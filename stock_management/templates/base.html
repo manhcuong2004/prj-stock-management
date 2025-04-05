@@ -167,7 +167,11 @@
 
     <div class="sidebar">
         <a href="#" data-bs-toggle="collapse" data-bs-target="#sanphamSubmenu" aria-expanded="false">
-            <i class="bi bi-box-seam"></i> Sản phẩm
+            <i class="bi bi-box-seam">
+                {% block header-name %}
+                    Sản phẩm
+                {%endblock%}
+            </i>
         </a>
         <div class="collapse ms-4" id="sanphamSubmenu">
             <a href="#" class="submenu">Danh mục sản phẩm</a>
