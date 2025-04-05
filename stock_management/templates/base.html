@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
-
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,9 +84,10 @@
         padding-top: 1rem;
         border-right: 1px solid #dee2e6;
         height: calc(100vh - 60px);
-        position: absolute;
+        position: fixed;
         top: 60px;
         left: 0;
+
     }
 
     .sidebar a {
@@ -137,8 +138,10 @@
 
     .main-content {
         margin-left: 250px;
+        margin-top: 50px;
         padding-top: 80px;
         padding: 20px;
+
     }
     </style>
 </head>
@@ -147,10 +150,13 @@
 
     <div class="header">
         <div class="left-container">
-            <img src="./static/stockb-logo.png">
-            <div class="title-header">Sản phẩm</div>
+            <img src="{% static 'stockb-logo.png' %}" />
+            <div class="title-header">
+                {% block header-name %}
+                    Sản phẩm
+                {%endblock%}
+            </div>
         </div>
-
         <div class="d-flex align-items-center">
             <div class="dropdown name-user">
                 <button class="dropdown-toggle  text-dark bg-transparent border-0" id="dropdownMenuButton1"
@@ -167,11 +173,7 @@
 
     <div class="sidebar">
         <a href="#" data-bs-toggle="collapse" data-bs-target="#sanphamSubmenu" aria-expanded="false">
-            <i class="bi bi-box-seam">
-                {% block header-name %}
-                    Sản phẩm
-                {%endblock%}
-            </i>
+            <i class="bi bi-box-seam"></i>Sản phẩm
         </a>
         <div class="collapse ms-4" id="sanphamSubmenu">
             <a href="#" class="submenu">Danh mục sản phẩm</a>
@@ -192,10 +194,12 @@
         </div>
         <a href="#"><i class="bi bi-file-bar-graph"></i> Báo cáo</a>
     </div>
-    <div class="container mt-5 main-content">
-        {% block content %}
-            <h1>Welcome to StockB!</h1>
-        {% endblock %}
+    <div class="main-content">
+        <div class="container mt-5">
+            {% block content %}
+                <h1>Welcome to StockB!</h1>
+            {% endblock %}
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
