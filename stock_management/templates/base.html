@@ -9,7 +9,8 @@
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
     <style>
-        .header {
+
+    .header {
         height: 60px;
         width: 100%;
         background-color: #ffffff;
@@ -138,9 +139,11 @@
 
     .main-content {
             margin-left: 250px;
-            margin-top: 30px;
-            padding-top: 80px;
+            margin-top: 50px;
             padding: 20px;
+            background: #F5F3F3;
+            height: calc(100vh - 50px); /* Đảm bảo rằng content chiếm toàn bộ không gian còn lại */
+            overflow-y: auto;
         }
     {% block style %}
 

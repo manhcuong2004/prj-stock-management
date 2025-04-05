@@ -1,5 +1,84 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div>Hi stock-out</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5>Danh sách đơn hàng</h5>
+      <button class="btn btn-primary">
+          Tạo đơn hàng
+      </button>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <ul class="nav nav-tabs mb-3">
+          <li class="nav-item">
+            <a class="nav-link active" href="#">Tất cả đơn hàng</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Đơn hàng chưa giải quyết</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Đơn hàng đã giải quyết</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Chưa thanh toán</a>
+          </li>
+        </ul>
+
+        <div class="input-group mb-4">
+          <input type="text" class="form-control" placeholder="Tìm kiếm">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">Mã</th>
+                <th scope="col">Ngày tạo</th>
+                <th scope="col">Khách hàng</th>
+                <th scope="col">Thanh toán</th>
+                <th scope="col">Trạng thái đơn</th>
+                <th scope="col">Tổng tiền</th>
+                <th scope="col">Chỉnh sửa</th>
+                <th scope="col">Xóa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><i class="bi bi-chevron-right"></i></td>
+                <td>#10027</td>
+                <td>01/03/2025 10:42 CH</td>
+                <td>Haravan Demo</td>
+                <td><span class="badge bg-success">Đã thanh toán</span></td>
+                <td><span class="badge bg-danger">Đã hủy</span></td>
+                <td>31,900,000 đ</td>
+                <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
+                <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+              </tr>
+            <tr>
+                <td><i class="bi bi-chevron-right"></i></td>
+                <td>#10027</td>
+                <td>01/03/2025 10:42 CH</td>
+                <td>Haravan Demo</td>
+                <td><span class="badge bg-success">Đã thanh toán</span></td>
+                <td><span class="badge bg-danger">Đã hủy</span></td>
+                <td>31,900,000 đ</td>
+                <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
+                <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+              </tr>
+            <tr>
+                <td><i class="bi bi-chevron-right"></i></td>
+                <td>#10027</td>
+                <td>01/03/2025 10:42 CH</td>
+                <td>Haravan Demo</td>
+                <td><span class="badge bg-success">Đã thanh toán</span></td>
+                <td><span class="badge bg-danger">Đã hủy</span></td>
+                <td>31,900,000 đ</td>
+                <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
+                <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+              </tr>
+            </tbody>
+          </table>
+    </div>
+  </div>
 {% endblock %}
