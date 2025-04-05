@@ -136,13 +136,14 @@
         /* Dịch ngược lại 50% để căn giữa */
     }
 
-    {% block style %}
-        .main-content {
+    .main-content {
             margin-left: 250px;
             margin-top: 30px;
             padding-top: 80px;
             padding: 20px;
         }
+    {% block style %}
+
     {% endblock %}
     </style>
 </head>
@@ -165,6 +166,7 @@
                     VLXD Nam Đàng
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/">Trang chủ</a></li>
                     <li><a class="dropdown-item" href="#">Thông tin</a></li>
                     <li><a class="dropdown-item" href="#">Đăng xuất</a></li>
                 </ul>
