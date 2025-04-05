@@ -5,4 +5,4 @@ def index(request):
     return render(request, "main.html")
 
 def stock_out(request):
-    return render(request, "stock_out.html")
+    return render(request, "stock_out/stock_out.html")

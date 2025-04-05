@@ -1,5 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block style %}
+.main-content {
+            margin-left: 250px;
+            margin-top: 50px;
+            padding-top: 80px;
+            padding: 20px;
+        }
+{% endblock %}
 {% block content %}
    <div class="row align-items-center">
     <div class="col-md-6 text-center text-md-start">
@@ -14,7 +22,7 @@
     </div>
   </div>
     <div class="mt-5 text-center text-muted">
-        <br><br><br>
+        <br><br><br><br>
         <p class="mb-0">Sản phẩm tâm huyết của <strong>Vũ Đức Anh - Huỳnh Trần Ngọc Bảo - Huỳnh Mạnh Cường - Nguyễn Công Hiếu - Nguyễn Phương Thành</strong></p>
     </div>
 {% endblock %}

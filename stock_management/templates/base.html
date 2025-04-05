@@ -136,13 +136,14 @@
         /* Dịch ngược lại 50% để căn giữa */
     }
 
-    .main-content {
-        margin-left: 250px;
-        margin-top: 50px;
-        padding-top: 80px;
-        padding: 20px;
-
-    }
+    {% block style %}
+        .main-content {
+            margin-left: 250px;
+            margin-top: 30px;
+            padding-top: 80px;
+            padding: 20px;
+        }
+    {% endblock %}
     </style>
 </head>
 
@@ -181,7 +182,7 @@
         </div>
         <a href="#"><i class="bi bi-people"></i> Khách hàng</a>
         <a href="#"><i class="bi bi-building"></i> Đơn vị</a>
-        <a href="#"><i class="bi bi-truck"></i> Xuất kho</a>
+        <a href="/stock-out"><i class="bi bi-truck"></i> Xuất kho</a>
         <a href="#"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
         <a href="#"><i class="bi bi-person-badge"></i> Nhân viên</a>
         <a href="#"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
