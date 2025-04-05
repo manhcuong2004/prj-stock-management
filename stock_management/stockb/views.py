@@ -4,3 +4,5 @@ from django.shortcuts import render
 def index(request):
     return render(request, "base.html")
 
+def stock_out(request):
+    return render(request, "stock_out.html")
