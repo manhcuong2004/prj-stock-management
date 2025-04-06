@@ -190,13 +190,13 @@
         <a href="/stock-out"><i class="bi bi-truck"></i> Xuất kho</a>
         <a href="#"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
         <a href="#"><i class="bi bi-person-badge"></i> Nhân viên</a>
-        <a href="#"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
+        <a href="/supplier"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
         <a href="#" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false">
             <i class="bi bi-box-seam"></i> Kiểm kê sản phẩm
         </a>
         <div class="collapse ms-4" id="kiemkeSubmenu">
-            <a href="#" class="submenu">Gần đến ngày khuyến nghị</a>
-            <a href="#" class="submenu">Gần hết trong kho</a>
+            <a href="{% url 'near_expiry_list' %}" class="submenu">Gần đến ngày khuyến nghị</a>
+            <a href="{% url 'low_stock_list' %}" class="submenu">Gần hết trong kho</a>
         </div>
         <a href="#"><i class="bi bi-file-bar-graph"></i> Báo cáo</a>
     </div>
