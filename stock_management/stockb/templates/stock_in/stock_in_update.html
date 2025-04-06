@@ -2,14 +2,159 @@
 {% block title %}
     {{title}}
 {% endblock %}
+{% block style %}
+    .order-code {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .badge-status {
+      font-size: 0.9rem;
+    }
+    .summary-box {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+    }
 
+{% endblock %}
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5>Tạo mới đơn nhập</h5>
-      <a  class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i>
-          Tạo đơn hàng
-      </a>
-    </div>
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div class="order-code">MÃ <span class="text-dark">#10027</span></div>
+          <small class="text-muted">01/03/2025 10:42 CH</small>
+        </div>
+        <div>
+          <button type="button" class="btn btn-outline-secondary me-2">Quay lại đơn hàng cũ</button>
+          <button type="submit" class="btn btn-primary">Tạo mới và hủy đơn hàng cũ</button>
+        </div>
+      </div>
+
+      <div class="mb-3 d-flex gap-2">
+        <span class="badge bg-warning badge-status">Trạng thái đơn hàng: Chưa xử lý</span>
+        <span class="badge bg-danger badge-status">Trạng thái thanh toán: Chưa thanh toán</span>
+      </div>
+
+    <form>
+      <div class="row">
+        <div class="col-md-8">
+            <div class="summary-box">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Tên sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Giá</th>
+                        <th>Chiết khấu</th>
+                        <th>Thành tiền</th>
+                          <th>Xóa</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <strong>Bao xi măng thịnh phát</strong><br>
+                          <small>Loại 5kg</small>
+                        </td>
+                        <td><input type="number" class="form-control" style="width: 100px;" name= "quantity"></td>
+                        <td>1,100,000 đ</td>
+                        <td>
+                            <div class="input-group" style="max-width: 120px;">
+                            <input type="number" class="form-control" name="discount" value="29">
+                            <span class="input-group-text">%</span>
+                          </div>
+                        </td>
+                        <td>31,900,000 đ</td>
+                        <td class="text-center"><i class="bi bi-x-lg"></i></td>
+                      </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-success"><i class="bi bi-plus-circle"></i> Thêm sản phẩm</button>
+            </div>
+
+
+          <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="summary-box">
+                    <h6>Ghi Chú Đơn Hàng</h6>
+                    <input type="text" class="form-control mb-2" name="note" placeholder="Thêm ghi chú cho đơn hàng">
+                    <p><strong>Ghi Chú Hiện Có:</strong><br>Ghi chú nháp thôi he he boi ánk br
+                    âssssssssssssssssssssss
+                        sssssssssssss
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="summary-box">
+                <div class="d-flex justify-content-between">
+                  <span>Số lượng sản phẩm</span><span>29</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Tổng tiền hàng</span><span>31,900,000 đ</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Giảm giá</span><span>0 đ</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold">
+                  <span>Tổng giá trị đơn hàng</span><span>31,900,000 đ</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Đã thanh toán</span><span>31,900,000 đ</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Còn nợ</span><span>0 đ</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Thực nhận</span><span>31,900,000 đ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="summary-box mb-3">
+            <h6>Thông Tin Người Mua <i class="bi bi-pencil ms-2"></i></h6>
+            <p class="mb-1"><a href="#">Haravan Demo</a><br><small>hello@haravan.com</small></p>
+            <ul class="mb-0">
+              <li>Đã đặt: <strong>28 Đơn hàng</strong></li>
+              <li>Doanh thu tích lũy: <strong>261,380,000 đ</strong></li>
+              <li>Khách nợ: <span class="text-success">-257,030,000 đ</span></li>
+            </ul>
+          </div>
+
+          <div class="summary-box mb-3">
+            <h6>Nhân Viên Tạo</h6>
+            <select class="form-select" name="employee">
+                <option selected>Huỳnh Mạnh Cường</option>
+                <option>Nguyễn Công Hiếu</option>
+
+              </select>
+          </div>
+
+          <div class="summary-box">
+            <div class="mb-2">
+              <label class="form-label">Trạng thái đơn hàng</label>
+              <select class="form-select" name="order_status">
+                <option selected>Chưa xử lý</option>
+                <option>Đang giao</option>
+                <option>Đã giao</option>
+                <option>Đã huỷ</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Trạng thái thanh toán</label>
+              <select class="form-select" name="payment_status">
+                <option selected>Chưa thanh toán</option>
+                <option>Đã thanh toán</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
 
 {% endblock %}

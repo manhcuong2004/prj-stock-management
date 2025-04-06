@@ -56,30 +56,29 @@
                 <td><span class="badge bg-success">Đã thanh toán</span></td>
                 <td><span class="badge bg-danger">Đã hủy</span></td>
                 <td>31,900,000 đ</td>
-                <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
-                <td><button class="btn btn-danger btn-sm">Xóa</button></td>
-              </tr>
-            <tr>
-                <td><i class="bi bi-chevron-right"></i></td>
-                <td>#10027</td>
-                <td>01/03/2025 10:42 CdH</td>
-                <td>Haravan Demo</td>
-                <td><span class="badge bg-success">Đã thanh toán</span></td>
-                <td><span class="badge bg-danger">Đã hủy</span></td>
-                <td>31,900,000 đ</td>
-                <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
-                <td><button class="btn btn-danger btn-sm">Xóa</button></td>
-              </tr>
-            <tr>
-                <td><i class="bi bi-chevron-right"></i></td>
-                <td>#10027</td>
-                <td>01/03/2025 10:42 CH</td>
-                <td>Haravan Demo</td>
-                <td><span class="badge bg-success">Đã thanh toán</span></td>
-                <td><span class="badge bg-danger">Đã hủy</span></td>
-                <td>31,900,000 đ</td>
-                <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
-                <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+                <td><a href="create" class="btn btn-warning btn-sm">Chỉnh sửa</a></td>
+                <td>
+                  <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                    Xóa
+                  </button>
+                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalCenterTitle">Xác nhận xoá</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          Bạn có chắc chắn muốn xoá sản phẩm này khỏi đơn hàng không?
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                          <button type="button" class="btn btn-danger">Xóa</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
