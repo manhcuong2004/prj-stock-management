@@ -49,4 +49,10 @@ def report_overview(request):
 
 def product_category_view(request):
     return render(request, 'product_category/product_category_list.html')
+def product_category_create(request):
+    return render(request, 'product_category/product_category_update.html')
+def product_category_detail(request):
+    return render(request, 'product_category/product_category_detail.html')
 
+def product_view(request):
+    return render(request, 'product/product_list.html')

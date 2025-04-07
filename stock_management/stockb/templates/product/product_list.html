@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{title}}
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5>Danh sách đơn hàng nhập</h5>
+      <a href="create" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i>
+          Tạo đơn hàng
+      </a>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+
+        <div class="input-group mb-4">
+          <input type="text" class="form-control" placeholder="Tìm kiếm">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Tên sản phẩm</th>
+                <th scope="col">Danh mục</th>
+                <th scope="col">Nhà cung cấp</th>
+                <th scope="col">Số lượng tồn kho</th>
+                <th scope="col">Giá nhập vào</th>
+                <th scope="col">Giá bán ra</th>
+                <th scope="col">Lô hiện có</th>
+                <th scope="col">Chỉnh sửa</th>
+                <th scope="col">Xóa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <a class="text-primary">Xi măng Thịnh Vượng</a>
+                  <p>Loại 5kg</p>
+                </td>
+                <td>Xi măng</td>
+                <td>Công ty TNHH Thịnh Vượng</td>
+                <td>979 Bao</td>
+                <td>300.000đ</td>
+                <td>330.000đ</td>
+                <td>3</td>
+                <td><a href="create" class="btn btn-warning btn-sm">Chỉnh sửa</a></td>
+                <td>
+                  <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                    Xóa
+                  </button>
+                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalCenterTitle">Xác nhận xoá</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          Bạn có chắc chắn muốn xoá sản phẩm này khỏi đơn hàng không?
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                          <button type="button" class="btn btn-danger">Xóa</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+    </div>
+  </div>
+{% endblock %}
