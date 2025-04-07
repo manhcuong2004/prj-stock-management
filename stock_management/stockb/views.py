@@ -17,20 +17,16 @@ def stock_out_update(request):
 
 def stock_in(request):
     context = {"title": "Trang xuất kho"}
-    return render(request, "stock_in/stock_in.html", context)
+    return render(request, "stock_in/stock_in_list.html", context)
 
 def stock_in_update(request):
     context = {"title": "Trang tạo mới đơn nhập kho"}
     return render(request, "stock_in/stock_in_update.html", context)
 
 
-def units_view(request):
-    return render(request, 'units/units.html')
 def supplier_list_view(request):
     return render(request, 'supplier/supplier_list.html')
 
-def create_unit(request):
-    return render(request, 'units/create_unit.html')
 def supplier_create_view(request):
     if request.method == 'POST':
         return redirect('supplier_list')
@@ -42,5 +38,15 @@ def near_expiry_list_view(request):
 def low_stock_list_view(request):
     return render(request, 'inventory/low_stock_list.html')
 
+
+def units_view(request):
+    return render(request, 'units/units.html')
+def create_unit(request):
+    return render(request, 'units/create_unit.html')
 def report_overview(request):
     return render(request, 'report/overview.html')
+
+
+def product_category_view(request):
+    return render(request, 'product_category/product_category_list.html')
+

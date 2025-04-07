@@ -5,16 +5,11 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="mb-0">Đơn vị</h5>
         <a href="{% url 'create_unit' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Tạo đơn vị
+            <i class="bi bi-plus-circle"></i> Tạo mới danh mục
         </a>
     </div>
 
     <div class="bg-white p-4 rounded shadow">
-        <ul class="nav nav-tabs mb-3">
-            <li class="nav-item">
-                <a class="nav-link active" href="#">Tất cả đơn vị</a>
-            </li>
-        </ul>
 
         <div class="input-group mb-4">
             <input type="text" class="form-control" placeholder="Tìm kiếm">
@@ -25,7 +20,6 @@
             <table class="table table-bordered align-middle text-center">
                 <thead class="table-light">
                     <tr>
-                        <th scope="col"></th>
                         <th scope="col">Tên đơn vị</th>
                         <th scope="col">Kí hiệu</th>
                         <th scope="col">Chỉnh sửa</th>
@@ -34,25 +28,22 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><input type="checkbox" class="form-check-input"></td>
                         <td>Kí lô</td>
                         <td>Kg</td>
-                        <td><button class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Chỉnh sửa</button></td>
-                        <td><button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Xóa</button></td>
+                        <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
+                        <td><button class="btn btn-danger btn-sm">Xóa</button></td>
                     </tr>
                     <tr>
-                        <td><input type="checkbox" class="form-check-input"></td>
                         <td>Lít</td>
                         <td>L</td>
-                        <td><button class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Chỉnh sửa</button></td>
-                        <td><button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Xóa</button></td>
+                        <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
+                        <td><button class="btn btn-danger btn-sm">Xóa</button></td>
                     </tr>
                     <tr>
-                        <td><input type="checkbox" class="form-check-input"></td>
                         <td>Mét</td>
                         <td>M</td>
-                        <td><button class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Chỉnh sửa</button></td>
-                        <td><button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Xóa</button></td>
+                        <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
+                        <td><button class="btn btn-danger btn-sm">Xóa</button></td>
                     </tr>
                 </tbody>
             </table>

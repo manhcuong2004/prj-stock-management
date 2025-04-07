@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block extra_head %}
-    <!-- Flatpickr CSS (nếu chưa có trong base.html) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock %}
 
@@ -16,7 +15,6 @@
             <div class="position-relative flex-grow-1">
                 <input type="text" id="dateRange" class="form-control py-2 px-4" placeholder="Chọn khoảng thời gian">
                 <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-                    <svg class="text-muted" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                               d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
                               clip-rule="evenodd"></path>
@@ -35,20 +33,16 @@
             <div class="card shadow-sm text-center p-4">
                 <div class="text-muted">Số đơn hàng</div>
                 <div class="fs-2 fw-bold text-dark my-2">28</div>
-                <div class="text-muted">-</div>
             </div>
         </div>
 
-        <!-- Doanh thu -->
         <div class="col-md-4">
             <div class="card shadow-sm text-center p-4">
                 <div class="text-muted">Doanh thu</div>
                 <div class="fs-2 fw-bold text-dark my-2">261,380,000 đ</div>
-                <div class="text-muted">-</div>
             </div>
         </div>
 
-        <!-- Doanh thu thuần -->
         <div class="col-md-4">
             <div class="card shadow-sm text-center p-4">
                 <div class="text-muted">Doanh thu thuần theo nhà cung cấp</div>
@@ -70,7 +64,6 @@
         </div>
     </div>
 
-    <!-- Nợ phải trả/Nợ phải thu -->
     <div class="row g-4 mt-4">
         <div class="col-md-6">
             <div class="card shadow-sm p-4">
@@ -89,14 +82,11 @@
 {% endblock %}
 
 {% block extra_js %}
-    <!-- Flatpickr JS (nếu chưa có trong base.html) -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
-    <!-- Chart.js (nếu chưa có trong base.html) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Khởi tạo date picker
         flatpickr("#dateRange", {
             mode: "range",
             dateFormat: "d/m/Y",
@@ -105,7 +95,6 @@
             maxDate: "today"
         });
 
-        // Xử lý sự kiện khi click nút lọc
         document.getElementById('filterBtn').addEventListener('click', function() {
             const dateRange = document.getElementById('dateRange').value;
             if (dateRange) {
@@ -113,20 +102,16 @@
                 const startDate = dates[0];
                 const endDate = dates[1] || dates[0];
 
-                // Cập nhật ngày hiển thị
                 document.querySelectorAll('.date-range-display').forEach(el => {
                     el.textContent = `${startDate} - ${endDate}`;
                 });
 
-                // Ở đây bạn có thể thêm code để gọi API hoặc lọc dữ liệu
                 console.log(`Lọc dữ liệu từ ${startDate} đến ${endDate}`);
 
-                // Tạm thời hiển thị thông báo
                 alert(`Đã áp dụng bộ lọc từ ${startDate} đến ${endDate}`);
             }
         });
 
-        // Biểu đồ lượng đơn hàng
         document.addEventListener('DOMContentLoaded', function() {
             const ordersCtx = document.getElementById('ordersChart').getContext('2d');
             const ordersChart = new Chart(ordersCtx, {

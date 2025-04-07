@@ -5,12 +5,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d9f0882c-7488-4846-9dee-bb4ad5a5d77e" name="Changes" comment="sua chart">
+      <changelist_data name="thanh-2406" email="phuongthanh0gh@gmail.com" automatic="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/prj-stock-management.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_management/stockb/templates/product_category/product_category_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/main.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/report/overview.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/report/overview.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/stock_in/stock_in.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/stock_in/stock_in_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/supplier/supplier_create.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/supplier/supplier_create.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/units/create_unit.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/units/create_unit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/units/units.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/units/units.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/stockb/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_management/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <favorite-branches>
@@ -39,12 +59,12 @@
     &quot;assignee&quot;: &quot;thanh-2406&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/manhcuong2004/prj-stock-management.git&quot;,
-    &quot;accountId&quot;: &quot;783fc753-1e88-45d5-9381-4ea0303e0cdc&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/manhcuong2004/prj-stock-management.git",
+    "accountId": "2532dbad-656b-4f1f-a276-1ba38e14368c"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -53,14 +73,65 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Thanh&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Python.manage.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "Thanh",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "F:/LTW/prj-stock-management"
   }
-}</component>
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="prj-stock-management" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="manage" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="prj-stock-management" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11" />
+      <option name="WORKING_DIRECTORY" value="F:\LTW\prj-stock-management" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stock_management/manage.py" />
+      <option name="PARAMETERS" value="runserver" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -93,12 +164,21 @@
       <option name="project" value="LOCAL" />
       <updated>1744008894452</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="sua chart">
+      <option name="closed" value="true" />
+      <created>1744018666703</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1744018666703</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="check check" />
     <MESSAGE value="sua chart" />
-    <option name="LAST_COMMIT_MESSAGE" value="sua chart" />
+    <MESSAGE value="sua create uniu" />
+    <option name="LAST_COMMIT_MESSAGE" value="sua create uniu" />
   </component>
 </project>
