@@ -36,7 +36,21 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Thêm khách hàng Haravan Demo trực tiếp vào HTML -->
+                    <tr>
+                        <td>1</td>
+                        <td>Haravan Demo</td>
+                        <td>0987654321</td>
+                        <td>hello@haravan.com</td>
+                        <td>08:30 07/04/2025</td>
+                        <td class="text-center">
+                            <a href="#" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
+                        </td>
+                    </tr>
+
                     {% for customer in customers %}
+                    {% if customer.email != "hello@haravan.com" %}  <!-- Tránh hiển thị trùng lặp nếu đã có trong DB -->
                     <tr>
                         <td>{{ customer.id }}</td>
                         <td>{{ customer.last_name }} {{ customer.first_name }}</td>
@@ -48,10 +62,9 @@
                             <a href="{% url 'customer_delete' customer.id %}" class="btn btn-sm btn-outline-danger">Xóa</a>
                         </td>
                     </tr>
+                    {% endif %}
                     {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center">Không có khách hàng nào</td>
-                    </tr>
+                    <!-- Không hiển thị thông báo vì đã có ít nhất một khách hàng (Haravan Demo) -->
                     {% endfor %}
                 </tbody>
             </table>
