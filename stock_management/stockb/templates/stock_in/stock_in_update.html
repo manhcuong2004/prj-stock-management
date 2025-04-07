@@ -70,15 +70,20 @@
             </tbody>
             </table>
             <div class="add-product">
-            <input type="text" id="new-product" class="form-control" placeholder="Nhập tên sản phẩm mới" list="suggestions">
-            <datalist id="suggestions">
-                <option value="Bao xi măng thịnh phát">
-                <option value="Xi măng Holcim">
-                <option value="Xi măng Sài Gòn">
-                <option value="Xi măng Vicem Bỉm Sơn">
-                <option value="Xi măng Nghi Sơn - Loại 30kg">
-            </datalist>
-            <button type="button" class="btn btn-primary mt-2" id="add-product-btn">Thêm sản phẩm</button>
+                <div class="input-group mb-3">
+                  <input type="text" id="new-product" class="form-control" placeholder="Nhập tên sản phẩm mới" list="suggestions">
+                  <button type="button" class="btn btn-success" id="add-product-btn" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                    Thêm sản phẩm
+                  </button>
+                </div>
+
+                <datalist id="suggestions">
+                  <option value="Bao xi măng thịnh phát">
+                  <option value="Xi măng Holcim">
+                  <option value="Xi măng Sài Gòn">
+                  <option value="Xi măng Vicem Bỉm Sơn">
+                  <option value="Xi măng Nghi Sơn - Loại 30kg">
+                </datalist>
             </div>
         </div>
 
