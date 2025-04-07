@@ -18,8 +18,9 @@ urlpatterns = [
     path('report/', views.report_overview, name='report'),
 
     path('product-category/', views.product_category_view, name='product_category'),
-    path('product-category/create', views.product_category_create, name='product_category_create'),
+    path('product-category/create', views.product_category_update, name='product_category_create'),
     path('product-category/detail', views.product_category_detail, name='product_category_detail'),
 
     path('product/', views.product_view, name='product'),
+    path('product/create', views.product_update, name='product_update'),
 ]

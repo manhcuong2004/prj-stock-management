@@ -56,7 +56,7 @@ def report_overview(request):
 def product_category_view(request):
     context = {"title": "Danh mục sản phẩm"}
     return render(request, 'product_category/product_category_list.html', context)
-def product_category_create(request):
+def product_category_update(request):
     context = {"title": "Tạo mới danh mục sản phẩm"}
     return render(request, 'product_category/product_category_update.html', context)
 def product_category_detail(request):
@@ -66,3 +66,6 @@ def product_category_detail(request):
 def product_view(request):
     context = {"title": "Danh sách sản phẩm"}
     return render(request, 'product/product_list.html', context)
+def product_update(request):
+    context = {"title": "Tạo mới sản phẩm"}
+    return render(request, 'product/product_update.html', context)
