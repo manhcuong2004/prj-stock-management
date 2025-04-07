@@ -18,7 +18,7 @@
         </div>
 
         <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9">
+            <a class="col-9" href="/product/detail">
                 Xi măng VSA
             </a>
 
@@ -36,6 +36,37 @@
             </div>
         </div>
 
-
+        <div class="add-product mt-4">
+            <input type="text" id="new-product" class="form-control" placeholder="Nhập tên sản phẩm mới" list="suggestions">
+            <datalist id="suggestions">
+                <option value="Bao xi măng thịnh phát">
+                <option value="Xi măng Holcim">
+                <option value="Xi măng Sài Gòn">
+                <option value="Xi măng Vicem Bỉm Sơn">
+                <option value="Xi măng Nghi Sơn - Loại 30kg">
+            </datalist>
+            <button type="button" class="btn btn-success mt-2" id="add-product-btn" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                Thêm sản phẩm</button>
+            </div>
+            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                  </div>
+                </div>
+                </div>
+            </div>
     </div>
+
 {% endblock %}

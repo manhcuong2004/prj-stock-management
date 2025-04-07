@@ -35,42 +35,83 @@
         <span class="badge bg-danger badge-status">Trạng thái thanh toán: Chưa thanh toán</span>
       </div>
 
-    <form>
+    <form id="order-form" >
       <div class="row">
-        <div class="col-md-8">
-            <div class="summary-box">
-                <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Tên sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Giá</th>
-                        <th>Chiết khấu</th>
-                        <th>Thành tiền</th>
-                          <th>Xóa</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <strong>Bao xi măng thịnh phát</strong><br>
-                          <small>Loại 5kg</small>
-                        </td>
-                        <td><input type="number" class="form-control" style="width: 100px;" name= "quantity"></td>
-                        <td>1,100,000 đ</td>
-                        <td>
-                            <div class="input-group" style="max-width: 120px;">
+        <div class="col-md-9">
+        <div class="summary-box">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tên sản phẩm</th>
+                <th>Tên lô</th>
+                <th>Số lượng</th>
+                <th>Giá</th>
+                <th>Chiết khấu</th>
+                <th>Thành tiền</th>
+                <th>Xóa</th>
+            </tr>
+        </thead>
+            <tbody id="product-list">
+                <tr>
+                    <td>
+                        <strong>Bao xi măng thịnh phát</strong><br>
+                        <small>Loại 5kg</small>
+                    </td>
+                    <td>Rikaki</td>
+                    <td><input type="number" class="form-control" style="width: 100px;" name="quantity"></td>
+                    <td>1,100,000 đ</td>
+                    <td>
+                        <div class="input-group" style="max-width: 120px;">
                             <input type="number" class="form-control" name="discount" value="29">
                             <span class="input-group-text">%</span>
-                          </div>
-                        </td>
-                        <td>31,900,000 đ</td>
-                        <td class="text-center"><i class="bi bi-x-lg"></i></td>
-                      </tr>
-                    </tbody>
-                </table>
-                <button type="button" class="btn btn-success"><i class="bi bi-plus-circle"></i> Thêm sản phẩm</button>
+                        </div>
+                    </td>
+                    <td>31,900,000 đ</td>
+                    <td class="text-center"><i class="bi bi-x-lg"></i></td>
+                </tr>
+            </tbody>
+            </table>
+            <div class="add-product">
+                <input type="text" id="new-product" class="form-control" placeholder="Nhập tên sản phẩm mới" list="suggestions">
+                <datalist id="suggestions">
+                    <option value="Bao xi măng thịnh phát">
+                    <option value="Xi măng Holcim">
+                    <option value="Xi măng Sài Gòn">
+                    <option value="Xi măng Vicem Bỉm Sơn">
+                    <option value="Xi măng Nghi Sơn - Loại 30kg">
+                </datalist>
+                <button type="button" class="btn btn-primary mt-2" id="add-product-btn">Thêm sản phẩm</button>
             </div>
+        </div>
+
+        <script>
+            document.getElementById('add-product-btn').addEventListener('click', function(event) {
+            event.preventDefault();
+            var productName = document.getElementById('new-product').value;
+            if (productName) {
+                var tableBody = document.getElementById('product-list');
+
+                var newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td><strong>${productName}</strong><br><small>Loại mới</small></td>
+                    <td>Rikaki</td>
+                    <td><input type="number" class="form-control" style="width: 100px;" name="quantity"></td>
+                    <td>0 đ</td>
+                    <td>
+                        <div class="input-group" style="max-width: 120px;">
+                            <input type="number" class="form-control" name="discount" value="0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </td>
+                    <td>0 đ</td>
+                    <td class="text-center"><i class="bi bi-x-lg"></i></td>
+                `;
+                tableBody.appendChild(newRow);
+
+                document.getElementById('new-product').value = '';
+            }
+        });
+        </script>
 
 
           <div class="row mt-4">
@@ -114,7 +155,7 @@
           </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="summary-box mb-3">
             <h6>Thông Tin Người Mua <i class="bi bi-pencil ms-2"></i></h6>
             <p class="mb-1"><a href="#">Haravan Demo</a><br><small>hello@haravan.com</small></p>

@@ -8,7 +8,7 @@ def index(request):
 
 def stock_out(request):
     context = {"title": "Trang xuất kho"}
-    return render(request, "stock_out/stock_out.html", context)
+    return render(request, "stock_out/stock_out_list.html", context)
 
 def stock_out_update(request):
     context = {"title": "Trang tạo mới đơn xuất kho"}
@@ -44,7 +44,7 @@ def low_stock_list_view(request):
 
 def units_view(request):
     context = {"title": "Danh sách đơn vị"}
-    return render(request, 'units/units.html', context)
+    return render(request, 'units/units_list.html', context)
 def create_unit(request):
     context = {"title": "Tạo mới đơn vị"}
     return render(request, 'units/create_unit.html',context)
@@ -69,6 +69,9 @@ def product_view(request):
 def product_update(request):
     context = {"title": "Tạo mới sản phẩm"}
     return render(request, 'product/product_update.html', context)
+def product_detail(request):
+    context = {"title": "Danh sách sản phẩm"}
+    return render(request, 'product/product_detail.html', context)
 
 #Khách hàng
 def customer_list(request):

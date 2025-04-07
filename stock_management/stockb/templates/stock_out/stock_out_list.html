@@ -36,29 +36,26 @@
           <table class="table table-bordered align-middle text-center">
             <thead class="table-light">
               <tr>
-                <th scope="col"></th>
                 <th scope="col">Mã</th>
                 <th scope="col">Ngày tạo</th>
                 <th scope="col">Khách hàng</th>
                 <th scope="col">Thanh toán</th>
                 <th scope="col">Trạng thái đơn</th>
                 <th scope="col">Tổng tiền</th>
-                <th scope="col">Chỉnh sửa</th>
-                <th scope="col">Xóa</th>
+                <th scope="col">Thao tác</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><i class="bi bi-chevron-right"></i></td>
                 <td>#10027</td>
                 <td>01/03/2025 10:42 CH</td>
                 <td>Haravan Demo</td>
                 <td><span class="badge bg-success">Đã thanh toán</span></td>
                 <td><span class="badge bg-danger">Đã hủy</span></td>
                 <td>31,900,000 đ</td>
-                <td><a href="create" class="btn btn-warning btn-sm">Chỉnh sửa</a></td>
                 <td>
-                  <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                  <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
                     Xóa
                   </button>
                     <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -69,7 +66,7 @@
                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                          Bạn có chắc chắn muốn xoá sản phẩm này khỏi đơn hàng không?
+                          Bạn có chắc chắn muốn xoá đơn hàng này không?
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>

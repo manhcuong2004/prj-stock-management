@@ -26,8 +26,7 @@
                         <th scope="col">Số điện thoại</th>
                         <th scope="col">Email</th>
                         <th scope="col">Địa chỉ</th>
-                        <th scope="col">Chỉnh sửa</th>
-                        <th scope="col">Xóa</th>
+                        <th scope="col">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,8 +37,29 @@
                         <td>039478233467</td>
                         <td>huynhnm@gmail.com</td>
                         <td>Mai Lâm com...</td>
-                        <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
-                        <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+                            Xóa
+                          </button>
+                            <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="exampleModalCenterTitle">Xác nhận xoá</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  Bạn có chắc chắn muốn xoá đơn hàng này không?
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                  <button type="button" class="btn btn-danger">Xóa</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
