@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d9f0882c-7488-4846-9dee-bb4ad5a5d77e" name="Changes" comment="check check">
+    <list default="true" id="d9f0882c-7488-4846-9dee-bb4ad5a5d77e" name="Changes" comment="sua chart">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/report/overview.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/report/overview.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock_management/stockb/templates/units/units.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/stockb/templates/units/units.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock_management/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_management/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,11 +85,20 @@
       <option name="project" value="LOCAL" />
       <updated>1744002934789</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="sua chart">
+      <option name="closed" value="true" />
+      <created>1744008894452</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1744008894452</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="check check" />
-    <option name="LAST_COMMIT_MESSAGE" value="check check" />
+    <MESSAGE value="sua chart" />
+    <option name="LAST_COMMIT_MESSAGE" value="sua chart" />
   </component>
 </project>
