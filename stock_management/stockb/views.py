@@ -69,3 +69,19 @@ def product_view(request):
 def product_update(request):
     context = {"title": "Tạo mới sản phẩm"}
     return render(request, 'product/product_update.html', context)
+
+#Khách hàng
+def customer_list(request):
+    context = {"title": "Danh sách khách hàng"}
+    return render(request, "customer/customer_list.html", context)
+def customer_create(request):
+    context = {"title": "Thêm mới khách hàng"}
+    return render(request, "customer/customer_form.html", context)
+
+#Nhân viên
+def  employee_list(request):
+    context = {"title": "Danh sách nhân viên"}
+    return render(request, "employer/employee_list.html", context)
+def employee_create(request):
+    context = {"title": "Thêm mới nhân viên"}
+    return render(request, "employer/employee_form.html", context)

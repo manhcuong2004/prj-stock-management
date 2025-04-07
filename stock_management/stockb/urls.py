@@ -16,6 +16,9 @@ urlpatterns = [
     path('units/', views.units_view, name='units'),
     path('units/create/', views.create_unit, name='create_unit'),
     path('report/', views.report_overview, name='report'),
+    # Khách hàng
+    path('customers/', views.customer_list, name='customer_list'),
+    path('customers/create/', views.customer_create, name='customer_create'),
 
     path('product-category/', views.product_category_view, name='product_category'),
     path('product-category/create', views.product_category_update, name='product_category_create'),
@@ -23,4 +26,7 @@ urlpatterns = [
 
     path('product/', views.product_view, name='product'),
     path('product/create', views.product_update, name='product_update'),
+    # Nhân viên
+    path('employees/', views.employee_list, name='employee_list'),
+    path('employees/create/', views.employee_create, name='employee_create'),
 ]
