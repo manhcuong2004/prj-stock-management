@@ -1,0 +1,682 @@
+[
+    {
+        "model": "stockb.ProductCategory",
+        "pk": 1,
+        "fields": {
+            "category_name": "Đồ điện tử",
+            "description": "Các sản phẩm công nghệ cao",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.ProductCategory",
+        "pk": 2,
+        "fields": {
+            "category_name": "Thực phẩm",
+            "description": "Thực phẩm tươi sống và đóng gói",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.ProductCategory",
+        "pk": 3,
+        "fields": {
+            "category_name": "Quần áo",
+            "description": "Thời trang nam, nữ và trẻ em",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.ProductCategory",
+        "pk": 4,
+        "fields": {
+            "category_name": "Đồ gia dụng",
+            "description": "Đồ dùng trong gia đình",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.ProductCategory",
+        "pk": 5,
+        "fields": {
+            "category_name": "Văn phòng phẩm",
+            "description": "Dụng cụ học tập và làm việc",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Unit",
+        "pk": 1,
+        "fields": {
+            "unit_name": "Cái",
+            "unit_symbol": "pcs",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Unit",
+        "pk": 2,
+        "fields": {
+            "unit_name": "Kilogram",
+            "unit_symbol": "kg",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Unit",
+        "pk": 3,
+        "fields": {
+            "unit_name": "Lít",
+            "unit_symbol": "L",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Unit",
+        "pk": 4,
+        "fields": {
+            "unit_name": "Hộp",
+            "unit_symbol": "box",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Unit",
+        "pk": 5,
+        "fields": {
+            "unit_name": "Bộ",
+            "unit_symbol": "set",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Supplier",
+        "pk": 1,
+        "fields": {
+            "supplier_name": "Nguyễn Văn A",
+            "company_name": "Công ty TNHH ABC",
+            "tax_code": "1234567890",
+            "address": "123 Đường Láng, Hà Nội",
+            "phone": "0901234567",
+            "email": "abc@example.com",
+            "notes": "Nhà cung cấp uy tín",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Supplier",
+        "pk": 2,
+        "fields": {
+            "supplier_name": "Trần Thị B",
+            "company_name": "Công ty XYZ",
+            "tax_code": "0987654321",
+            "address": "456 Lê Lợi, TP.HCM",
+            "phone": "0912345678",
+            "email": "xyz@example.com",
+            "notes": "Giao hàng nhanh",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Supplier",
+        "pk": 3,
+        "fields": {
+            "supplier_name": "Lê Văn C",
+            "company_name": "Công ty 123",
+            "tax_code": "1122334455",
+            "address": "789 Trần Hưng Đạo, Đà Nẵng",
+            "phone": "0923456789",
+            "email": "123@example.com",
+            "notes": "Hàng chất lượng cao",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Supplier",
+        "pk": 4,
+        "fields": {
+            "supplier_name": "Phạm Thị D",
+            "company_name": "Công ty DEF",
+            "tax_code": "6677889900",
+            "address": "321 Nguyễn Huệ, Huế",
+            "phone": "0934567890",
+            "email": "def@example.com",
+            "notes": "Giá cạnh tranh",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Supplier",
+        "pk": 5,
+        "fields": {
+            "supplier_name": "Hoàng Văn E",
+            "company_name": "Công ty GHI",
+            "tax_code": "5566778899",
+            "address": "654 Phạm Ngũ Lão, Hải Phòng",
+            "phone": "0945678901",
+            "email": "ghi@example.com",
+            "notes": "Dịch vụ tốt",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Product",
+        "pk": 1,
+        "fields": {
+            "product_name": "Máy tính xách tay",
+            "description": "Laptop Dell XPS 13",
+            "quantity": 10,
+            "purchase_price": "20000000.00",
+            "selling_price": "25000000.00",
+            "minimum_stock": 5,
+            "inspection_time": "2025-04-01T10:00:00Z",
+            "category": 1,
+            "unit": 1,
+            "supplier": 1,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Product",
+        "pk": 2,
+        "fields": {
+            "product_name": "Gạo ST25",
+            "description": "Gạo thơm chất lượng cao",
+            "quantity": 50,
+            "purchase_price": "15000.00",
+            "selling_price": "20000.00",
+            "minimum_stock": 20,
+            "inspection_time": "2025-04-02T14:00:00Z",
+            "category": 2,
+            "unit": 2,
+            "supplier": 2,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Product",
+        "pk": 3,
+        "fields": {
+            "product_name": "Áo sơ mi nam",
+            "description": "Áo sơ mi vải cotton",
+            "quantity": 30,
+            "purchase_price": "150000.00",
+            "selling_price": "200000.00",
+            "minimum_stock": 10,
+            "inspection_time": "2025-04-03T09:00:00Z",
+            "category": 3,
+            "unit": 1,
+            "supplier": 3,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Product",
+        "pk": 4,
+        "fields": {
+            "product_name": "Nồi cơm điện",
+            "description": "Nồi cơm điện 1.8L",
+            "quantity": 15,
+            "purchase_price": "500000.00",
+            "selling_price": "700000.00",
+            "minimum_stock": 5,
+            "inspection_time": "2025-04-04T15:00:00Z",
+            "category": 4,
+            "unit": 1,
+            "supplier": 4,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Product",
+        "pk": 5,
+        "fields": {
+            "product_name": "Bút bi",
+            "description": "Bút bi Thiên Long",
+            "quantity": 100,
+            "purchase_price": "3000.00",
+            "selling_price": "5000.00",
+            "minimum_stock": 50,
+            "inspection_time": "2025-04-05T11:00:00Z",
+            "category": 5,
+            "unit": 1,
+            "supplier": 5,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Employee",
+        "pk": 1,
+        "fields": {
+            "first_name": "Nguyễn",
+            "last_name": "Hùng",
+            "email": "hung.nguyen@example.com",
+            "password": "hashed_password_1",
+            "phone": "0909123456",
+            "gender": "M",
+            "address": "123 Nguyễn Trãi, Hà Nội",
+            "role": "Quản lý",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Employee",
+        "pk": 2,
+        "fields": {
+            "first_name": "Trần",
+            "last_name": "Mai",
+            "email": "mai.tran@example.com",
+            "password": "hashed_password_2",
+            "phone": "0918234567",
+            "gender": "F",
+            "address": "456 Lê Đại Hành, TP.HCM",
+            "role": "Nhân viên bán hàng",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Employee",
+        "pk": 3,
+        "fields": {
+            "first_name": "Lê",
+            "last_name": "Phong",
+            "email": "phong.le@example.com",
+            "password": "hashed_password_3",
+            "phone": "0927345678",
+            "gender": "M",
+            "address": "789 Hùng Vương, Đà Nẵng",
+            "role": "Kế toán",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Employee",
+        "pk": 4,
+        "fields": {
+            "first_name": "Phạm",
+            "last_name": "Lan",
+            "email": "lan.pham@example.com",
+            "password": "hashed_password_4",
+            "phone": "0936456789",
+            "gender": "F",
+            "address": "321 Trần Phú, Huế",
+            "role": "Nhân viên kho",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Employee",
+        "pk": 5,
+        "fields": {
+            "first_name": "Hoàng",
+            "last_name": "Nam",
+            "email": "nam.hoang@example.com",
+            "password": "hashed_password_5",
+            "phone": "0945567890",
+            "gender": "M",
+            "address": "654 Lý Thường Kiệt, Hải Phòng",
+            "role": "Nhân viên giao hàng",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Customer",
+        "pk": 1,
+        "fields": {
+            "first_name": "Nguyễn",
+            "last_name": "Anh",
+            "email": "anh.nguyen@example.com",
+            "phone": "0909876543",
+            "address": "123 Pasteur, TP.HCM",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Customer",
+        "pk": 2,
+        "fields": {
+            "first_name": "Trần",
+            "last_name": "Bình",
+            "email": "binh.tran@example.com",
+            "phone": "0918765432",
+            "address": "456 Nguyễn Thị Minh Khai, Hà Nội",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Customer",
+        "pk": 3,
+        "fields": {
+            "first_name": "Lê",
+            "last_name": "Cường",
+            "email": null,
+            "phone": "0927654321",
+            "address": "789 Lê Lai, Đà Nẵng",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Customer",
+        "pk": 4,
+        "fields": {
+            "first_name": "Phạm",
+            "last_name": "Dung",
+            "email": "dung.pham@example.com",
+            "phone": "0936543210",
+            "address": "321 Hai Bà Trưng, Huế",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.Customer",
+        "pk": 5,
+        "fields": {
+            "first_name": "Hoàng",
+            "last_name": "Em",
+            "email": null,
+            "phone": "0945432109",
+            "address": "654 Điện Biên Phủ, Hải Phòng",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockIn",
+        "pk": 1,
+        "fields": {
+            "import_date": "2025-04-01T08:00:00Z",
+            "total_amount": "200000000.00",
+            "payment_status": "PAID",
+            "import_status": "COMPLETED",
+            "notes": "Nhập lô laptop",
+            "employee": 1,
+            "supplier": 1,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockIn",
+        "pk": 2,
+        "fields": {
+            "import_date": "2025-04-02T09:00:00Z",
+            "total_amount": "750000.00",
+            "payment_status": "UNPAID",
+            "import_status": "IN_PROGRESS",
+            "notes": "Nhập gạo",
+            "employee": 2,
+            "supplier": 2,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockIn",
+        "pk": 3,
+        "fields": {
+            "import_date": "2025-04-03T10:00:00Z",
+            "total_amount": "4500000.00",
+            "payment_status": "PAID",
+            "import_status": "COMPLETED",
+            "notes": "Nhập áo sơ mi",
+            "employee": 3,
+            "supplier": 3,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockIn",
+        "pk": 4,
+        "fields": {
+            "import_date": "2025-04-04T11:00:00Z",
+            "total_amount": "7500000.00",
+            "payment_status": "UNPAID",
+            "import_status": "IN_PROGRESS",
+            "notes": "Nhập nồi cơm điện",
+            "employee": 4,
+            "supplier": 4,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockIn",
+        "pk": 5,
+        "fields": {
+            "import_date": "2025-04-05T12:00:00Z",
+            "total_amount": "300000.00",
+            "payment_status": "PAID",
+            "import_status": "COMPLETED",
+            "notes": "Nhập bút bi",
+            "employee": 5,
+            "supplier": 5,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOut",
+        "pk": 1,
+        "fields": {
+            "export_date": "2025-04-06T08:00:00Z",
+            "payment_status": "PAID",
+            "import_status": "COMPLETED",
+            "notes": "Bán laptop",
+            "employee": 1,
+            "customer": 1,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOut",
+        "pk": 2,
+        "fields": {
+            "export_date": "2025-04-07T09:00:00Z",
+            "payment_status": "UNPAID",
+            "import_status": "IN_PROGRESS",
+            "notes": "Bán gạo",
+            "employee": 2,
+            "customer": 2,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOut",
+        "pk": 3,
+        "fields": {
+            "export_date": "2025-04-08T10:00:00Z",
+            "payment_status": "PAID",
+            "import_status": "COMPLETED",
+            "notes": "Bán áo sơ mi",
+            "employee": 3,
+            "customer": 3,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOut",
+        "pk": 4,
+        "fields": {
+            "export_date": "2025-04-09T11:00:00Z",
+            "payment_status": "UNPAID",
+            "import_status": "IN_PROGRESS",
+            "notes": "Bán nồi cơm điện",
+            "employee": 4,
+            "customer": 4,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOut",
+        "pk": 5,
+        "fields": {
+            "export_date": "2025-04-10T12:00:00Z",
+            "payment_status": "PAID",
+            "import_status": "COMPLETED",
+            "notes": "Bán bút bi",
+            "employee": 5,
+            "customer": 5,
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockInDetail",
+        "pk": 1,
+        "fields": {
+            "import_record": 1,
+            "product": 1,
+            "quantity": 10,
+            "discount": "0.00",
+            "product_batch": "LOT001",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockInDetail",
+        "pk": 2,
+        "fields": {
+            "import_record": 2,
+            "product": 2,
+            "quantity": 50,
+            "discount": "0.00",
+            "product_batch": "LOT002",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockInDetail",
+        "pk": 3,
+        "fields": {
+            "import_record": 3,
+            "product": 3,
+            "quantity": 30,
+            "discount": "0.00",
+            "product_batch": "LOT003",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockInDetail",
+        "pk": 4,
+        "fields": {
+            "import_record": 4,
+            "product": 4,
+            "quantity": 15,
+            "discount": "0.00",
+            "product_batch": "LOT004",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockInDetail",
+        "pk": 5,
+        "fields": {
+            "import_record": 5,
+            "product": 5,
+            "quantity": 100,
+            "discount": "0.00",
+            "product_batch": "LOT005",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOutDetail",
+        "pk": 1,
+        "fields": {
+            "export_record": 1,
+            "product": 1,
+            "quantity": 2,
+            "discount": "5.00",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOutDetail",
+        "pk": 2,
+        "fields": {
+            "export_record": 2,
+            "product": 2,
+            "quantity": 10,
+            "discount": "0.00",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOutDetail",
+        "pk": 3,
+        "fields": {
+            "export_record": 3,
+            "product": 3,
+            "quantity": 5,
+            "discount": "10.00",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOutDetail",
+        "pk": 4,
+        "fields": {
+            "export_record": 4,
+            "product": 4,
+            "quantity": 3,
+            "discount": "0.00",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    },
+    {
+        "model": "stockb.StockOutDetail",
+        "pk": 5,
+        "fields": {
+            "export_record": 5,
+            "product": 5,
+            "quantity": 20,
+            "discount": "0.00",
+            "created_at": "2025-04-10T00:00:00Z",
+            "update_at": "2025-04-10T00:00:00Z"
+        }
+    }
+]
