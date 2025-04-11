@@ -1,13 +1,45 @@
 
 from django.shortcuts import render, redirect
+from django.db.models import Sum, F
+from .models import StockOut, StockOutDetail
 
 
 # Create your views here.
 def index(request):
     return render(request, "main.html")
-
+#Xuất nhập kho
 def stock_out(request):
-    context = {"title": "Trang xuất kho"}
+    stock_outs = StockOut.objects.all().order_by('-export_date')
+    stock_out_list = []
+
+    filter_type = request.GET.get('filter', 'all')
+    search_type = request.GET.get('filter', 'all')
+    if filter_type == 'in_progress':
+        stock_outs = stock_outs.filter(export_status='IN_PROGRESS')
+    elif filter_type == 'cancel':
+        stock_outs = stock_outs.filter(export_status='CANCELLED')
+    elif filter_type == 'paid':
+        stock_outs = stock_outs.filter(payment_status='PAID')
+    elif filter_type == 'unpaid':
+        stock_outs = stock_outs.filter(payment_status='UNPAID')
+
+    for stock_out in stock_outs:
+        total_amount = StockOutDetail.objects.filter(export_record=stock_out).aggregate(
+            total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
+        )['total'] or 0
+        stock_out_list.append({
+            'id': stock_out.id,
+            'export_date': stock_out.export_date,
+            'customer': f"{stock_out.customer.first_name} {stock_out.customer.last_name}",
+            'payment_status': stock_out.payment_status,
+            'export_status': stock_out.export_status,
+            'total_amount': total_amount,
+        })
+    context = {
+        "title": "Trang xuất kho",
+        'filter_type': filter_type,
+        "stock_out_list" : stock_out_list,
+    }
     return render(request, "stock_out/stock_out_list.html", context)
 
 def stock_out_update(request):

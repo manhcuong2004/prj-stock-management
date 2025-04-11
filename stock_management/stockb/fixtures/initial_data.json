@@ -490,7 +490,7 @@
         "fields": {
             "export_date": "2025-04-06T08:00:00Z",
             "payment_status": "PAID",
-            "import_status": "COMPLETED",
+            "export_status": "COMPLETED",
             "notes": "Bán laptop",
             "employee": 1,
             "customer": 1,
@@ -504,7 +504,7 @@
         "fields": {
             "export_date": "2025-04-07T09:00:00Z",
             "payment_status": "UNPAID",
-            "import_status": "IN_PROGRESS",
+            "export_status": "CANCELLED",
             "notes": "Bán gạo",
             "employee": 2,
             "customer": 2,
@@ -518,7 +518,7 @@
         "fields": {
             "export_date": "2025-04-08T10:00:00Z",
             "payment_status": "PAID",
-            "import_status": "COMPLETED",
+            "export_status": "COMPLETED",
             "notes": "Bán áo sơ mi",
             "employee": 3,
             "customer": 3,
@@ -532,7 +532,7 @@
         "fields": {
             "export_date": "2025-04-09T11:00:00Z",
             "payment_status": "UNPAID",
-            "import_status": "IN_PROGRESS",
+            "export_status": "IN_PROGRESS",
             "notes": "Bán nồi cơm điện",
             "employee": 4,
             "customer": 4,
@@ -546,7 +546,7 @@
         "fields": {
             "export_date": "2025-04-10T12:00:00Z",
             "payment_status": "PAID",
-            "import_status": "COMPLETED",
+            "export_status": "COMPLETED",
             "notes": "Bán bút bi",
             "employee": 5,
             "customer": 5,

@@ -2,6 +2,7 @@
 {% block title %}
     {{title}}
 {% endblock %}
+{% load humanize %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,16 +15,19 @@
     <div class="container bg-white p-4 rounded shadow">
         <ul class="nav nav-tabs mb-3">
           <li class="nav-item">
-            <a class="nav-link active" href="#">Tất cả đơn hàng</a>
+            <a class="nav-link  {% if filter_type == 'all' %}active{% endif %}" href="?filter=all">Tất cả đơn hàng</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Đơn hàng chưa giải quyết</a>
+            <a class="nav-link {% if filter_type == 'in_progress' %}active{% endif %}" href="?filter=in_progress">Đơn hàng đang xử lí</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Đơn hàng đã giải quyết</a>
+            <a class="nav-link {% if filter_type == 'cancel' %}active{% endif %}" href="?filter=cancel">Đơn hàng đã hủy</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Chưa thanh toán</a>
+            <a class="nav-link {% if filter_type == 'paid' %}active{% endif %}" href="?filter=paid">Đã thanh toán</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if filter_type == 'unpaid' %}active{% endif %}" href="?filter=unpaid">Chưa thanh toán</a>
           </li>
         </ul>
 
@@ -39,20 +43,35 @@
                 <th scope="col">Mã</th>
                 <th scope="col">Ngày tạo</th>
                 <th scope="col">Khách hàng</th>
-                <th scope="col">Thanh toán</th>
                 <th scope="col">Trạng thái đơn</th>
+                <th scope="col">Thanh toán</th>
                 <th scope="col">Tổng tiền</th>
                 <th scope="col">Thao tác</th>
               </tr>
             </thead>
+            {% for item in stock_out_list %}
             <tbody>
               <tr>
-                <td>#10027</td>
-                <td>01/03/2025 10:42 CH</td>
-                <td>Haravan Demo</td>
-                <td><span class="badge bg-success">Đã thanh toán</span></td>
-                <td><span class="badge bg-danger">Đã hủy</span></td>
-                <td>31,900,000 đ</td>
+                <td>#{{item.id}}</td>
+                <td>{{item.export_date|date:"d/m/Y H:i A"}}</td>
+                <td>{{item.customer}}</td>
+                <td>
+                  {% if item.export_status == "IN_PROGRESS" %}
+                    <span class="badge bg-warning">Đang xử lí</span>
+                  {% elif item.export_status == "COMPLETED" %}
+                    <span class="badge bg-success">Hoàn thành</span>
+                  {% else %}
+                    <span class="badge bg-danger">Đã hủy</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if item.payment_status == "PAID" %}
+                    <span class="badge bg-success">Đã thanh toán</span>
+                  {% else %}
+                    <span class="badge bg-danger">Chưa thanh toán</span>
+                  {% endif %}
+                </td>
+                <td>{{ item.total_amount|intcomma }}đ</td>
                 <td>
                   <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
@@ -78,6 +97,7 @@
                 </td>
               </tr>
             </tbody>
+            {% endfor %}
           </table>
     </div>
   </div>

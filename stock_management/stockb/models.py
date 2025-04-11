@@ -108,11 +108,11 @@ class StockIn(models.Model):
 
 class StockOut(models.Model):
     PAYMENT_STATUS_CHOICES = [
-        ('UNPAID', 'Chưa thanh toán'),
-        ('PAID', 'Đã thanh toán'),
+        ('UNPAID', 'Unpaid'),
+        ('PAID', 'Paid'),
     ]
     IMPORT_STATUS_CHOICES = [
-        ('IN_PROGRESS', 'Đang xử lí'),
+        ('IN_PROGRESS', 'In progress'),
         ('COMPLETED', 'Completed'),
         ('CANCELLED', 'Cancelled'),
     ]
@@ -122,7 +122,7 @@ class StockOut(models.Model):
         choices=PAYMENT_STATUS_CHOICES,
         default='PENDING'
     )
-    import_status = models.CharField(
+    export_status = models.CharField(
         max_length=20,
         choices=IMPORT_STATUS_CHOICES,
         default='IN_PROGRESS'
