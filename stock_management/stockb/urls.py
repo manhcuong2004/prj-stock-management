@@ -13,9 +13,10 @@ urlpatterns = [
     path('stock-in/', views.stock_in, name='stock_in'),
     path('stock-in/create', views.stock_in_update, name='stock_in_create'),
 
-    path('units/', views.units_view, name='units'),
+    path('units/', views.unit_list, name='units_list'),
     path('units/create/', views.create_unit, name='create_unit'),
-    path('report/', views.report_overview, name='report'),
+    path('units/edit/<int:pk>/', views.edit_unit, name='edit_unit'),
+    path('units/delete/<int:pk>/', views.delete_unit, name='delete_unit'),
     # Khách hàng
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/create/', views.customer_create, name='customer_create'),

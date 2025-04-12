@@ -1,7 +1,10 @@
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F
-from .models import StockOut, StockOutDetail
+from django.contrib import messages
+
+from .forms import UnitForm
+from .models import StockOut, StockOutDetail, Unit
 
 
 # Create your views here.
@@ -74,12 +77,47 @@ def low_stock_list_view(request):
     return render(request, 'inventory/low_stock_list.html',context)
 
 
-def units_view(request):
-    context = {"title": "Danh sách đơn vị"}
-    return render(request, 'units/units_list.html', context)
+def unit_list(request):
+    units = Unit.objects.all()
+    query = request.GET.get('q')
+    if query:
+        units = units.filter(name__icontains=query) | units.filter(symbol__icontains=query)
+    return render(request, 'units/units_list.html', {'units': units})
+
+# Tạo đơn vị
 def create_unit(request):
-    context = {"title": "Tạo mới đơn vị"}
-    return render(request, 'units/create_unit.html',context)
+    if request.method == 'POST':
+        form = UnitForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đơn vị đã được tạo thành công!')
+            return redirect('units_list')
+    else:
+        form = UnitForm()
+    return render(request, 'units/create_unit.html', {'form': form})
+
+# Cập nhật đơn vị
+def edit_unit(request, pk):
+    unit = get_object_or_404(Unit, pk=pk)
+    if request.method == 'POST':
+        form = UnitForm(request.POST, instance=unit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đơn vị đã được cập nhật thành công!')
+            return redirect('units_list')
+    else:
+        form = UnitForm(instance=unit)
+    return render(request, 'units/edit_unit.html', {'form': form, 'unit': unit})
+
+# Xóa đơn vị
+def delete_unit(request, pk):
+    unit = get_object_or_404(Unit, pk=pk)
+    if request.method == 'POST':
+        unit.delete()
+        messages.success(request, 'Đơn vị đã được xóa thành công!')
+        return redirect('units_list')
+    return render(request, 'units/units_list.html', {'unit': unit})
+
 def report_overview(request):
     context = {"title": "Báo cáo"}
     return render(request, 'report/overview.html', context)
