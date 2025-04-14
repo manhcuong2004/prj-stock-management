@@ -9,7 +9,8 @@ urlpatterns = [
     path('inventory/low-stock', views.low_stock_list_view, name='low_stock_list'),
     #Xuất nhập kho
     path('stock-out/', views.stock_out, name='stock_out'),
-    path('stock-out/create', views.stock_out_update, name='stock_out_create'),
+    path('stock-out/create/', views.stock_out_update, name='stock_out_create'),
+    # path('stock-out/update/<int:pk>/', views.stock_out_update, name='stock_out_update'),
     path('stock-in/', views.stock_in, name='stock_in'),
     path('stock-in/create', views.stock_in_update, name='stock_in_create'),
 

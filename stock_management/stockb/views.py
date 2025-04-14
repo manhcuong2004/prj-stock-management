@@ -1,7 +1,13 @@
+import datetime
 
+from django.core.checks import messages
+from django.db import transaction
 from django.shortcuts import render, redirect
-from django.db.models import Sum, F
-from .models import StockOut, StockOutDetail
+from django.db.models import Sum, F, Q
+from unidecode import unidecode
+
+from .forms import StockOutForm, StockOutDetailFormSet
+from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail
 
 
 # Create your views here.
@@ -13,7 +19,8 @@ def stock_out(request):
     stock_out_list = []
 
     filter_type = request.GET.get('filter', 'all')
-    search_type = request.GET.get('filter', 'all')
+    search_text = request.GET.get('search', '')
+
     if filter_type == 'in_progress':
         stock_outs = stock_outs.filter(export_status='IN_PROGRESS')
     elif filter_type == 'cancel':
@@ -22,6 +29,32 @@ def stock_out(request):
         stock_outs = stock_outs.filter(payment_status='PAID')
     elif filter_type == 'unpaid':
         stock_outs = stock_outs.filter(payment_status='UNPAID')
+
+    if search_text:
+        search_text_ch = unidecode(search_text).lower()
+        stock_outs_by_id = stock_outs.filter(id__icontains=search_text_ch)
+        customers_fn = set()
+        customers_ln = set()
+        customers_full = set()
+        all_customers = Customer.objects.all()
+        for customer in all_customers:
+            first_name_ch = unidecode(customer.first_name).lower()
+            last_name_ch = unidecode(customer.last_name).lower()
+            full_name_ch = f"{first_name_ch} {last_name_ch}"
+
+            if search_text_ch in first_name_ch:
+                customers_fn.add(customer)
+            if search_text_ch in last_name_ch:
+                customers_ln.add(customer)
+            if search_text_ch in full_name_ch:
+                customers_full.add(customer)
+
+        customers = customers_fn | customers_ln | customers_full
+
+        stock_outs_by_customer = stock_outs.filter(customer__in=customers)
+
+        stock_outs = stock_outs_by_id | stock_outs_by_customer
+
 
     for stock_out in stock_outs:
         total_amount = StockOutDetail.objects.filter(export_record=stock_out).aggregate(
@@ -42,8 +75,80 @@ def stock_out(request):
     }
     return render(request, "stock_out/stock_out_list.html", context)
 
+
 def stock_out_update(request):
-    context = {"title": "Trang tạo mới đơn xuất kho"}
+    if request.method == 'POST':
+        form = StockOutForm(request.POST)
+        formset = StockOutDetailFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    stock_out = form.save(commit=False)
+                    stock_out.export_date = datetime.now()
+                    stock_out.save()
+
+                    for detail_form in formset:
+                        if detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
+                            detail = detail_form.save(commit=False)
+                            detail.export_record = stock_out
+                            product = detail.product
+
+                            if product.quantity < detail.quantity:
+                                raise ValueError(f'Sản phẩm {product.product_name} không đủ số lượng. Tồn kho: {product.quantity}')
+
+                            product.quantity -= detail.quantity
+                            product.save()
+
+                            detail.save()
+
+                            product_detail = ProductDetail.objects.filter(product=product).order_by('-import_date').first()
+                            if product_detail:
+                                product_detail.remaining_quantity -= detail.quantity
+                                product_detail.save()
+
+                    if not stock_out.stockoutdetail_set.exists():
+                        stock_out.delete()
+                        messages.error(request, 'Phải có ít nhất một sản phẩm.')
+                        return redirect('stock_out_create')
+
+                    messages.success(request, f'Đơn hàng xuất kho đã được tạo thành công!')
+                    return redirect('stock_out')
+
+            except Exception as e:
+                messages.error(request, f'Có lỗi xảy ra: {str(e)}')
+                return redirect('stock_out_create')
+        else:
+            messages.error(request, 'Vui lòng kiểm tra lại thông tin.')
+    else:
+        form = StockOutForm()
+        formset = StockOutDetailFormSet()
+
+    products = Product.objects.all()
+    product_details = {}
+    for product in products:
+        detail = ProductDetail.objects.filter(product=product).order_by('-import_date').first()
+        if detail:
+            product_details[product.id] = {
+                'product_batch': detail.product_batch,
+                'remaining_quantity': detail.remaining_quantity,
+                'import_date': detail.import_date,
+            }
+        else:
+            product_details[product.id] = {
+                'product_batch': "Không có lô",
+                'remaining_quantity': 0,
+                'import_date': None,
+                'status': "OUT_OF_STOCK",
+            }
+
+    context = {
+        "title": "Trang tạo mới đơn xuất kho",
+        "form": form,
+        "formset": formset,
+        "products": products,
+        "product_details": product_details,  # Truyền product_details vào context
+    }
     return render(request, "stock_out/stock_out_update.html", context)
 
 def stock_in(request):

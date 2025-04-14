@@ -44,6 +44,11 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.product_name
+
+
+
 
 class Employee(models.Model):
     GENDER_CHOICES = [
@@ -81,6 +86,7 @@ class StockIn(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ('UNPAID', 'Chưa thanh toán'),
         ('PAID', 'Đã thanh toán'),
+        ('PARTIALLY_PAID', 'Còn nợ'),
     ]
     IMPORT_STATUS_CHOICES = [
         ('IN_PROGRESS', 'Đang xử lí'),
@@ -108,13 +114,14 @@ class StockIn(models.Model):
 
 class StockOut(models.Model):
     PAYMENT_STATUS_CHOICES = [
-        ('UNPAID', 'Unpaid'),
-        ('PAID', 'Paid'),
+        ('UNPAID', 'Chưa thanh toán'),
+        ('PARTIALLY_PAID', 'Còn nợ'),
+        ('PAID', 'Đã thanh toán'),
     ]
     IMPORT_STATUS_CHOICES = [
-        ('IN_PROGRESS', 'In progress'),
-        ('COMPLETED', 'Completed'),
-        ('CANCELLED', 'Cancelled'),
+        ('IN_PROGRESS', 'Đang xử lí'),
+        ('COMPLETED', 'Đã hoàn thành'),
+        ('CANCELLED', 'Đã hủy'),
     ]
     export_date = models.DateTimeField()
     payment_status = models.CharField(
@@ -130,8 +137,22 @@ class StockOut(models.Model):
     notes = models.TextField(blank=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
+
+    def total_amount(self):
+        total = sum(
+            detail.quantity * detail.product.selling_price * (1 - detail.discount / 100)
+            for detail in self.stockoutdetail_set.all()
+        )
+        return total
+
+    def remaining_debt(self):
+        return self.total_amount() - self.amount_paid
+
+    def __str__(self):
+        return f"StockOut #{self.id} - {self.customer.first_name} {self.customer.last_name}"
 
 
 class StockInDetail(models.Model):
@@ -151,3 +172,49 @@ class StockOutDetail(models.Model):
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
+
+class ProductDetail(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_details')
+    stock_in_detail = models.ForeignKey(StockInDetail, on_delete=models.CASCADE, related_name='product_details')
+    product_batch = models.CharField(max_length=100)  # Tên lô hàng
+    initial_quantity = models.IntegerField()  # Số lượng ban đầu
+    remaining_quantity = models.IntegerField()
+    import_date = models.DateTimeField()
+    expiry_date = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'product_batch')
+
+    def __str__(self):
+        return f"{self.product.product_name} - Lô {self.product_batch}"
+
+    def save(self, *args, **kwargs):
+        if not self.initial_quantity:
+            self.initial_quantity = self.stock_in_detail.quantity
+        self.remaining_quantity = self.calculate_remaining_quantity()
+        self.update_status()
+        super().save(*args, **kwargs)
+
+    def calculate_remaining_quantity(self):
+        exported_quantity = sum(
+            detail.quantity
+            for detail in StockOutDetail.objects.filter(
+                product=self.product,
+                export_record__export_date__gte=self.import_date
+            )
+        )
+        return max(0, self.initial_quantity - exported_quantity)
+
+    def update_status(self):
+        from django.utils import timezone
+        if self.expiry_date and self.expiry_date < timezone.now():
+            self.status = 'EXPIRED'
+        elif self.remaining_quantity == 0:
+            self.status = 'OUT_OF_STOCK'
+        elif self.remaining_quantity <= self.product.minimum_stock:
+            self.status = 'LOW_STOCK'
+        else:
+            self.status = 'ACTIVE'
+

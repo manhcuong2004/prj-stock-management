@@ -2,6 +2,9 @@
 {% block title %}
     {{title}}
 {% endblock %}
+{% block header-name %}
+    Sản phẩm
+{%endblock%}
 {% load humanize %}
 
 {% block content %}
@@ -32,8 +35,13 @@
         </ul>
 
         <div class="input-group mb-4">
-          <input type="text" class="form-control" placeholder="Tìm kiếm">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
+           <form class="d-inline-block float-end w-100" method="GET">
+            <div class="input-group">
+                <input type="hidden" name="filter" value="{{ filter_type }}">
+                <input type="text" name="search" class="form-control" placeholder="Tìm kiếm dựa theo mã hàng hoặc tên khách hàng" value="{{ search_text }}">
+                <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+            </div>
+          </form>
         </div>
 
         <div class="table-responsive">
@@ -67,13 +75,15 @@
                 <td>
                   {% if item.payment_status == "PAID" %}
                     <span class="badge bg-success">Đã thanh toán</span>
+                  {% elif item.payment_status == "PARTIALLY_PAID" %}
+                    <span class="badge bg-warning">Còn nợ</span>
                   {% else %}
                     <span class="badge bg-danger">Chưa thanh toán</span>
                   {% endif %}
                 </td>
                 <td>{{ item.total_amount|intcomma }}đ</td>
                 <td>
-                  <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
+                  <a href="#" class="btn btn-sm btn-outline-primary">Xem</a>
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
                     Xóa
                   </button>
