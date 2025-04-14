@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% load static %}
 {% block title %}
-    {{title}}
+    Tổng quan
 {% endblock %}
 {% block extra_head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -9,74 +10,68 @@
 
 {% block content %}
 <div class="container py-4 px-4">
-    <div class="row justify-content-between align-items-start align-items-md-center mb-4 g-4">
+    <!-- Tiêu đề và bộ lọc -->
+    <div class="row justify-content-between align-items-center mb-4 g-3">
         <div class="col-12 col-md-auto">
-            <h1 class="fs-3 fw-semibold">Tổng quan</h1>
+            <h1 class="fs-3 fw-bold text-dark">📊 Tổng quan</h1>
         </div>
         <div class="col-12 col-md-auto d-flex flex-column flex-sm-row gap-2">
             <div class="position-relative flex-grow-1">
-                <input type="text" id="dateRange" class="form-control py-2 px-4" placeholder="Chọn khoảng thời gian">
-                <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-                        <path fill-rule="evenodd"
-                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                              clip-rule="evenodd"></path>
-                    </svg>
-                </div>
+                <input type="text" id="dateRange" class="form-control rounded-3 px-4 py-2 shadow-sm" placeholder="Chọn khoảng thời gian">
             </div>
-            <button id="filterBtn" class="btn btn-primary px-4 py-2">
+            <button id="filterBtn" class="btn btn-primary px-4 py-2 shadow-sm rounded-3">
                 Lọc
             </button>
         </div>
     </div>
 
+    <!-- Thống kê chính -->
     <div class="row g-4">
         <!-- Số đơn hàng -->
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-light rounded-4 shadow-sm text-center p-4">
                 <div class="text-muted">Số đơn hàng</div>
-                <div class="fs-2 fw-bold text-dark my-2">28</div>
+                <div class="fs-2 fw-bold text-primary my-2">{{ so_don_hang }}</div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-4">
+        <!-- Doanh thu -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-light rounded-4 shadow-sm text-center p-4">
                 <div class="text-muted">Doanh thu</div>
-                <div class="fs-2 fw-bold text-dark my-2">261,380,000 đ</div>
+                <div class="fs-2 fw-bold text-success my-2">{{ doanh_thu|intcomma }} đ</div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-4">
-                <div class="text-muted">Doanh thu thuần theo nhà cung cấp</div>
-                <div class="fs-2 fw-bold text-dark my-2">261,380,000 đ</div>
+        <!-- Giá trị nhập kho -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-light rounded-4 shadow-sm text-center p-4">
+                <div class="text-muted">Giá trị nhập kho tháng này</div>
+                <div class="fs-2 fw-bold text-dark my-2">{{ gia_tri_nhap_kho|intcomma }} đ</div>
+            </div>
+        </div>
+
+        <!-- Doanh thu xuất kho -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-light rounded-4 shadow-sm text-center p-4">
+                <div class="text-muted">Doanh thu xuất kho tháng này</div>
+                <div class="fs-2 fw-bold text-dark my-2">{{ gia_tri_xuat_kho|intcomma }} đ</div>
             </div>
         </div>
     </div>
 
-    <!-- Biểu đồ lượng đơn hàng -->
-    <div class="card shadow-sm mt-4 p-4">
-        <h5 class="fs-5 fw-semibold">Lượng đơn hàng</h5>
-        <p class="text-muted mb-3">28 đơn hàng</p>
-        <div class="position-relative" style="height: 320px;">
-            <canvas id="ordersChart"></canvas>
-        </div>
-        <div class="d-flex justify-content-between mt-3">
-            <div class="text-muted small">01/03/2025 - 31/03/2025</div>
-            <div class="text-muted small">01/02/2025 - 28/02/2025</div>
-        </div>
-    </div>
-
+    <!-- Nợ -->
     <div class="row g-4 mt-4">
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="fs-5 fw-semibold">Nợ phải trả</h5>
-                <div class="display-5 fw-bold my-2">1,380,000 đ</div>
+            <div class="card bg-white rounded-4 shadow p-4">
+                <h5 class="fs-5 fw-semibold text-danger">Nợ phải trả</h5>
+                <div class="display-6 fw-bold mt-2 text-danger">{{ no_phai_tra|intcomma }} đ</div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="fs-5 fw-semibold">Nợ phải thu</h5>
-                <div class="display-5 fw-bold my-2">12,910,000 đ</div>
+            <div class="card bg-white rounded-4 shadow p-4">
+                <h5 class="fs-5 fw-semibold text-success">Nợ phải thu</h5>
+                <div class="display-6 fw-bold mt-2 text-success">{{ no_phai_thu|intcomma }} đ</div>
             </div>
         </div>
     </div>
@@ -86,14 +81,13 @@
 {% block extra_js %}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         flatpickr("#dateRange", {
             mode: "range",
             dateFormat: "d/m/Y",
             locale: "vn",
-            defaultDate: ["01/03/2025", "31/03/2025"],
+            defaultDate: ["01/{{ today.month }}/{{ today.year }}", "{{ today.day }}/{{ today.month }}/{{ today.year }}"],
             maxDate: "today"
         });
 
@@ -104,53 +98,9 @@
                 const startDate = dates[0];
                 const endDate = dates[1] || dates[0];
 
-                document.querySelectorAll('.date-range-display').forEach(el => {
-                    el.textContent = `${startDate} - ${endDate}`;
-                });
-
-                console.log(`Lọc dữ liệu từ ${startDate} đến ${endDate}`);
-
-                alert(`Đã áp dụng bộ lọc từ ${startDate} đến ${endDate}`);
+                // Gửi yêu cầu filter đến server
+                window.location.href = `?start_date=${startDate}&end_date=${endDate}`;
             }
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-            const ordersChart = new Chart(ordersCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['01/03', '03/03', '05/03', '07/03', '08/03', '11/03', '13/03', '15/03', '17/03', '18/03', '21/03', '23/03', '25/03', '27/03', '29/03', '31/03'],
-                    datasets: [
-                        {
-                            label: 'Tháng 3/2025',
-                            data: [3, 2, 1, 4, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 1, 1],
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Tháng 2/2025',
-                            data: [2, 1, 3, 2, 1, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 0],
-                            backgroundColor: 'rgba(201, 203, 207, 0.7)',
-                            borderColor: 'rgba(201, 203, 207, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5,
-                                max: 30
-                            }
-                        }
-                    }
-                }
-            });
         });
     </script>
 {% endblock %}

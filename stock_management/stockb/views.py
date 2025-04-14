@@ -1,10 +1,16 @@
+import datetime
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F
 from django.contrib import messages
+from django.shortcuts import render
+from django.db.models import Sum, Count
+from django.utils import timezone
+from django.http import JsonResponse
+from datetime import datetime
 
 from .forms import UnitForm
-from .models import StockOut, StockOutDetail, Unit
+from .models import StockOut, StockOutDetail, Unit, StockIn
 
 
 # Create your views here.
@@ -118,9 +124,74 @@ def delete_unit(request, pk):
         return redirect('units_list')
     return render(request, 'units/units_list.html', {'unit': unit})
 
+
 def report_overview(request):
-    context = {"title": "Báo cáo"}
+    today = datetime.today()
+    start_date = today.replace(day=1)
+    end_date = today
+
+    so_don_hang = StockOut.objects.filter(export_date__range=(start_date, end_date)).count()
+
+    doanh_thu = StockOut.objects.filter(export_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('stockoutdetail__product__selling_price'))['total'] or 0
+
+    gia_tri_nhap_kho = StockIn.objects.filter(import_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+
+    gia_tri_xuat_kho = StockOut.objects.filter(export_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('stockoutdetail__product__selling_price'))['total'] or 0
+
+    no_phai_tra = StockIn.objects.filter(payment_status='UNPAID', import_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+
+    no_phai_thu = StockOut.objects.filter(payment_status='UNPAID', export_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('stockoutdetail__product__selling_price'))['total'] or 0
+
+    context = {
+        'so_don_hang': so_don_hang,
+        'doanh_thu': doanh_thu,
+        'gia_tri_nhap_kho': gia_tri_nhap_kho,
+        'gia_tri_xuat_kho': gia_tri_xuat_kho,
+        'no_phai_tra': no_phai_tra,
+        'no_phai_thu': no_phai_thu,
+    }
     return render(request, 'report/overview.html', context)
+
+def ajax_dashboard_stats(request):
+    date_range = request.GET.get('dateRange')
+
+    try:
+        start_str, end_str = date_range.split(" to ")
+        start_date = datetime.strptime(start_str.strip(), "%d/%m/%Y")
+        end_date = datetime.strptime(end_str.strip(), "%d/%m/%Y")
+    except:
+        return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+    so_don_hang = StockOut.objects.filter(export_date__range=(start_date, end_date)).count()
+
+    doanh_thu = StockOut.objects.filter(export_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('stockoutdetail__product__selling_price'))['total'] or 0
+
+    gia_tri_nhap_kho = StockIn.objects.filter(import_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+
+    gia_tri_xuat_kho = StockOut.objects.filter(export_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('stockoutdetail__product__selling_price'))['total'] or 0
+
+    no_phai_tra = StockIn.objects.filter(payment_status='UNPAID', import_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+
+    no_phai_thu = StockOut.objects.filter(payment_status='UNPAID', export_date__range=(start_date, end_date)) \
+        .aggregate(total=Sum('stockoutdetail__product__selling_price'))['total'] or 0
+
+    return JsonResponse({
+        'so_don_hang': so_don_hang,
+        'doanh_thu': doanh_thu,
+        'gia_tri_nhap_kho': gia_tri_nhap_kho,
+        'gia_tri_xuat_kho': gia_tri_xuat_kho,
+        'no_phai_tra': no_phai_tra,
+        'no_phai_thu': no_phai_thu,
+    })
 
 
 def product_category_view(request):
