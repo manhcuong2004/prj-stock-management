@@ -169,6 +169,7 @@ class StockOutDetail(models.Model):
     export_record = models.ForeignKey(StockOut, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
