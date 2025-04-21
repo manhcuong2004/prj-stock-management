@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}
+    Danh sách kiểm kê hàng hóa
+{% endblock %}
+
+{% block style %}
+<style>
+    .check-code {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    .badge-status {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Danh sách kiểm kê hàng hóa</h2>
+        <a href="{% url 'inventory_check_create' %}" class="btn btn-primary">Tạo kiểm kê mới</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Mã kiểm kê</th>
+                <th>Ngày kiểm kê</th>
+                <th>Nhân viên</th>
+                <th>Số lượng sản phẩm</th>
+                <th>Ghi chú</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for check in inventory_checks %}
+                <tr>
+                    <td class="check-code">
+                        <a href="{% url 'inventory_check_update' check.id %}">#{{ check.id }}</a>
+                    </td>
+                    <td>{{ check.check_date|date:"d/m/Y H:i A" }}</td>
+                    <td>{{ check.employee.first_name }} {{ check.employee.last_name }}</td>
+                    <td>{{ check.details.count }}</td>
+                    <td>{{ check.notes|default:'Không có' }}</td>
+                    <td>
+                        <a href="{% url 'inventory_check_update' check.id %}" class="btn btn-sm btn-warning">Chỉnh sửa</a>
+                        <a href="{% url 'inventory_check_delete' check.id %}" class="btn btn-sm btn-danger">Xóa</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Chưa có lần kiểm kê nào.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

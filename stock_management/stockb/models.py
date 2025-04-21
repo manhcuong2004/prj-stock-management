@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class ProductCategory(models.Model):
@@ -80,6 +81,9 @@ class Customer(models.Model):
     address = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
 
 class StockIn(models.Model):
@@ -195,7 +199,6 @@ class ProductDetail(models.Model):
         if not self.initial_quantity:
             self.initial_quantity = self.stock_in_detail.quantity
         self.remaining_quantity = self.calculate_remaining_quantity()
-        self.update_status()
         super().save(*args, **kwargs)
 
     def calculate_remaining_quantity(self):
@@ -208,14 +211,46 @@ class ProductDetail(models.Model):
         )
         return max(0, self.initial_quantity - exported_quantity)
 
-    def update_status(self):
-        from django.utils import timezone
-        if self.expiry_date and self.expiry_date < timezone.now():
-            self.status = 'EXPIRED'
-        elif self.remaining_quantity == 0:
-            self.status = 'OUT_OF_STOCK'
-        elif self.remaining_quantity <= self.product.minimum_stock:
-            self.status = 'LOW_STOCK'
-        else:
-            self.status = 'ACTIVE'
+
+
+class InventoryCheck(models.Model):
+    check_date = models.DateTimeField(default=timezone.now)
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Inventory Check #{self.id} - {self.check_date.strftime('%d/%m/%Y %H:%M')}"
+
+class InventoryCheckDetail(models.Model):
+    inventory_check = models.ForeignKey(InventoryCheck, on_delete=models.CASCADE, related_name='details')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    product_batch = models.CharField(max_length=100, blank=True)  # Lô hàng (nếu có)
+    theoretical_quantity = models.IntegerField()  # Số lượng lý thuyết
+    actual_quantity = models.IntegerField()  # Số lượng thực tế
+    discrepancy = models.IntegerField(editable=False)  # Chênh lệch
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('inventory_check', 'product', 'product_batch')
+
+    def save(self, *args, **kwargs):
+        # Tính toán số lượng lý thuyết dựa trên ProductDetail
+        if not self.theoretical_quantity:
+            product_details = ProductDetail.objects.filter(product=self.product, product_batch=self.product_batch)
+            if product_details.exists():
+                self.theoretical_quantity = product_details.first().remaining_quantity
+            else:
+                # Nếu không có ProductDetail, lấy từ Product.quantity
+                self.theoretical_quantity = self.product.quantity
+
+        # Tính chênh lệch
+        self.discrepancy = self.actual_quantity - self.theoretical_quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.product_name} (Batch: {self.product_batch or 'N/A'}) - Check #{self.inventory_check.id}"
 

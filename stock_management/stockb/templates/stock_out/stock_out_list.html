@@ -83,7 +83,7 @@
                 </td>
                 <td>{{ item.total_amount|intcomma }}đ</td>
                 <td>
-                  <a href="#" class="btn btn-sm btn-outline-primary">Xem</a>
+                  <a href="{% url 'stock_out_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
                     Xóa
                   </button>

@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{title}}
+    {{ title }}
 {% endblock %}
 {% block style %}
+{% load humanize %}
+
+<style>
     .order-code {
       font-size: 1.5rem;
       font-weight: bold;
@@ -15,6 +18,7 @@
       border-radius: 8px;
       padding: 1rem;
     }
+</style>
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
@@ -28,8 +32,14 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <div class="order-code">MÃ <span class="text-dark">#Mới</span></div>
-                <small class="text-muted">{{ "now"|date:"d/m/Y H:i A" }}</small>
+                <div class="order-code">MÃ <span class="text-dark">#{% if form.instance.pk %}{{ form.instance.pk }}{% else %}Mới{% endif %}</span></div>
+                <small class="text-muted">
+                    {% if form.instance.export_date %}
+                        {{ form.instance.export_date|date:"d/m/Y H:i A" }}
+                    {% else %}
+                        {% now "d/m/Y H:i A" %}
+                    {% endif %}
+                </small>
             </div>
             <div>
                 <a href="{% url 'stock_out' %}" class="btn btn-outline-secondary me-2">Quay lại danh sách</a>
@@ -49,6 +59,7 @@
             <div class="row">
                 <div class="col-md-9">
                     <div class="summary-box">
+                        {% if formset.forms %}
                         <table class="table">
                             <thead>
                                 <tr>
@@ -63,40 +74,66 @@
                             </thead>
                             <tbody id="product-list">
                                 {% for detail_form in formset %}
+                                    {% with product_id=detail_form.initial.product|default:detail_form.product.value %}
+                                    {% if product_id or detail_form.product.value %}
                                     <tr class="product-row">
                                         <td>
                                             {{ detail_form.product }}
+                                            {% if detail_form.instance.pk %}
+                                                <input type="hidden" name="{{ detail_form.prefix }}-id" value="{{ detail_form.instance.pk }}">
+                                            {% endif %}
                                         </td>
                                         <td>
-                                            {{ detail_form.instance.product.batch_name|default:'Rikaki' }}
+                                            {% for pid, details in product_details.items %}
+                                                {% if pid == product_id %}
+                                                    {{ details.product_batch }}
+                                                {% endif %}
+                                            {% endfor %}
                                         </td>
-                                        <td>{{ detail_form.quantity }}</td>
                                         <td>
-                                            <span class="price">{{ detail_form.instance.product.selling_price|default:'1100000' }} đ</span>
+                                            <input type="number" class="form-control quantity" style="width: 100px;" name="{{ detail_form.prefix }}-quantity" value="{{ detail_form.initial.quantity|default:0 }}">
+                                        </td>
+                                        <td>
+                                            <span class="price" data-price="{% for pid, details in product_details.items %}{% if pid == product_id %}{{ details.selling_price }}{% endif %}{% endfor %}">
+                                                {% for pid, details in product_details.items %}
+                                                    {% if pid == product_id %}
+                                                        {{ details.selling_price|floatformat:0|intcomma }} đ
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </span>
                                         </td>
                                         <td>
                                             <div class="input-group" style="max-width: 120px;">
-                                                {{ detail_form.discount }}
+                                                <input type="number" class="form-control discount" name="{{ detail_form.prefix }}-discount" value="{{ detail_form.initial.discount|default:0 }}">
                                                 <span class="input-group-text">%</span>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="total">{{ detail_form.instance.total|default:'31900000' }} đ</span>
+                                            <span class="total">0 đ</span>
                                         </td>
                                         <td class="text-center">
-                                            {{ detail_form.DELETE }}
+                                            <input type="checkbox" name="{{ detail_form.prefix }}-DELETE" {% if detail_form.DELETE.value %}checked{% endif %} style="display: none;">
                                             <i class="bi bi-x-lg delete-row"></i>
                                         </td>
                                     </tr>
+                                    {% endif %}
+                                    {% endwith %}
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {% else %}
+                            <p id="no-product-message">Chưa có sản phẩm</p>
+                        {% endif %}
                         <div class="add-product">
                             <div class="input-group mb-3">
                                 <select id="new-product" class="form-control">
                                     <option value="">Chọn sản phẩm</option>
                                     {% for product in products %}
-                                        <option value="{{ product.id }}" data-price="{{ product.selling_price }}">{{ product.product_name }}</option>
+                                        <option value="{{ product.id }}"
+                                                data-price="{{ product.selling_price }}"
+                                                data-batch="{% for pid, details in product_details.items %}{% if pid == product.id %}{{ details.product_batch|default:'Rikaki' }}{% endif %}{% endfor %}">
+                                            {{ product.product_name }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                                 <button type="button" class="btn btn-success" id="add-product-btn">
@@ -113,9 +150,38 @@
                             const productSelect = document.getElementById('new-product');
                             const productId = productSelect.value;
                             const productName = productSelect.options[productSelect.selectedIndex].text;
-                            const productPrice = productSelect.options[productSelect.selectedIndex].dataset.price;
+                            const productPrice = parseFloat(productSelect.options[productSelect.selectedIndex].dataset.price) || 0;
+                            const productBatch = productSelect.options[productSelect.selectedIndex].dataset.batch || 'Rikaki';
 
                             if (productId) {
+                                const noProductMessage = document.getElementById('no-product-message');
+                                if (noProductMessage) {
+                                    noProductMessage.style.display = 'none';
+                                }
+
+                                let table = document.querySelector('.table');
+                                if (!table) {
+                                    const tableHTML = `
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tên sản phẩm</th>
+                                                    <th>Tên lô</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Giá</th>
+                                                    <th>Chiết khấu</th>
+                                                    <th>Thành tiền</th>
+                                                    <th>Xóa</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="product-list"></tbody>
+                                        </table>
+                                    `;
+                                    const summaryBox = document.querySelector('.summary-box');
+                                    summaryBox.insertAdjacentHTML('afterbegin', tableHTML);
+                                    table = document.querySelector('.table');
+                                }
+
                                 const tableBody = document.getElementById('product-list');
                                 const newRow = document.createElement('tr');
                                 newRow.classList.add('product-row');
@@ -125,10 +191,10 @@
                                             <option value="${productId}" selected>${productName}</option>
                                         </select>
                                     </td>
-                                    <td>Rikaki</td>
+                                    <td>${productBatch}</td>
                                     <td><input type="number" class="form-control quantity" style="width: 100px;" name="stockoutdetail_set-${formIndex}-quantity" value="1"></td>
                                     <td>
-                                        <span class="price">${parseFloat(productPrice).toLocaleString('vi-VN')} đ</span>
+                                        <span class="price" data-price="${productPrice}">${productPrice.toLocaleString('vi-VN')} đ</span>
                                     </td>
                                     <td>
                                         <div class="input-group" style="max-width: 120px;">
@@ -137,7 +203,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="total">${parseFloat(productPrice).toLocaleString('vi-VN')} đ</span>
+                                        <span class="total">${productPrice.toLocaleString('vi-VN')} đ</span>
                                     </td>
                                     <td class="text-center">
                                         <input type="checkbox" name="stockoutdetail_set-${formIndex}-DELETE" style="display: none;">
@@ -146,17 +212,16 @@
                                 `;
                                 tableBody.appendChild(newRow);
 
-                                // Cập nhật total forms
                                 const totalForms = document.querySelector('#id_stockoutdetail_set-TOTAL_FORMS');
                                 totalForms.value = parseInt(totalForms.value) + 1;
                                 formIndex++;
 
                                 productSelect.value = '';
+                                updateRowTotals();
                                 updateSummary();
                             }
                         });
 
-                        // Xử lý xóa hàng
                         document.addEventListener('click', function(event) {
                             if (event.target.classList.contains('delete-row')) {
                                 const row = event.target.closest('tr');
@@ -168,30 +233,46 @@
                                     row.remove();
                                 }
                                 updateSummary();
+
+                                const visibleRows = document.querySelectorAll('.product-row:not([style*="display: none"])');
+                                if (visibleRows.length === 0) {
+                                    const table = document.querySelector('.table');
+                                    if (table) {
+                                        table.remove();
+                                    }
+                                    const noProductMessage = document.createElement('p');
+                                    noProductMessage.id = 'no-product-message';
+                                    noProductMessage.textContent = 'Chưa có sản phẩm';
+                                    const summaryBox = document.querySelector('.summary-box');
+                                    summaryBox.insertBefore(noProductMessage, summaryBox.firstChild);
+                                }
                             }
                         });
 
-                        // Cập nhật tổng tiền khi thay đổi số lượng hoặc chiết khấu
-                        document.addEventListener('input', function(event) {
-                            if (event.target.classList.contains('quantity') || event.target.classList.contains('discount')) {
-                                const row = event.target.closest('tr');
+                        function updateRowTotals() {
+                            document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
                                 const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
-                                const price = parseFloat(row.querySelector('.price').textContent.replace(/[^0-9]/g, '')) || 0;
+                                const priceElement = row.querySelector('.price');
+                                const price = parseFloat(priceElement.dataset.price) || 0;
                                 const discount = parseFloat(row.querySelector('.discount').value) || 0;
                                 const total = quantity * price * (1 - discount / 100);
                                 row.querySelector('.total').textContent = total.toLocaleString('vi-VN') + ' đ';
+                            });
+                        }
+
+                        document.addEventListener('input', function(event) {
+                            if (event.target.classList.contains('quantity') || event.target.classList.contains('discount')) {
+                                updateRowTotals();
                                 updateSummary();
                             }
                         });
 
-                        // Cập nhật khi thay đổi số tiền đã trả
                         document.addEventListener('input', function(event) {
                             if (event.target.classList.contains('amount-paid')) {
                                 updateSummary();
                             }
                         });
 
-                        // Cập nhật phần tóm tắt
                         function updateSummary() {
                             let totalItems = 0;
                             let totalAmount = 0;
@@ -199,7 +280,8 @@
 
                             document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
                                 const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
-                                const price = parseFloat(row.querySelector('.price').textContent.replace(/[^0-9]/g, '')) || 0;
+                                const priceElement = row.querySelector('.price');
+                                const price = parseFloat(priceElement.dataset.price) || 0;
                                 const discount = parseFloat(row.querySelector('.discount').value) || 0;
                                 const total = quantity * price * (1 - discount / 100);
 
@@ -209,17 +291,31 @@
                             });
 
                             const finalAmount = totalAmount - totalDiscount;
-                            const amountPaid = parseFloat(document.querySelector('.amount-paid').value) || 0;
+                            const amountPaidInput = document.querySelector('.amount-paid');
+                            const amountPaid = amountPaidInput ? (parseFloat(amountPaidInput.value) || 0) : 0;
                             const remainingDebt = finalAmount - amountPaid;
 
-                            document.querySelector('.summary-box .total-items').textContent = totalItems;
-                            document.querySelector('.summary-box .total-amount').textContent = totalAmount.toLocaleString('vi-VN') + ' đ';
-                            document.querySelector('.summary-box .total-discount').textContent = totalDiscount.toLocaleString('vi-VN') + ' đ';
-                            document.querySelector('.summary-box .final-amount').textContent = finalAmount.toLocaleString('vi-VN') + ' đ';
-                            document.querySelector('.summary-box .amount-paid-display').textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
-                            document.querySelector('.summary-box .remaining-debt').textContent = remainingDebt.toLocaleString('vi-VN') + ' đ';
-                            document.querySelector('.summary-box .actual-received').textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
+                            const totalItemsElement = document.querySelector('.summary-box .total-items');
+                            const totalAmountElement = document.querySelector('.summary-box .total-amount');
+                            const totalDiscountElement = document.querySelector('.summary-box .total-discount');
+                            const finalAmountElement = document.querySelector('.summary-box .final-amount');
+                            const amountPaidDisplayElement = document.querySelector('.summary-box .amount-paid-display');
+                            const remainingDebtElement = document.querySelector('.summary-box .remaining-debt');
+                            const actualReceivedElement = document.querySelector('.summary-box .actual-received');
+
+                            if (totalItemsElement) totalItemsElement.textContent = totalItems;
+                            if (totalAmountElement) totalAmountElement.textContent = totalAmount.toLocaleString('vi-VN') + ' đ';
+                            if (totalDiscountElement) totalDiscountElement.textContent = totalDiscount.toLocaleString('vi-VN') + ' đ';
+                            if (finalAmountElement) finalAmountElement.textContent = finalAmount.toLocaleString('vi-VN') + ' đ';
+                            if (amountPaidDisplayElement) amountPaidDisplayElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
+                            if (remainingDebtElement) remainingDebtElement.textContent = remainingDebt.toLocaleString('vi-VN') + ' đ';
+                            if (actualReceivedElement) actualReceivedElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
                         }
+
+                        document.addEventListener('DOMContentLoaded', function() {
+                            updateRowTotals();
+                            updateSummary();
+                        });
                     </script>
 
                     <div class="row mt-4">
@@ -249,15 +345,22 @@
                                 <div class="d-flex justify-content-between">
                                     <span>Đã thanh toán</span>
                                     <span>
-                                        <input type="number" name="amount_paid" class="form-control amount-paid" style="width: 150px;" value="0">
-                                        <span class="amount-paid-display">0 đ</span>
+                                        {{ form.amount_paid }}
+                                        <span class="amount-paid-display">{{ form.amount_paid.value|default:'0'|intcomma }} đ</span>
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span>Còn nợ</span><span class="remaining-debt">0 đ</span>
+                                    <span>Còn nợ</span>
+                                    <span class="remaining-debt">
+                                        {% if form.instance.pk %}
+                                            {{ form.instance.remaining_debt|floatformat:0|intcomma|default:'0' }} đ
+                                        {% else %}
+                                            0 đ
+                                        {% endif %}
+                                    </span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span>Thực nhận</span><span class="actual-received">0 đ</span>
+                                    <span>Thực nhận</span><span class="actual-received">{{ form.amount_paid.value|default:'0'|intcomma }} đ</span>
                                 </div>
                             </div>
                         </div>
@@ -266,7 +369,7 @@
 
                 <div class="col-md-3">
                     <div class="summary-box mb-3">
-                        <h6>Thông Tin Khách Hàng <i class="bi bi-pencil ms-2"></i></h6>
+                        <h6>Thông Tin Khách Hàng</h6>
                         {{ form.customer }}
                     </div>
 
@@ -286,10 +389,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="mt-3">
-                <button type="submit" class="btn btn-success">Lưu Đơn Hàng</button>
             </div>
         </form>
     </div>

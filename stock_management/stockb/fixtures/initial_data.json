@@ -625,138 +625,143 @@
         }
     },
     {
-        "model": "stockb.StockOutDetail",
-        "pk": 1,
-        "fields": {
-            "export_record": 1,
-            "product": 1,
-            "quantity": 2,
-            "discount": "5.00",
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.StockOutDetail",
-        "pk": 2,
-        "fields": {
-            "export_record": 2,
-            "product": 2,
-            "quantity": 10,
-            "discount": "0.00",
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.StockOutDetail",
-        "pk": 3,
-        "fields": {
-            "export_record": 3,
-            "product": 3,
-            "quantity": 5,
-            "discount": "10.00",
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.StockOutDetail",
-        "pk": 4,
-        "fields": {
-            "export_record": 4,
-            "product": 4,
-            "quantity": 3,
-            "discount": "0.00",
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.StockOutDetail",
-        "pk": 5,
-        "fields": {
-            "export_record": 5,
-            "product": 5,
-            "quantity": 20,
-            "discount": "0.00",
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.ProductDetail",
-        "pk": 1,
-        "fields": {
-            "product": 1,
-            "stock_in_detail": 1,
-            "product_batch": "LOT001",
-            "initial_quantity": 10,
-            "remaining_quantity": 8,
-            "import_date": "2025-04-01T08:00:00Z",
-            "expiry_date": null,
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.ProductDetail",
-        "pk": 2,
-        "fields": {
-            "product": 2,
-            "stock_in_detail": 2,
-            "product_batch": "LOT002",
-            "initial_quantity": 50,
-            "remaining_quantity": 40,
-            "import_date": "2025-04-02T09:00:00Z",
-            "expiry_date": "2025-12-31T23:59:59Z",
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.ProductDetail",
-        "pk": 3,
-        "fields": {
-            "product": 3,
-            "stock_in_detail": 3,
-            "product_batch": "LOT003",
-            "initial_quantity": 30,
-            "remaining_quantity": 25,
-            "import_date": "2025-04-03T10:00:00Z",
-            "expiry_date": null,
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.ProductDetail",
-        "pk": 4,
-        "fields": {
-            "product": 4,
-            "stock_in_detail": 4,
-            "product_batch": "LOT004",
-            "initial_quantity": 15,
-            "remaining_quantity": 12,
-            "import_date": "2025-04-04T11:00:00Z",
-            "expiry_date": null,
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
-    },
-    {
-        "model": "stockb.ProductDetail",
-        "pk": 5,
-        "fields": {
-            "product": 5,
-            "stock_in_detail": 5,
-            "product_batch": "LOT005",
-            "initial_quantity": 100,
-            "remaining_quantity": 80,
-            "import_date": "2025-04-05T12:00:00Z",
-            "expiry_date": null,
-            "created_at": "2025-04-10T00:00:00Z",
-            "update_at": "2025-04-10T00:00:00Z"
-        }
+    "model": "stockb.StockOutDetail",
+    "pk": 1,
+    "fields": {
+        "export_record": 1,
+        "product": 1,
+        "quantity": 2,
+        "amount_paid": "0.00",
+        "discount": "5.00",
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
     }
+},
+{
+    "model": "stockb.StockOutDetail",
+    "pk": 2,
+    "fields": {
+        "export_record": 2,
+        "product": 2,
+        "quantity": 10,
+        "amount_paid": "0.00",
+        "discount": "0.00",
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.StockOutDetail",
+    "pk": 3,
+    "fields": {
+        "export_record": 3,
+        "product": 3,
+        "quantity": 5,
+        "amount_paid": "0.00",
+        "discount": "10.00",
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.StockOutDetail",
+    "pk": 4,
+    "fields": {
+        "export_record": 4,
+        "product": 4,
+        "quantity": 3,
+        "amount_paid": "0.00",
+        "discount": "0.00",
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.StockOutDetail",
+    "pk": 5,
+    "fields": {
+        "export_record": 5,
+        "product": 5,
+        "quantity": 20,
+        "amount_paid": "0.00",
+        "discount": "0.00",
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+    {
+    "model": "stockb.ProductDetail",
+    "pk": 1,
+    "fields": {
+        "product": 1,
+        "stock_in_detail": 1,
+        "product_batch": "LOT001",
+        "initial_quantity": 10,
+        "remaining_quantity": 8,
+        "import_date": "2025-04-01T08:00:00Z",
+        "expiry_date": null,
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.ProductDetail",
+    "pk": 2,
+    "fields": {
+        "product": 2,
+        "stock_in_detail": 2,
+        "product_batch": "LOT002",
+        "initial_quantity": 50,
+        "remaining_quantity": 40,
+        "import_date": "2025-04-02T09:00:00Z",
+        "expiry_date": "2025-12-31T23:59:59Z",
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.ProductDetail",
+    "pk": 3,
+    "fields": {
+        "product": 3,
+        "stock_in_detail": 3,
+        "product_batch": "LOT003",
+        "initial_quantity": 30,
+        "remaining_quantity": 25,
+        "import_date": "2025-04-03T10:00:00Z",
+        "expiry_date": null,
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.ProductDetail",
+    "pk": 4,
+    "fields": {
+        "product": 4,
+        "stock_in_detail": 4,
+        "product_batch": "LOT004",
+        "initial_quantity": 15,
+        "remaining_quantity": 12,
+        "import_date": "2025-04-04T11:00:00Z",
+        "expiry_date": null,
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+},
+{
+    "model": "stockb.ProductDetail",
+    "pk": 5,
+    "fields": {
+        "product": 5,
+        "stock_in_detail": 5,
+        "product_batch": "LOT005",
+        "initial_quantity": 100,
+        "remaining_quantity": 80,
+        "import_date": "2025-04-05T12:00:00Z",
+        "expiry_date": null,
+        "created_at": "2025-04-10T00:00:00Z",
+        "update_at": "2025-04-10T00:00:00Z"
+    }
+}
 ]
