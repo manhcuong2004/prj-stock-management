@@ -6,17 +6,18 @@ from django.forms import formset_factory
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F, Q
 from django.utils import timezone
+from django.contrib import messages
 from unidecode import unidecode
 from .forms import InventoryCheckForm, InventoryCheckDetailFormSet
-from .models import InventoryCheck, Product, Employee, ProductDetail
 from .forms import StockOutForm, StockOutDetailFormSet, StockOutDetailForm
-from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail, Employee
-
+from .models import InventoryCheck, Product, Employee, ProductDetail
+from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail, Employee, Supplier
 
 # Create your views here.
 def index(request):
     return render(request, "main.html")
-#Xuất nhập kho
+
+# Xuất nhập kho
 def stock_out(request):
     stock_outs = StockOut.objects.all().order_by('-export_date')
     stock_out_list = []
@@ -58,7 +59,6 @@ def stock_out(request):
 
         stock_outs = stock_outs_by_id | stock_outs_by_customer
 
-
     for stock_out in stock_outs:
         total_amount = StockOutDetail.objects.filter(export_record=stock_out).aggregate(
             total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
@@ -74,10 +74,9 @@ def stock_out(request):
     context = {
         "title": "Trang xuất kho",
         'filter_type': filter_type,
-        "stock_out_list" : stock_out_list,
+        "stock_out_list": stock_out_list,
     }
     return render(request, "stock_out/stock_out_list.html", context)
-
 
 StockOutDetailFormSet = formset_factory(StockOutDetailForm, extra=0)
 def stock_out_update(request, pk=None):
@@ -151,23 +150,133 @@ def stock_out_update(request, pk=None):
     return render(request, 'stock_out/stock_out_update.html', context)
 
 def stock_in(request):
-    context = {"title": "Trang xuất kho"}
+    context = {"title": "Trang nhập kho"}
     return render(request, "stock_in/stock_in_list.html", context)
 
 def stock_in_update(request):
     context = {"title": "Trang tạo mới đơn nhập kho"}
     return render(request, "stock_in/stock_in_update.html", context)
 
-
+# View cho danh sách nhà cung cấp
 def supplier_list_view(request):
-    context = {"title": "Danh sách nhà cung cấp"}
+    suppliers = Supplier.objects.all()  # Lấy tất cả nhà cung cấp từ CSDL
+    context = {
+        "title": "Danh sách nhà cung cấp",
+        "suppliers": suppliers,
+    }
     return render(request, 'supplier/supplier_list.html', context)
 
+# View cho tạo mới nhà cung cấp
 def supplier_create_view(request):
-    context = {"title": "Tạo mới nhà cung cấp"}
     if request.method == 'POST':
+        supplier_name = request.POST.get('supplier_name')
+        tax_code = request.POST.get('tax_code')
+        address = request.POST.get('address')
+        mobile_phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        supplier_notes = request.POST.get('notes')
+        company_name = request.POST.get('company_name')
+
+        # Kiểm tra dữ liệu đầu vào
+        missing_fields = []
+        if not supplier_name:
+            missing_fields.append("Tên nhà cung cấp")
+        if not tax_code:
+            missing_fields.append("Mã số thuế")
+        if not email:
+            missing_fields.append("Email")
+        if not mobile_phone:
+            missing_fields.append("Số điện thoại")
+
+        if missing_fields:
+            messages.error(request, f'Vui lòng điền đầy đủ các trường bắt buộc: {", ".join(missing_fields)}!')
+            return render(request, 'supplier/supplier_create.html', {
+                'form_data': request.POST,
+            })
+
+        # Kết hợp thông tin Công ty vào ghi chú (nếu có)
+        if company_name:
+            supplier_notes = f"Công ty: {company_name}\n{supplier_notes or ''}"
+
+        # Tạo nhà cung cấp mới
+        try:
+            Supplier.objects.create(
+                supplier_name=supplier_name,
+                tax_code=tax_code,
+                address=address,
+                phone=mobile_phone,
+                email=email,
+                notes=supplier_notes,
+                company_name=company_name or "",
+                created_at=timezone.now(),
+                update_at=timezone.now(),
+            )
+            messages.success(request, 'Thêm nhà cung cấp thành công!')
+            return redirect('supplier_list')
+        except Exception as e:
+            messages.error(request, f'Có lỗi xảy ra: {str(e)}')
+            return render(request, 'supplier/supplier_create.html', {
+                'form_data': request.POST,
+            })
+
+    return render(request, 'supplier/supplier_create.html', {
+        "title": "Tạo mới nhà cung cấp",
+        'form_data': {},
+    })
+
+# View cho chỉnh sửa nhà cung cấp
+def supplier_update_view(request, id):
+    supplier = get_object_or_404(Supplier, id=id)
+    if request.method == 'POST':
+        supplier.supplier_name = request.POST.get('supplier_name')
+        supplier.tax_code = request.POST.get('tax_code')
+        supplier.address = request.POST.get('address')
+        supplier.phone = request.POST.get('phone')
+        supplier.email = request.POST.get('email')
+        supplier.notes = request.POST.get('notes')
+        supplier.company_name = request.POST.get('company_name')
+
+        # Kiểm tra dữ liệu đầu vào
+        missing_fields = []
+        if not supplier.supplier_name:
+            missing_fields.append("Tên nhà cung cấp")
+        if not supplier.tax_code:
+            missing_fields.append("Mã số thuế")
+        if not supplier.email:
+            missing_fields.append("Email")
+        if not supplier.phone:
+            missing_fields.append("Số điện thoại")
+
+        if missing_fields:
+            messages.error(request, f'Vui lòng điền đầy đủ các trường bắt buộc: {", ".join(missing_fields)}!')
+            return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
+
+        # Lưu cập nhật
+        try:
+            supplier.update_at = timezone.now()
+            supplier.save()
+            messages.success(request, 'Cập nhật nhà cung cấp thành công!')
+            return redirect('supplier_list')
+        except Exception as e:
+            messages.error(request, f'Có lỗi xảy ra: {str(e)}')
+            return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
+
+    return render(request, 'supplier/supplier_update.html', {
+        'supplier': supplier,
+        'title': "Chỉnh sửa nhà cung cấp",
+    })
+
+# View cho xóa nhà cung cấp
+def supplier_delete_view(request, id):
+    supplier = get_object_or_404(Supplier, id=id)
+    if request.method == 'POST':
+        supplier.delete()
+        messages.success(request, 'Xóa nhà cung cấp thành công!')
         return redirect('supplier_list')
-    return render(request, 'supplier/supplier_create.html',context)
+    return render(request, 'supplier/supplier_confirm_delete.html', {
+        'supplier': supplier,
+        'title': "Xóa nhà cung cấp",
+    })
 
 def near_expiry_list_view(request):
     context = {"title": "Hàng gần đến ngày khuyến nghị"}
@@ -175,26 +284,28 @@ def near_expiry_list_view(request):
 
 def low_stock_list_view(request):
     context = {"title": "Hàng gần hết trong kho"}
-    return render(request, 'check/low_stock_list.html',context)
-
+    return render(request, 'check/low_stock_list.html', context)
 
 def units_view(request):
     context = {"title": "Danh sách đơn vị"}
     return render(request, 'units/units_list.html', context)
+
 def create_unit(request):
     context = {"title": "Tạo mới đơn vị"}
-    return render(request, 'units/create_unit.html',context)
+    return render(request, 'units/create_unit.html', context)
+
 def report_overview(request):
     context = {"title": "Báo cáo"}
     return render(request, 'report/overview.html', context)
 
-
 def product_category_view(request):
     context = {"title": "Danh mục sản phẩm"}
     return render(request, 'product_category/product_category_list.html', context)
+
 def product_category_update(request):
     context = {"title": "Tạo mới danh mục sản phẩm"}
     return render(request, 'product_category/product_category_update.html', context)
+
 def product_category_detail(request):
     context = {"title": "Chi tiết sản phẩm"}
     return render(request, 'product_category/product_category_detail.html', context)
@@ -202,34 +313,38 @@ def product_category_detail(request):
 def product_view(request):
     context = {"title": "Danh sách sản phẩm"}
     return render(request, 'product/product_list.html', context)
+
 def product_update(request):
     context = {"title": "Tạo mới sản phẩm"}
     return render(request, 'product/product_update.html', context)
+
 def product_detail(request):
     context = {"title": "Danh sách sản phẩm"}
     return render(request, 'product/product_detail.html', context)
 
-#Khách hàng
+# Khách hàng
 def customer_list(request):
     context = {"title": "Danh sách khách hàng"}
     return render(request, "customer/customer_list.html", context)
+
 def customer_create(request):
     context = {"title": "Thêm mới khách hàng"}
     return render(request, "customer/customer_form.html", context)
 
-#Nhân viên
-def  employee_list(request):
+# Nhân viên
+def employee_list(request):
     context = {"title": "Danh sách nhân viên"}
     return render(request, "employer/employee_list.html", context)
+
 def employee_create(request):
     context = {"title": "Thêm mới nhân viên"}
     return render(request, "employer/employee_form.html", context)
-
 
 def inventory_check_list(request):
     inventory_checks = InventoryCheck.objects.all().order_by('-check_date')
     context = {
         'inventory_checks': inventory_checks,
+        'title': "Danh sách kiểm kê hàng hóa",
     }
     return render(request, 'inventory/inventory_check_list.html', context)
 
@@ -313,5 +428,6 @@ def inventory_check_delete(request, pk):
         messages.success(request, "Xóa kiểm kê thành công!")
         return redirect('inventory_check_list')
     return render(request, 'inventory/inventory_check_list.html', {
-        'inventory_checks': InventoryCheck.objects.all().order_by('-check_date')
+        'inventory_checks': InventoryCheck.objects.all().order_by('-check_date'),
+        'title': "Danh sách kiểm kê hàng hóa",
     })
