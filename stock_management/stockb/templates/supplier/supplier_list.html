@@ -8,6 +8,16 @@
             Tạo nhà cung cấp
         </a>
     </div>
+
+    <!-- Hiển thị thông báo -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <div class="container bg-white p-4 rounded shadow">
         <div class="input-group mb-4">
             <input type="text" class="form-control" placeholder="Tìm kiếm">
@@ -29,17 +39,36 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dữ liệu mẫu giống trong ảnh -->
-                    <tr>
-                        <td>Cường</td>
-                        <td>Hòa Phát</td>
-                        <td>34788374</td>
-                        <td>039478233467</td>
-                        <td>huynhnm@gmail.com</td>
-                        <td>Mai Lâm com...</td>
-                        <td><button class="btn btn-warning btn-sm">Chỉnh sửa</button></td>
-                        <td><button class="btn btn-danger btn-sm">Xóa</button></td>
-                    </tr>
+                    {% for supplier in suppliers %}
+                        <tr>
+                            <td>{{ supplier.supplier_name }}</td>
+                            <td>
+                                {% if supplier.supplier_notes %}
+                                    {% if "Công ty: " in supplier.supplier_notes %}
+                                        {{ supplier.supplier_notes|slice:":10"|cut:"Công ty: " }}
+                                    {% else %}
+                                        {{ supplier.supplier_notes }}
+                                    {% endif %}
+                                {% else %}
+                                    Không có
+                                {% endif %}
+                            </td>
+                            <td>{{ supplier.tax_code }}</td>
+                            <td>{{ supplier.mobile_phone }}</td>
+                            <td>{{ supplier.email }}</td>
+                            <td>{{ supplier.address }}</td>
+                            <td>
+                                <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-warning btn-sm">Chỉnh sửa</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8">Không có nhà cung cấp nào.</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
