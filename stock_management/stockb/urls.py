@@ -29,10 +29,13 @@ urlpatterns = [
     path('product-category/create/', views.product_category_update, name='product_category_create'),
     path('product-category/detail/', views.product_category_detail, name='product_category_detail'),
     # Đơn vị
-    path('units/', views.units_view, name='units'),
+    path('units/', views.unit_list, name='units_list'),
     path('units/create/', views.create_unit, name='create_unit'),
+    path('units/edit/<int:pk>/', views.edit_unit, name='edit_unit'),
+    path('units/delete/<int:pk>/', views.delete_unit, name='delete_unit'),
     # Báo cáo
     path('report/', views.report_overview, name='report'),
+    path('report/ajax/', views.ajax_dashboard_stats, name='ajax_dashboard_stats'),
     # Khách hàng
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/create/', views.customer_create, name='customer_create'),

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid  -4">
+<div class="container-fluid p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="mb-0">Đơn vị</h5>
         <a href="{% url 'create_unit' %}" class="btn btn-primary">
@@ -10,11 +10,10 @@
     </div>
 
     <div class="bg-white p-4 rounded shadow">
-
-        <div class="input-group mb-4">
-            <input type="text" class="form-control" placeholder="Tìm kiếm">
+        <form method="GET" class="input-group mb-4">
+            <input type="text" name="q" class="form-control" placeholder="Tìm kiếm" value="{{ request.GET.q }}">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-        </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table table-bordered align-middle text-center">
@@ -26,33 +25,43 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for unit in units %}
                     <tr>
-                        <td>Mét</td>
-                        <td>M</td>
+                        <td>{{ unit.unit_name }}</td>
+                        <td>{{ unit.unit_symbol }}</td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
-                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
-                    Xóa
-                  </button>
-                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="exampleModalCenterTitle">Xác nhận xoá</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <a href="{% url 'edit_unit' unit.pk %}" class="btn btn-sm btn-outline-warning">Sửa</a>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ unit.pk }}">
+                                Xóa
+                            </button>
+                            <!-- Modal -->
+                            <div class="modal fade" id="deleteModal{{ unit.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ unit.pk }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ unit.pk }}">Xác nhận xóa</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Bạn có chắc chắn muốn xóa đơn vị "{{ unit.unit_name }}" không?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <form method="POST" action="{% url 'delete_unit' unit.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">Xóa</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="modal-body">
-                              Bạn có chắc chắn muốn xoá đơn vị này không?
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                              <button type="button" class="btn btn-danger">Xóa</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+                        </td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">Không có đơn vị nào.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
