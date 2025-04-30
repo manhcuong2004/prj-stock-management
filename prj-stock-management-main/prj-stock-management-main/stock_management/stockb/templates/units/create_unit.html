@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Tạo mới đơn vị</h5>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <h5 class="mb-4">Thông tin đơn vị</h5>
+
+        <form method="POST">
+            {% csrf_token %}
+             <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-secondary" for="ten-don-vi">Tên đơn vị</label>
+                    <input class="form-control" type="text" id="ten-don-vi" name="name" placeholder="Nhập tên đơn vị" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-secondary" for="ki-hieu-don-vi">Kí hiệu đơn vị</label>
+                    <input class="form-control" type="text" id="ki-hieu-don-vi" name="symbol" placeholder="Nhập kí hiệu đơn vị" required>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="/units" class="btn btn-secondary ms-2">Hủy</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

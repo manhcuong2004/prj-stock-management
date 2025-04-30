@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{title}}
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5>Danh sách sản phẩm</h5>
+      <a href="{% url 'product_create' %}" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i>
+          Thêm sản phẩm mới
+      </a>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <form method="GET" action="{% url 'product' %}">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm" name="search" value="{{ search_text }}">
+                        <button class="input-group-text" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <select class="form-select" name="category" onchange="this.form.submit()">
+                                <option value="">Tất cả danh mục</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if filter_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ category.category_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="supplier" onchange="this.form.submit()">
+                                <option value="">Tất cả nhà cung cấp</option>
+                                {% for supplier in suppliers %}
+                                    <option value="{{ supplier.id }}" {% if filter_supplier == supplier.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ supplier.company_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="stock_status" onchange="this.form.submit()">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="low_stock" {% if filter_stock_status == 'low_stock' %}selected{% endif %}>Dưới mức tối thiểu</option>
+                                <option value="out_of_stock" {% if filter_stock_status == 'out_of_stock' %}selected{% endif %}>Hết hàng</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Tên sản phẩm</th>
+                <th scope="col">Danh mục</th>
+                <th scope="col">Nhà cung cấp</th>
+                <th scope="col">Số lượng tồn kho</th>
+                <th scope="col">Giá nhập vào</th>
+                <th scope="col">Giá bán ra</th>
+                <th scope="col">Lô hiện có</th>
+                <th scope="col">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in products %}
+              <tr>
+                <td>
+                  <a class="text-primary" href="{% url 'product_detail' product.pk %}">{{ product.product_name }}</a>
+                  <p class="text-muted">{{ product.unit.unit_name }}</p>
+                </td>
+                <td>{{ product.category.category_name }}</td>
+                <td>{{ product.supplier.company_name }}</td>
+                <td>{{ product.quantity }} {{ product.unit.unit_name }}</td>
+                <td>{{ product.purchase_price }}đ</td>
+                <td>{{ product.selling_price }}đ</td>
+                <td>{{ product.product_details.count }}</td>
+                <td>
+                    <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-warning">Sửa</a>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ product.pk }}">
+                        Xóa
+                    </button>
+                    <div class="modal fade" id="deleteModal{{ product.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ product.pk }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="deleteModalLabel{{ product.pk }}">Xác nhận xóa</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              Bạn có chắc chắn muốn xóa sản phẩm "{{ product.product_name }}" không?
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                              <form method="POST" action="{% url 'product_delete' product.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8">Không có sản phẩm nào.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+    </div>
+{% endblock %}

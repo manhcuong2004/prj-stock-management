@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{title}}
+{% endblock %}
+{% block content %}
+    <div class="mb-4">
+      <h5>{{ title }}</h5>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <h5 class="mb-4">Thông tin sản phẩm</h5>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.product_name.id_for_label }}" class="form-label">Tên sản phẩm</label>
+                        {{ form.product_name }}
+                        {% if form.product_name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.product_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Mô tả</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.quantity.id_for_label }}" class="form-label">Số lượng</label>
+                        {{ form.quantity }}
+                        {% if form.quantity.errors %}
+                            <div class="text-danger">
+                                {% for error in form.quantity.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.purchase_price.id_for_label }}" class="form-label">Giá nhập vào</label>
+                        {{ form.purchase_price }}
+                        {% if form.purchase_price.errors %}
+                            <div class="text-danger">
+                                {% for error in form.purchase_price.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.selling_price.id_for_label }}" class="form-label">Giá bán ra</label>
+                        {{ form.selling_price }}
+                        {% if form.selling_price.errors %}
+                            <div class="text-danger">
+                                {% for error in form.selling_price.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.minimum_stock.id_for_label }}" class="form-label">Số lượng tồn kho tối thiểu</label>
+                        {{ form.minimum_stock }}
+                        {% if form.minimum_stock.errors %}
+                            <div class="text-danger">
+                                {% for error in form.minimum_stock.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.inspection_time.id_for_label }}" class="form-label">Thời gian kiểm tra</label>
+                        {{ form.inspection_time }}
+                        {% if form.inspection_time.errors %}
+                            <div class="text-danger">
+                                {% for error in form.inspection_time.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">Danh mục</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger">
+                                {% for error in form.category.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.unit.id_for_label }}" class="form-label">Đơn vị</label>
+                        {{ form.unit }}
+                        {% if form.unit.errors %}
+                            <div class="text-danger">
+                                {% for error in form.unit.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.supplier.id_for_label }}" class="form-label">Nhà cung cấp</label>
+                        {{ form.supplier }}
+                        {% if form.supplier.errors %}
+                            <div class="text-danger">
+                                {% for error in form.supplier.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="{% url 'product' %}" class="btn btn-secondary ms-2">Hủy</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

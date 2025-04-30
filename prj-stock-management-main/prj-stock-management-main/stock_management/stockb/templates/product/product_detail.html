@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{title}}
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5>Chi tiết sản phẩm</h5>
+      <a class="btn btn-secondary" href="{% url 'product' %}">
+          <i class="bi bi-arrow-90deg-left"></i>
+          Quay lại
+      </a>
+    </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-4">
+        <h5 class="mb-4">{{ product.product_name }}</h5>
+        <p><strong>Ghi chú:</strong> {{ product.description|default:"Không có" }}</p>
+        <p><strong>Danh mục:</strong> {{ product.category.category_name }}</p>
+        <p><strong>Nhà cung cấp:</strong> {{ product.supplier.company_name }}</p>
+        <p><strong>Số lượng tồn kho:</strong> {{ product.quantity }} {{ product.unit.unit_name }}</p>
+        <p><strong>Giá nhập vào:</strong> {{ product.purchase_price }}đ</p>
+        <p><strong>Giá bán ra:</strong> {{ product.selling_price }}đ</p>
+        <p><strong>Lô hiện có:</strong> {{ product_details.count }}</p>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3 mb-4">
+        <h6>Tổng hợp lô hàng</h6>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Số lô</span><span>{{ product_details.count }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Tổng số lượng</span><span>{{ product.quantity }} {{ product.unit.unit_name }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="card shadow-sm p-3">
+        <h6 class="mb-3">Danh sách lô hàng</h6>
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Tên lô</th>
+              <th>Ngày nhập</th>
+              <th>Số lượng</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for detail in product_details %}
+            <tr>
+              <td>{{ detail.product_batch }}</td>
+              <td>{{ detail.import_date|date:"d/m/Y" }}</td>
+              <td>{{ detail.remaining_quantity }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3">Không có lô hàng nào.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
