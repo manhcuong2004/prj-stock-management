@@ -1,9 +1,7 @@
-from datetime import timezone
-from django.core.checks import messages
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
 
@@ -37,13 +35,12 @@ def stock_in(request):
 
     for stock_in in stock_ins:
         total_amount = StockInDetail.objects.filter(import_record=stock_in).aggregate(
-            total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
+            total=Sum(F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100))
         )['total'] or 0
         stock_in_list.append({
             'id': stock_in.id,
             'import_date': stock_in.import_date,
             'supplier': stock_in.supplier.company_name,
-            'product_batch': stock_in.product_batch,
             'payment_status': stock_in.payment_status,
             'import_status': stock_in.import_status,
             'total_amount': total_amount,
@@ -63,20 +60,30 @@ def stock_in_update(request, pk=None):
 
     if request.method == "POST":
         if form.is_valid() and formset.is_valid():
+            # Lưu StockIn trước
             stock_in = form.save(commit=False)
             if not stock_in.import_date:
                 stock_in.import_date = timezone.now()
             stock_in.employee = request.user
-            stock_in.save()
 
-            # Lấy mã lô chung từ form
-            product_batch = form.cleaned_data.get('product_batch')
+            # Tính tổng tiền từ chi tiết nhập kho
+            total_amount = 0
+            valid_details = []
+            for detail_form in formset:
+                if detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
+                    quantity = detail_form.cleaned_data.get('quantity', 0)
+                    product = detail_form.cleaned_data.get('product')
+                    discount = detail_form.cleaned_data.get('discount', 0)
+                    total_amount += quantity * product.purchase_price * (1 - discount / 100)
+                    valid_details.append(detail_form)
+            stock_in.total_amount = total_amount
+
+            stock_in.save()
 
             # Xử lý formset
             for detail_form in formset:
                 if detail_form.cleaned_data:
                     if detail_form.cleaned_data.get('DELETE', False):
-                        # Xóa hàng nếu được đánh dấu DELETE
                         if detail_form.instance.pk:
                             detail_form.instance.delete()
                         continue
@@ -85,7 +92,10 @@ def stock_in_update(request, pk=None):
                     detail.import_record = stock_in
                     detail.save()
 
-                    # Tạo hoặc cập nhật ProductDetail với mã lô chung
+                    # Lấy mã lô từ formset
+                    product_batch = detail_form.cleaned_data.get('product_batch')
+
+                    # Tạo hoặc cập nhật ProductDetail với mã lô riêng
                     product_detail, created = ProductDetail.objects.get_or_create(
                         product=detail.product,
                         product_batch=product_batch,
@@ -101,14 +111,7 @@ def stock_in_update(request, pk=None):
                         product_detail.remaining_quantity += detail.quantity
                         product_detail.save()
 
-                    # Cập nhật số lượng sản phẩm
-                    detail.product.quantity += detail.quantity
-                    detail.product.save()
-
-            # Kiểm tra lỗi sau khi xử lý
-            if not any(formset.errors):
-                messages.success(request, 'Đơn nhập kho đã được lưu thành công!')
-                return redirect('stock_in')
+            return redirect('stock_in')
         else:
             print("Form errors:", form.errors)
             print("Formset errors:", formset.errors)

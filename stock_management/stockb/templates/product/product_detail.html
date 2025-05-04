@@ -13,7 +13,7 @@
     </div>
 
   <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="card shadow-sm p-4">
         <h5 class="mb-4">{{ product.product_name }}</h5>
         <p><strong>Ghi chú:</strong> {{ product.description|default:"Không có" }}</p>
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-8">
       <div class="card shadow-sm p-3 mb-4">
         <h6>Tổng hợp lô hàng</h6>
         <ul class="list-group list-group-flush">
@@ -41,29 +41,67 @@
       <div class="card shadow-sm p-3">
         <h6 class="mb-3">Danh sách lô hàng</h6>
         <table class="table table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>Tên lô</th>
-              <th>Ngày nhập</th>
-              <th>Số lượng</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for detail in product_details %}
-            <tr>
-              <td>{{ detail.product_batch }}</td>
-              <td>{{ detail.import_date|date:"d/m/Y" }}</td>
-              <td>{{ detail.remaining_quantity }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="3">Không có lô hàng nào.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <thead class="table-light">
+          <tr>
+            <th>Tên lô</th>
+            <th>Ngày nhập</th>
+            <th>Số lượng ban đầu</th>
+            <th>Số lượng hiện tại</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for detail in product_details %}
+          <tr>
+            <td>{{ detail.product_batch }}</td>
+            <td>{{ detail.import_date|date:"d/m/Y" }}</td>
+            <td>{{ detail.initial_quantity }}</td>
+            <td>{{ detail.remaining_quantity }}</td>
+            <td>
+              <form action="{% url 'toggle_product_detail_status' detail.pk %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if detail.status == 'ACTIVE' %}btn-outline-primary{% else %}btn-outline-success{% endif %}">
+                  {% if detail.status == 'ACTIVE' %}Tắt kích hoạt{% else %}Kích hoạt{% endif %}
+                </button>
+              </form>
+              <form action="{% url 'edit_product_detail' detail.pk %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="remaining_quantity" value="{{ detail.remaining_quantity }}">
+                <button type="submit" class="btn btn-sm btn-outline-warning">Sửa</button>
+              </form>
+              <form action="{% url 'delete_product_detail' detail.pk %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">Không có lô hàng nào.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
       </div>
     </div>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.btn-outline-warning').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const form = this.closest('form');
+      const currentQuantity = form.querySelector('input[name="remaining_quantity"]').value;
+      const newQuantity = prompt('Nhập số lượng hiện tại mới:', currentQuantity);
+      if (newQuantity !== null && !isNaN(newQuantity) && newQuantity >= 0) {
+        form.querySelector('input[name="remaining_quantity"]').value = newQuantity;
+        form.submit();
+      } else if (newQuantity !== null) {
+        alert('Vui lòng nhập số lượng hợp lệ!');
+      }
+    });
+  });
+});
+</script>
 {% endblock %}

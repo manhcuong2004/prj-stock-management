@@ -46,11 +46,7 @@
                         {% for error in form.non_field_errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
-                        {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ field }}: {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
+
                     {% endfor %}
                 </ul>
             </div>

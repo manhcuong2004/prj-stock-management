@@ -2,6 +2,7 @@
 {% block title %}
     {{title}}
 {% endblock %}
+{% load humanize %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -26,7 +27,7 @@
                             <select class="form-select" name="category" onchange="this.form.submit()">
                                 <option value="">Tất cả danh mục</option>
                                 {% for category in categories %}
-                                    <option value="{{ category.id }}" {% if filter_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                    <option value="{{ category.id }}" {% if filter_category == category.id %}selected{% endif %}>
                                         {{ category.category_name }}
                                     </option>
                                 {% endfor %}
@@ -36,19 +37,13 @@
                             <select class="form-select" name="supplier" onchange="this.form.submit()">
                                 <option value="">Tất cả nhà cung cấp</option>
                                 {% for supplier in suppliers %}
-                                    <option value="{{ supplier.id }}" {% if filter_supplier == supplier.id|stringformat:"s" %}selected{% endif %}>
+                                    <option value="{{ supplier.id }}" {% if filter_supplier == supplier.id %}selected{% endif %}>
                                         {{ supplier.company_name }}
                                     </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <select class="form-select" name="stock_status" onchange="this.form.submit()">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="low_stock" {% if filter_stock_status == 'low_stock' %}selected{% endif %}>Dưới mức tối thiểu</option>
-                                <option value="out_of_stock" {% if filter_stock_status == 'out_of_stock' %}selected{% endif %}>Hết hàng</option>
-                            </select>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -61,7 +56,6 @@
                 <th scope="col">Tên sản phẩm</th>
                 <th scope="col">Danh mục</th>
                 <th scope="col">Nhà cung cấp</th>
-                <th scope="col">Số lượng tồn kho</th>
                 <th scope="col">Giá nhập vào</th>
                 <th scope="col">Giá bán ra</th>
                 <th scope="col">Lô hiện có</th>
@@ -77,9 +71,8 @@
                 </td>
                 <td>{{ product.category.category_name }}</td>
                 <td>{{ product.supplier.company_name }}</td>
-                <td>{{ product.quantity }} {{ product.unit.unit_name }}</td>
-                <td>{{ product.purchase_price }}đ</td>
-                <td>{{ product.selling_price }}đ</td>
+                <td>{{ product.purchase_price|intcomma }}đ</td>
+                <td>{{ product.selling_price|intcomma }}đ</td>
                 <td>{{ product.product_details.count }}</td>
                 <td>
                     <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-warning">Sửa</a>

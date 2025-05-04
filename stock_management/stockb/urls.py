@@ -41,6 +41,12 @@ urlpatterns = [
     path('product/<int:pk>/update/', product_views.product_update, name='product_update'),
     path('product/<int:pk>/delete/', product_views.product_delete, name='product_delete'),
 
+    # Chi tiết sản phẩm
+    path('product-detail/<int:pk>/toggle-status/', product_views.toggle_product_detail_status,name='toggle_product_detail_status'),
+    path('product-detail/<int:pk>/edit/', product_views.edit_product_detail, name='edit_product_detail'),
+    path('product-detail/<int:pk>/delete/', product_views.delete_product_detail, name='delete_product_detail'),
+
+
     # Danh mục
     path('product-category/', product_category_views.product_category_view, name='product_category'),
     path('product-category/create/', product_category_views.product_category_create, name='product_category_create'),

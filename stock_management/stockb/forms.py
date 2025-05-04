@@ -59,15 +59,9 @@ from django import forms
 from .models import StockIn, StockInDetail, Product, Supplier, User
 
 class StockInForm(forms.ModelForm):
-    product_batch = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control mb-2', 'placeholder': 'Nhập mã lô'}),
-        required=True
-    )
-
     class Meta:
         model = StockIn
-        fields = ['notes', 'employee', 'supplier', 'import_status', 'payment_status', 'product_batch']
+        fields = ['notes', 'employee', 'supplier', 'import_status', 'payment_status']
         widgets = {
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn nhập kho'}),
             'employee': forms.Select(attrs={'class': 'form-select'}),
@@ -76,28 +70,36 @@ class StockInForm(forms.ModelForm):
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
         }
 
-    def clean_product_batch(self):
-        product_batch = self.cleaned_data.get('product_batch')
-        if not product_batch:
-            raise forms.ValidationError("Mã lô không được để trống.")
-        # Kiểm tra mã lô không trùng với các đơn nhập kho khác
-        if StockIn.objects.filter(product_batch=product_batch).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError(f"Mã lô {product_batch} đã được sử dụng.")
-        return product_batch
-
 class StockInDetailForm(forms.ModelForm):
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    product_batch = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập mã lô'}),
+        required=True
+    )
 
     class Meta:
         model = StockInDetail
-        fields = ['product', 'quantity', 'discount']
+        fields = ['product', 'quantity', 'discount', 'product_batch']
         widgets = {
             'quantity': forms.NumberInput(attrs={'class': 'form-control quantity', 'style': 'width: 100px;', 'min': '1'}),
             'discount': forms.NumberInput(attrs={'class': 'form-control discount', 'min': '0', 'max': '100'}),
         }
+
+    def clean_product_batch(self):
+        product_batch = self.cleaned_data.get('product_batch')
+        product = self.cleaned_data.get('product')
+        if not product_batch:
+            raise forms.ValidationError("Mã lô không được để trống.")
+        query = ProductDetail.objects.filter(product=product, product_batch=product_batch)
+        if self.instance.pk:
+            query = query.exclude(stock_in_detail=self.instance)
+        if query.exists():
+            raise forms.ValidationError(f"Mã lô {product_batch} đã được sử dụng cho sản phẩm này.")
+        return product_batch
 
 StockInDetailFormSet = forms.inlineformset_factory(
     StockIn, StockInDetail, form=StockInDetailForm, extra=0, can_delete=True

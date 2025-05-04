@@ -1,12 +1,17 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum, F, Q, Count
+from django.utils import timezone
+
 from ..forms import ProductForm
 from ..models import Product, StockIn, StockInDetail, ProductCategory, ProductDetail, Supplier
 
 
 def product_view(request):
     products = Product.objects.all().order_by('product_name')
+
+
+
     search_text = request.GET.get('search', '').strip()
     filter_category = request.GET.get('category', '')
     filter_supplier = request.GET.get('supplier', '')
@@ -19,7 +24,6 @@ def product_view(request):
             Q(category__category_name__icontains=search_text) |
             Q(supplier__company_name__icontains=search_text)
         )
-
     # Lọc theo danh mục
     if filter_category:
         products = products.filter(category__id=filter_category)
@@ -27,12 +31,6 @@ def product_view(request):
     # Lọc theo nhà cung cấp
     if filter_supplier:
         products = products.filter(supplier__id=filter_supplier)
-
-    # Lọc theo trạng thái tồn kho
-    if filter_stock_status == 'low_stock':
-        products = products.filter(quantity__lte=F('minimum_stock'))
-    elif filter_stock_status == 'out_of_stock':
-        products = products.filter(quantity=0)
 
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
@@ -51,8 +49,10 @@ def product_view(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    product_details = ProductDetail.objects.filter(product=product).select_related('product__category', 'product__unit')
-    total_remaining_quantity = product_details.aggregate(total=Sum('remaining_quantity'))['total'] or 0
+    product_details = ProductDetail.objects.filter(product=product).select_related('product__category', 'product__unit').order_by('status')
+    total_remaining_quantity = ProductDetail.objects.filter(
+        product=product, status='ACTIVE'
+    ).aggregate(total=Sum('remaining_quantity'))['total'] or 0
 
     context = {
         "title": f"Chi tiết sản phẩm - {product.product_name}",
@@ -97,3 +97,51 @@ def product_delete(request, pk):
         messages.success(request, "Đã xóa sản phẩm thành công!")
         return redirect('product')
     return redirect('product')
+
+def toggle_product_detail_status(request, pk):
+    if request.method == 'POST':
+        product_detail = get_object_or_404(ProductDetail, pk=pk)
+        # Toggle trạng thái
+        if product_detail.status == 'ACTIVE':
+            product_detail.status = 'UNACTIVE'
+            messages.success(request, f'Lô hàng {product_detail.product_batch} đã được tắt kích hoạt.')
+        else:
+            product_detail.status = 'ACTIVE'
+            messages.success(request, f'Lô hàng {product_detail.product_batch} đã được kích hoạt.')
+        product_detail.save()
+        return redirect('product_detail', pk=product_detail.product.id)
+    messages.error(request, 'Yêu cầu không hợp lệ.')
+    product_detail = get_object_or_404(ProductDetail, pk=pk)
+    return redirect('product_detail', pk=product_detail.product.id)
+
+def edit_product_detail(request, pk):
+    if request.method == 'POST':
+        product_detail = get_object_or_404(ProductDetail, pk=pk)
+        try:
+            new_quantity = float(request.POST.get('remaining_quantity'))
+            if new_quantity >= 0:
+                product_detail.remaining_quantity = new_quantity
+                product_detail.save()
+                messages.success(request, f'Cập nhật số lượng lô {product_detail.product_batch} thành công.')
+            else:
+                messages.error(request, 'Số lượng không được âm.')
+        except (ValueError, TypeError):
+            messages.error(request, 'Số lượng không hợp lệ.')
+        return redirect('product_detail', pk=product_detail.product.id)
+    messages.error(request, 'Yêu cầu không hợp lệ.')
+    product_detail = get_object_or_404(ProductDetail, pk=pk)
+    return redirect('product_detail', pk=product_detail.product.id)
+
+def delete_product_detail(request, pk):
+    if request.method == 'POST':
+        product_detail = get_object_or_404(ProductDetail, pk=pk)
+        product_id = product_detail.product.id
+        try:
+            product_detail.delete()
+            messages.success(request, f'Lô hàng {product_detail.product_batch} đã được xóa.')
+        except Exception as e:
+            messages.error(request, f'Không thể xóa lô hàng {product_detail.product_batch}: {str(e)}')
+        return redirect('product_detail', pk=product_id)
+    messages.error(request, 'Yêu cầu không hợp lệ.')
+    product_detail = get_object_or_404(ProductDetail, pk=pk)
+    return redirect('product_detail', pk=product_detail.product.id)

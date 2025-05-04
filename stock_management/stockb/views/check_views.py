@@ -13,7 +13,7 @@ def near_expiry_list_view(request):
     search_query = request.GET.get('q', '')
     near_expiry_products = ProductDetail.objects.filter(
         expiry_date__range=(today, end_date),
-        remaining_quantity__gt=0
+        status = "ACTIVE"
     ).select_related('product__category', 'product__unit').order_by('expiry_date')
 
     if search_query:
@@ -41,7 +41,7 @@ def low_stock_list_view(request):
 
     for product in products:
         total_quantity = product.product_details.aggregate(total=Sum('remaining_quantity'))['total'] or 0
-        if total_quantity >= product.minimum_stock:
+        if total_quantity <= product.minimum_stock:
             low_stock_products.append({
                 'product': product,
                 'total_quantity': total_quantity,
