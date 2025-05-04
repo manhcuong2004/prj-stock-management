@@ -1,156 +1,275 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
+
 {% block title %}
-    {{title}}
+    Tổng quan kho hàng
 {% endblock %}
+
 {% block extra_head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background-color: #f8f9fa;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        .metric-card {
+            border-left: 4px solid #3b82f6;
+        }
+        .metric-card .card-title {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4 px-4">
-    <div class="row justify-content-between align-items-start align-items-md-center mb-4 g-4">
-        <div class="col-12 col-md-auto">
-            <h1 class="fs-3 fw-semibold">Tổng quan</h1>
-        </div>
-        <div class="col-12 col-md-auto d-flex flex-column flex-sm-row gap-2">
-            <div class="position-relative flex-grow-1">
-                <input type="text" id="dateRange" class="form-control py-2 px-4" placeholder="Chọn khoảng thời gian">
-                <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-                        <path fill-rule="evenodd"
-                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                              clip-rule="evenodd"></path>
-                    </svg>
+<div class="flex flex-col min-vh-100 bg-gray-50">
+    <header class="sticky top-0 z-10 bg-white border-bottom shadow-sm">
+        <div class="container-fluid py-3 px-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <i data-lucide="warehouse" class="w-6 h-6 text-primary"></i>
+                    <h1 class="h5 mb-0 fw-semibold">Tổng quan kho hàng</h1>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="position-relative">
+                        <input type="text" id="dateRange" class="form-control rounded-pill px-4 py-2 shadow-sm" placeholder="Chọn khoảng thời gian">
+                    </div>
+                    <button class="btn btn-primary rounded-pill d-flex align-items-center gap-2 px-4">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        Lọc
+                    </button>
                 </div>
             </div>
-            <button id="filterBtn" class="btn btn-primary px-4 py-2">
-                Lọc
-            </button>
         </div>
-    </div>
+    </header>
 
-    <div class="row g-4">
-        <!-- Số đơn hàng -->
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-4">
-                <div class="text-muted">Số đơn hàng</div>
-                <div class="fs-2 fw-bold text-dark my-2">28</div>
+    <main class="flex-1 py-4 px-4">
+        <div class="container-fluid">
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title text-uppercase fw-semibold text-muted">Tổng đơn hàng</h6>
+                                    <div class="metric-value text-dark mt-2">{{ so_don_hang }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title text-uppercase fw-semibold text-muted">Doanh thu</h6>
+                                    <div class="metric-value text-dark mt-2">{{ doanh_thu|intcomma }}đ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title text-uppercase fw-semibold text-muted">Giá trị nhập kho</h6>
+                                    <div class="metric-value text-dark mt-2">{{ gia_tri_nhap_kho|intcomma }}đ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title text-uppercase fw-semibold text-muted">Giá trị xuất kho</h6>
+                                    <div class="metric-value text-dark mt-2">{{ gia_tri_xuat_kho|intcomma }}đ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="card-title mb-0 text-danger">Nợ phải trả</h6>
+                                        <i data-lucide="alert-circle" class="w-5 h-5 text-danger"></i>
+                                    </div>
+                                    <div class="metric-value text-danger">{{ no_phai_tra|intcomma }}đ</div>
+                                    <div class="progress mt-3" style="height: 6px;">
+                                        <div class="progress-bar bg-danger" style="width: {{ no_phai_tra_progress }}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="card-title mb-0 text-success">Nợ phải thu</h6>
+                                        <i data-lucide="check-circle-2" class="w-5 h-5 text-success"></i>
+                                    </div>
+                                    <div class="metric-value text-success">{{ no_phai_thu|intcomma }}đ</div>
+                                    <div class="progress mt-3" style="height: 6px;">
+                                        <div class="progress-bar bg-success" style="width: {{ no_phai_thu_progress }}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">Tỷ lệ xuất nhập kho</h5>
+                                    <p class="text-muted small mb-0">Phân bổ giá trị xuất nhập kho trong hệ thống</p>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="inventoryPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-4">
-                <div class="text-muted">Doanh thu</div>
-                <div class="fs-2 fw-bold text-dark my-2">261,380,000 đ</div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-4">
-                <div class="text-muted">Doanh thu thuần theo nhà cung cấp</div>
-                <div class="fs-2 fw-bold text-dark my-2">261,380,000 đ</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Biểu đồ lượng đơn hàng -->
-    <div class="card shadow-sm mt-4 p-4">
-        <h5 class="fs-5 fw-semibold">Lượng đơn hàng</h5>
-        <p class="text-muted mb-3">28 đơn hàng</p>
-        <div class="position-relative" style="height: 320px;">
-            <canvas id="ordersChart"></canvas>
-        </div>
-        <div class="d-flex justify-content-between mt-3">
-            <div class="text-muted small">01/03/2025 - 31/03/2025</div>
-            <div class="text-muted small">01/02/2025 - 28/02/2025</div>
-        </div>
-    </div>
-
-    <div class="row g-4 mt-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="fs-5 fw-semibold">Nợ phải trả</h5>
-                <div class="display-5 fw-bold my-2">1,380,000 đ</div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="fs-5 fw-semibold">Nợ phải thu</h5>
-                <div class="display-5 fw-bold my-2">12,910,000 đ</div>
-            </div>
-        </div>
-    </div>
+    </main>
 </div>
 {% endblock %}
 
 {% block extra_js %}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        flatpickr("#dateRange", {
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Initialize date range picker
+        const dateRangePicker = flatpickr("#dateRange", {
             mode: "range",
             dateFormat: "d/m/Y",
             locale: "vn",
-            defaultDate: ["01/03/2025", "31/03/2025"],
+            defaultDate: ["01/{{ today.month }}/{{ today.year }}", "{{ today.day }}/{{ today.month }}/{{ today.year }}"],
             maxDate: "today"
         });
 
-        document.getElementById('filterBtn').addEventListener('click', function() {
-            const dateRange = document.getElementById('dateRange').value;
-            if (dateRange) {
-                const dates = dateRange.split(" to ");
-                const startDate = dates[0];
-                const endDate = dates[1] || dates[0];
-
-                document.querySelectorAll('.date-range-display').forEach(el => {
-                    el.textContent = `${startDate} - ${endDate}`;
-                });
-
-                console.log(`Lọc dữ liệu từ ${startDate} đến ${endDate}`);
-
-                alert(`Đã áp dụng bộ lọc từ ${startDate} đến ${endDate}`);
-            }
-        });
-
+        // Initialize pie chart
+        let inventoryPieChart;
         document.addEventListener('DOMContentLoaded', function() {
-            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-            const ordersChart = new Chart(ordersCtx, {
-                type: 'bar',
+            const ctx = document.getElementById('inventoryPieChart').getContext('2d');
+            inventoryPieChart = new Chart(ctx, {
+                type: 'pie',
                 data: {
-                    labels: ['01/03', '03/03', '05/03', '07/03', '08/03', '11/03', '13/03', '15/03', '17/03', '18/03', '21/03', '23/03', '25/03', '27/03', '29/03', '31/03'],
-                    datasets: [
-                        {
-                            label: 'Tháng 3/2025',
-                            data: [3, 2, 1, 4, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 1, 1],
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Tháng 2/2025',
-                            data: [2, 1, 3, 2, 1, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 0],
-                            backgroundColor: 'rgba(201, 203, 207, 0.7)',
-                            borderColor: 'rgba(201, 203, 207, 1)',
-                            borderWidth: 1
-                        }
-                    ]
+                    labels: ['Nhập kho', 'Xuất kho'],
+                    datasets: [{
+                        data: [{{ gia_tri_nhap_kho }}, {{ gia_tri_xuat_kho }}],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5,
-                                max: 30
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value.toLocaleString()}đ (${percentage}%)`;
+                                }
                             }
                         }
                     }
                 }
             });
+
+            // Hàm gửi yêu cầu AJAX để cập nhật dữ liệu
+            function updateDashboard() {
+                const selectedDates = dateRangePicker.selectedDates;
+                if (selectedDates.length === 2) {
+                    const startDate = selectedDates[0].toLocaleDateString('vi-VN');
+                    const endDate = selectedDates[1].toLocaleDateString('vi-VN');
+                    const dateRange = `${startDate} to ${endDate}`;
+
+                    fetch(`/report/ajax/?dateRange=${encodeURIComponent(dateRange)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                console.error(data.error);
+                                return;
+                            }
+
+                            // Cập nhật các số liệu
+                            document.querySelectorAll('.metric-value.text-dark')[0].textContent = data.so_don_hang;
+                            document.querySelectorAll('.metric-value.text-dark')[1].textContent = `${data.doanh_thu.toLocaleString()}đ`;
+                            document.querySelectorAll('.metric-value.text-dark')[2].textContent = `${data.gia_tri_nhap_kho.toLocaleString()}đ`;
+                            document.querySelectorAll('.metric-value.text-dark')[3].textContent = `${data.gia_tri_xuat_kho.toLocaleString()}đ`;
+                            document.querySelector('.metric-value.text-danger').textContent = `${data.no_phai_tra.toLocaleString()}đ`;
+                            document.querySelector('.metric-value.text-success').textContent = `${data.no_phai_thu.toLocaleString()}đ`;
+                            document.querySelector('.progress-bar.bg-danger').style.width = `${data.no_phai_tra_progress}%`;
+                            document.querySelector('.progress-bar.bg-success').style.width = `${data.no_phai_thu_progress}%`;
+
+                            // Cập nhật biểu đồ
+                            inventoryPieChart.data.datasets[0].data = [data.gia_tri_nhap_kho, data.gia_tri_xuat_kho];
+                            inventoryPieChart.update();
+                        })
+                        .catch(error => console.error('Error fetching data:', error));
+                }
+            }
+
+            // Gắn sự kiện cho input dateRange
+            document.getElementById('dateRange').addEventListener('change', updateDashboard);
+
+            // Gắn sự kiện cho nút Lọc
+            document.querySelector('.btn-primary').addEventListener('click', updateDashboard);
         });
     </script>
 {% endblock %}

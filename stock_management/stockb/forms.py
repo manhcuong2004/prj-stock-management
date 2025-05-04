@@ -1,7 +1,6 @@
 from django import forms
 from django.db.models import Sum
-from .models import StockOut, StockOutDetail, Product, InventoryCheck, InventoryCheckDetail, ProductDetail
-
+from .models import StockOut, StockOutDetail, Product, InventoryCheck, InventoryCheckDetail, ProductDetail, Unit
 
 class StockOutForm(forms.ModelForm):
     class Meta:
@@ -89,3 +88,19 @@ class InventoryCheckDetailForm(forms.ModelForm):
 InventoryCheckDetailFormSet = forms.inlineformset_factory(
     InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=1, can_delete=True
 )
+
+
+class UnitForm(forms.ModelForm):
+    class Meta:
+        model = Unit
+        fields = ['unit_name', 'unit_symbol']
+        labels = {
+            'unit_name': 'Tên đơn vị',
+            'unit_symbol': 'Kí hiệu đơn vị',
+        }
+        widgets = {
+            'unit_name': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Nhập tên đơn vị', 'required': True}),
+            'unit_symbol': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Nhập kí hiệu đơn vị', 'required': True}),
+        }
