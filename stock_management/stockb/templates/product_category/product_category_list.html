@@ -2,64 +2,86 @@
 {% block title %}
     {{title}}
 {% endblock %}
+
 {% block content %}
-<div class="container-fluid  -4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">Danh sách danh mục sản phẩm</h5>
-        <a href="create" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Tạo danh mục sản phẩm
-        </a>
+      <h5>Danh sách danh mục sản phẩm</h5>
+      <a href="{% url 'product_category_create' %}" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i>
+          Thêm danh mục mới
+      </a>
     </div>
-
-    <div class="bg-white p-4 rounded shadow">
-
-        <div class="input-group mb-4">
-            <input type="text" class="form-control" placeholder="Tìm kiếm">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-        </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <form method="GET" action="{% url 'product_category' %}">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm" name="search" value="{{ search_text }}">
+                        <button class="input-group-text" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="product_status" onchange="this.form.submit()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="has_products" {% if filter_product_status == 'has_products' %}selected{% endif %}>Có sản phẩm</option>
+                        <option value="no_products" {% if filter_product_status == 'no_products' %}selected{% endif %}>Không có sản phẩm</option>
+                    </select>
+                </div>
+            </div>
+        </form>
 
         <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center">
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col">Tên danh mục</th>
-                        <th scope="col">Mô tả</th>
-                        <th scope="col">Sản phẩm</th>
-                        <th scope="col">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                        <tr>
-                            <td><a href="detail">Xi măng</a></td>
-                            <td>Xi măng xây nhà</td>
-                            <td>3 sản phẩm</td>
-                            <td>
-                            <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
-                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
-                            Xóa
-                              </button>
-                                <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                  <div class="modal-content">
-                                    <div class="modal-header">
-                                      <h5 class="modal-title" id="exampleModalCenterTitle">Xác nhận xoá</h5>
-                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                      Bạn có chắc chắn muốn xoá danh mục sản phẩm này không?
-                                    </div>
-                                    <div class="modal-footer">
-                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                      <button type="button" class="btn btn-danger">Xóa</button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Tên danh mục</th>
+                <th scope="col">Mô tả</th>
+                <th scope="col">Số lượng sản phẩm</th>
+                <th scope="col">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for category in categories %}
+              <tr>
+                <td>
+                  <a class="text-primary" href="{% url 'product_category_detail' category.pk %}">{{ category.category_name }}</a>
+                </td>
+                <td>{{ category.description|default:"Không có mô tả" }}</td>
+                <td>{{ category.product_set.count }}</td>
+                <td>
+                    <a href="{% url 'product_category_update' category.pk %}" class="btn btn-sm btn-outline-warning">Sửa</a>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ category.pk }}">
+                        Xóa
+                    </button>
+                    <div class="modal fade" id="deleteModal{{ category.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ category.pk }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="deleteModalLabel{{ category.pk }}">Xác nhận xóa</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              Bạn có chắc chắn muốn xóa danh mục "{{ category.category_name }}" không?
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                              <form method="POST" action="{% url 'product_category_delete' category.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4">Không có danh mục nào.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
     </div>
-</div>
 {% endblock %}

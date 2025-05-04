@@ -12,12 +12,18 @@ class ProductCategory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.category_name
+
 
 class Unit(models.Model):
     unit_name = models.CharField(max_length=50)
     unit_symbol = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.unit_name} ({self.unit_symbol})"
 
 
 class Supplier(models.Model):
@@ -38,7 +44,6 @@ class Supplier(models.Model):
 class Product(models.Model):
     product_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    quantity = models.IntegerField()
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
     minimum_stock = models.IntegerField(default=0)
@@ -151,12 +156,21 @@ class StockInDetail(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class ProductDetail(models.Model):
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Kích hoạt'),
+        ('UNACTIVE', 'Tắt kích hoạt'),
+    ]
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_details')
     stock_in_detail = models.ForeignKey(StockInDetail, on_delete=models.CASCADE, related_name='product_details')
     product_batch = models.CharField(max_length=100)
     initial_quantity = models.IntegerField()
     remaining_quantity = models.IntegerField()
     import_date = models.DateTimeField()
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='ACTIVE'
+    )
     expiry_date = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

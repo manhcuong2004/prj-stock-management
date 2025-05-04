@@ -2,7 +2,6 @@ import datetime
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.checks import messages
 from django.contrib import messages
@@ -11,8 +10,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F, Q
 from django.utils import timezone
 from unidecode import unidecode
-from .forms import InventoryCheckForm, InventoryCheckDetailFormSet, StockInForm, StockInDetailFormSet
-from .models import InventoryCheck, Product, ProductDetail, Supplier, ProductCategory
+from datetime import timedelta
+from .forms import InventoryCheckForm, InventoryCheckDetailFormSet, StockInForm, StockInDetailFormSet, UnitForm
+from .models import InventoryCheck, Product, ProductDetail, Supplier, ProductCategory, Unit
 from .forms import StockOutForm, StockOutDetailFormSet, StockOutDetailForm
 from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail
 
@@ -280,23 +280,99 @@ def supplier_create_view(request):
 
 @login_required
 def near_expiry_list_view(request):
-    context = {"title": "Hàng gần đến ngày khuyến nghị"}
+    today = timezone.now()
+    end_date = today + timedelta(days=30)
+    search_query = request.GET.get('q', '')
+    near_expiry_products = ProductDetail.objects.filter(
+        expiry_date__range=(today, end_date),
+        remaining_quantity__gt=0
+    ).select_related('product__category', 'product__unit').order_by('expiry_date')
+
+    if search_query:
+        near_expiry_products = near_expiry_products.filter(product__product_name__icontains=search_query)
+
+    products_with_days_left = []
+    for detail in near_expiry_products:
+        days_left = (detail.expiry_date - today).days
+        products_with_days_left.append({
+            'detail': detail,
+            'days_left': max(0, days_left),
+        })
+
+    context = {
+        "title": "Hàng gần đến ngày hết hạn",
+        "near_expiry_products": products_with_days_left,
+        "search_query": search_query,
+    }
     return render(request, 'check/near_expiry_list.html', context)
 
 @login_required
 def low_stock_list_view(request):
-    context = {"title": "Hàng gần hết trong kho"}
-    return render(request, 'check/low_stock_list.html',context)
+    search_query = request.GET.get('q', '')
+    low_stock_products = []
+    products = Product.objects.all().prefetch_related('product_details').select_related('category', 'unit')
 
+    if search_query:
+        products = products.filter(product_name__icontains=search_query)
+
+    for product in products:
+        total_quantity = product.product_details.aggregate(total=Sum('remaining_quantity'))['total'] or 0
+        if total_quantity <= product.minimum_stock:
+            low_stock_products.append({
+                'product': product,
+                'total_quantity': total_quantity,
+                'minimum_stock': product.minimum_stock,
+            })
+
+    context = {
+        "title": "Hàng gần hết trong kho",
+        "low_stock_products": low_stock_products,
+        "search_query": search_query,
+    }
+    return render(request, 'check/low_stock_list.html', context)
 
 @login_required
-def units_view(request):
-    context = {"title": "Danh sách đơn vị"}
-    return render(request, 'units/units_list.html', context)
+def unit_list(request):
+    units = Unit.objects.all()
+    query = request.GET.get('q')
+    if query:
+        units = units.filter(name__icontains=query) | units.filter(symbol__icontains=query)
+    return render(request, 'units/units_list.html', {'units': units})
+
+@login_required
+def edit_unit(request, pk):
+    unit = get_object_or_404(Unit, pk=pk)
+    if request.method == 'POST':
+        form = UnitForm(request.POST, instance=unit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đơn vị đã được cập nhật thành công!')
+            return redirect('units_list')
+    else:
+        form = UnitForm(instance=unit)
+    return render(request, 'units/edit_unit.html', {'form': form, 'unit': unit})
+
 @login_required
 def create_unit(request):
-    context = {"title": "Tạo mới đơn vị"}
-    return render(request, 'units/create_unit.html',context)
+    if request.method == 'POST':
+        form = UnitForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đơn vị đã được tạo thành công!')
+            return redirect('units_list')
+    else:
+        form = UnitForm()
+    return render(request, 'units/create_unit.html', {'form': form})
+
+@login_required
+def delete_unit(request, pk):
+    unit = get_object_or_404(Unit, pk=pk)
+    if request.method == 'POST':
+        unit.delete()
+        messages.success(request, 'Đơn vị đã được xóa thành công!')
+        return redirect('units_list')
+    return render(request, 'units/units_list.html', {'unit': unit})
+
 @login_required
 def report_overview(request):
     context = {"title": "Báo cáo"}
@@ -324,7 +400,6 @@ def product_view(request):
     filter_supplier = request.GET.get('supplier', '')
     filter_stock_status = request.GET.get('stock_status', '')
 
-    # Tìm kiếm
     if search_text:
         products = products.filter(
             Q(product_name__icontains=search_text) |
@@ -332,7 +407,6 @@ def product_view(request):
             Q(supplier__company_name__icontains=search_text)
         )
 
-    # Lọc theo danh mục
     if filter_category:
         products = products.filter(category__id=filter_category)
 
@@ -476,14 +550,11 @@ def login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Xác thực người dùng
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            # Đăng nhập thành công
             login(request, user)
-            messages.success(request, "Đăng nhập thành công!")
-            return redirect('')
+            return redirect('/')
         else:
             messages.error(request, "Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.")
 

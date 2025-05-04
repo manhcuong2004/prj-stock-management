@@ -17,13 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from django.contrib.auth import views as auth_views
-
-from stock_management.stockb.views import login_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('stockb.urls')),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('login/', login_view, name='login'),
+
 ]

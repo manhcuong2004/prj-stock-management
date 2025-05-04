@@ -4,7 +4,11 @@
 {% endblock %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5>Danh sách sản phẩm trong danh mục</h5>
+        <h5>Danh sách sản phẩm trong danh mục - {{ category.category_name }}</h5>
+        <a class="btn btn-secondary" href="{% url 'product_category' %}">
+            <i class="bi bi-arrow-90deg-left"></i>
+            Quay lại
+        </a>
     </div>
     <div class="container bg-white p-4 rounded shadow">
         <div class="input-group mb-4">
@@ -17,25 +21,19 @@
             <div class="col-2 text-end">Giá</div>
         </div>
 
+        {% for product in products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9" href="/product/detail">
-                Xi măng VSA
+            <a class="col-9" href="{% url 'product_detail' product.pk %}">
+                {{ product.product_name }}
             </a>
-
             <div class="col-2 text-end">
-                <span>0</span>đ
+                <span>{{ product.selling_price }}</span>đ
             </div>
         </div>
-        <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9">
-                Xi măng Thịnh phát
-            </a>
-
-            <div class="col-2 text-end">
-                <span>1200</span>đ
-            </div>
+        {% empty %}
+        <div class="row py-2">
+            <div class="col-12">Không có sản phẩm nào trong danh mục này.</div>
         </div>
-
+        {% endfor %}
     </div>
-
 {% endblock %}

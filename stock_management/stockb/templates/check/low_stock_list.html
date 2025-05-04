@@ -1,35 +1,61 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{title}}
+    {{ title }}
 {% endblock %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5>Danh sách sản phẩm gần hết trong kho</h5>
     </div>
     <div class="container bg-white p-4 rounded shadow">
-        <div class="input-group mb-4">
-            <input type="text" class="form-control" placeholder="Tìm kiếm">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-        </div>
+        <form method="get" class="input-group mb-4">
+            <input type="text" name="q" class="form-control" placeholder="Tìm kiếm" value="{{ search_query }}">
+            <button type="submit" class="input-group-text"><i class="bi bi-search"></i></button>
+        </form>
 
-        <!-- Tiêu đề cột -->
         <div class="row mb-2 text-muted">
-            <div class="col-8">Sản phẩm</div>
+            <div class="col-5">Sản phẩm</div>
             <div class="col-2 text-end">Danh mục</div>
-            <div class="col-2 text-end">Còn lại trong kho</div>
+            <div class="col-3 text-end">Còn lại trong kho</div>
+            <div class="col-2 text-end">Tồn kho tối thiểu</div>
         </div>
 
         <!-- Dữ liệu sản phẩm -->
+        {% for item in low_stock_products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a class="col-8">
-                Xi măng VSA
+            <a href="#" class="col-5">
+                {{ item.product.product_name }}
             </a>
             <div class="col-2 text-end">
-                <span class="badge bg-secondary">Xi măng</span>
+                <span class="badge bg-secondary">{{ item.product.category.category_name }}</span>
+            </div>
+            <div class="col-3 text-end">
+                <span>{{ item.total_quantity }} {{ item.product.unit.unit_symbol }}</span>
             </div>
             <div class="col-2 text-end">
-                <span>0</span>
+                <span>{{ item.minimum_stock }} {{ item.product.unit.unit_symbol }}</span>
             </div>
         </div>
+        {% empty %}
+        <div class="row py-2">
+            <div class="col-12 text-center text-muted">
+                Không có sản phẩm nào gần hết trong kho.
+            </div>
+        </div>
+        {% endfor %}
     </div>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            let searchValue = e.target.value.toLowerCase();
+            let rows = document.querySelectorAll('.row.border-bottom');
+            rows.forEach(row => {
+                let productName = row.querySelector('.col-5').textContent.toLowerCase();
+                if (productName.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
 {% endblock %}

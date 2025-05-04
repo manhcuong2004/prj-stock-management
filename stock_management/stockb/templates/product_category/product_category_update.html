@@ -2,33 +2,23 @@
 {% block title %}
     {{title}}
 {% endblock %}
-{% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">Tạo mới danh mục sản phẩm</h5>
-    </div>
-    <div class="container bg-white p-4 rounded shadow">
-        <h5 class="mb-4">Thông tin danh mục sản phẩm</h5>
 
+{% block content %}
+    <div class="container bg-white p-4 rounded shadow">
+        <h5>{{ title }}</h5>
         <form method="POST">
             {% csrf_token %}
-            <div class="row mb-3">
-                <div class="col-md">
-                    <label for="supplier_name" class="form-label">Tên danh mục</label>
-                    <input type="text" class="form-control" id="supplier_name" name="supplier_name" placeholder="Nhập tên danh mục">
-                </div>
+            <div class="mb-3">
+                <label class="form-label">Tên danh mục</label>
+                {{ form.category_name }}
             </div>
-
-            <div class="row mb-3">
-                <div class="col-md">
-                    <label for="tax_code" class="form-label">Mô tả danh mục sản phẩm</label>
-                    <input type="text" class="form-control" id="tax_code" name="tax_code" placeholder="Nhập mô tả danh mục">
-                </div>
+            <div class="mb-3">
+                <label class="form-label">Mô tả</label>
+                {{ form.description }}
             </div>
-
-
             <div class="d-flex justify-content-end">
+                <a href="{% url 'product_category' %}" class="btn btn-secondary me-2">Hủy</a>
                 <button type="submit" class="btn btn-primary">Lưu</button>
-                <a href="/supplier" class="btn btn-secondary ms-2">Hủy</a>
             </div>
         </form>
     </div>

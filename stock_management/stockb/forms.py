@@ -1,5 +1,7 @@
 from django import forms
-from .models import StockOut, StockOutDetail, Product, ProductDetail, InventoryCheck, InventoryCheckDetail
+from .models import StockOut, StockOutDetail, Product, ProductDetail, InventoryCheck, InventoryCheckDetail, Unit, \
+    ProductCategory
+
 
 class StockOutForm(forms.ModelForm):
     class Meta:
@@ -101,6 +103,22 @@ StockInDetailFormSet = forms.inlineformset_factory(
     StockIn, StockInDetail, form=StockInDetailForm, extra=0, can_delete=True
 )
 
+
+class UnitForm(forms.ModelForm):
+    class Meta:
+        model = Unit
+        fields = ['unit_name', 'unit_symbol']
+        labels = {
+            'unit_name': 'Tên đơn vị',
+            'unit_symbol': 'Kí hiệu đơn vị',
+        }
+        widgets = {
+            'unit_name': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Nhập tên đơn vị', 'required': True}),
+            'unit_symbol': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Nhập kí hiệu đơn vị', 'required': True}),
+        }
+
 class InventoryCheckForm(forms.ModelForm):
     class Meta:
         model = InventoryCheck
@@ -152,3 +170,47 @@ class InventoryCheckDetailForm(forms.ModelForm):
 InventoryCheckDetailFormSet = forms.inlineformset_factory(
     InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=1, can_delete=True
 )
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            'product_name', 'description', 'purchase_price',
+            'selling_price', 'minimum_stock', 'inspection_time',
+            'category', 'unit', 'supplier'
+        ]
+
+        widgets = {
+            'product_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập tên sản phẩm'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Nhập mô tả sản phẩm', 'rows': 3}),
+            'purchase_price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': '0.01'}),
+            'selling_price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': '0.01'}),
+            'minimum_stock': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'inspection_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+        }
+
+    category = forms.ModelChoiceField(
+        queryset=ProductCategory.objects.all(),
+        empty_label="Chọn danh mục",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    unit = forms.ModelChoiceField(
+        queryset=Unit.objects.all(),
+        empty_label="Chọn đơn vị",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    supplier = forms.ModelChoiceField(
+        queryset=Supplier.objects.all(),
+        empty_label="Chọn nhà cung cấp",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+class ProductCategoryForm(forms.ModelForm):
+    class Meta:
+        model = ProductCategory
+        fields = ['category_name', 'description']
+
+        widgets = {
+            'category_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập tên danh mục'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập mô tả danh mục'}),
+        }
