@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F, Q
 from django.utils import timezone
 from django.contrib import messages
+from django.core.paginator import Paginator
 from unidecode import unidecode
 from .forms import InventoryCheckForm, InventoryCheckDetailFormSet
 from .forms import StockOutForm, StockOutDetailFormSet, StockOutDetailForm
@@ -93,7 +94,7 @@ def stock_out_update(request, pk=None):
                     'amount_paid': detail.amount_paid,
                 }
                 for detail in details
-            ], prefix='stockoutdetail_set')  # Thêm prefix
+            ], prefix='stockoutdetail_set')
         else:
             formset = StockOutDetailFormSet(prefix='stockoutdetail_set')
     else:
@@ -102,7 +103,7 @@ def stock_out_update(request, pk=None):
 
     if request.method == "POST":
         form = StockOutForm(request.POST, instance=stock_out if pk else None)
-        formset = StockOutDetailFormSet(request.POST, prefix='stockoutdetail_set')  # Thêm prefix
+        formset = StockOutDetailFormSet(request.POST, prefix='stockoutdetail_set')
 
         if form.is_valid() and formset.is_valid():
             stock_out = form.save(commit=False)
@@ -159,7 +160,7 @@ def stock_in_update(request):
 
 # View cho danh sách nhà cung cấp
 def supplier_list_view(request):
-    suppliers = Supplier.objects.all()  # Lấy tất cả nhà cung cấp từ CSDL
+    suppliers = Supplier.objects.all()
     context = {
         "title": "Danh sách nhà cung cấp",
         "suppliers": suppliers,
@@ -177,7 +178,6 @@ def supplier_create_view(request):
         supplier_notes = request.POST.get('notes')
         company_name = request.POST.get('company_name')
 
-        # Kiểm tra dữ liệu đầu vào
         missing_fields = []
         if not supplier_name:
             missing_fields.append("Tên nhà cung cấp")
@@ -190,15 +190,11 @@ def supplier_create_view(request):
 
         if missing_fields:
             messages.error(request, f'Vui lòng điền đầy đủ các trường bắt buộc: {", ".join(missing_fields)}!')
-            return render(request, 'supplier/supplier_create.html', {
-                'form_data': request.POST,
-            })
+            return render(request, 'supplier/supplier_create.html', {'form_data': request.POST})
 
-        # Kết hợp thông tin Công ty vào ghi chú (nếu có)
         if company_name:
             supplier_notes = f"Công ty: {company_name}\n{supplier_notes or ''}"
 
-        # Tạo nhà cung cấp mới
         try:
             Supplier.objects.create(
                 supplier_name=supplier_name,
@@ -215,14 +211,9 @@ def supplier_create_view(request):
             return redirect('supplier_list')
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
-            return render(request, 'supplier/supplier_create.html', {
-                'form_data': request.POST,
-            })
+            return render(request, 'supplier/supplier_create.html', {'form_data': request.POST})
 
-    return render(request, 'supplier/supplier_create.html', {
-        "title": "Tạo mới nhà cung cấp",
-        'form_data': {},
-    })
+    return render(request, 'supplier/supplier_create.html', {"title": "Tạo mới nhà cung cấp", 'form_data': {}})
 
 # View cho chỉnh sửa nhà cung cấp
 def supplier_update_view(request, id):
@@ -236,7 +227,6 @@ def supplier_update_view(request, id):
         supplier.notes = request.POST.get('notes')
         supplier.company_name = request.POST.get('company_name')
 
-        # Kiểm tra dữ liệu đầu vào
         missing_fields = []
         if not supplier.supplier_name:
             missing_fields.append("Tên nhà cung cấp")
@@ -251,7 +241,6 @@ def supplier_update_view(request, id):
             messages.error(request, f'Vui lòng điền đầy đủ các trường bắt buộc: {", ".join(missing_fields)}!')
             return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
 
-        # Lưu cập nhật
         try:
             supplier.update_at = timezone.now()
             supplier.save()
@@ -261,10 +250,7 @@ def supplier_update_view(request, id):
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
             return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
 
-    return render(request, 'supplier/supplier_update.html', {
-        'supplier': supplier,
-        'title': "Chỉnh sửa nhà cung cấp",
-    })
+    return render(request, 'supplier/supplier_update.html', {'supplier': supplier, 'title': "Chỉnh sửa nhà cung cấp"})
 
 # View cho xóa nhà cung cấp
 def supplier_delete_view(request, id):
@@ -273,10 +259,7 @@ def supplier_delete_view(request, id):
         supplier.delete()
         messages.success(request, 'Xóa nhà cung cấp thành công!')
         return redirect('supplier_list')
-    return render(request, 'supplier/supplier_confirm_delete.html', {
-        'supplier': supplier,
-        'title': "Xóa nhà cung cấp",
-    })
+    return render(request, 'supplier/supplier_confirm_delete.html', {'supplier': supplier, 'title': "Xóa nhà cung cấp"})
 
 def near_expiry_list_view(request):
     context = {"title": "Hàng gần đến ngày khuyến nghị"}
@@ -342,8 +325,18 @@ def employee_create(request):
 
 def inventory_check_list(request):
     inventory_checks = InventoryCheck.objects.all().order_by('-check_date')
+    if request.GET.get('search'):
+        search_text = unidecode(request.GET['search'].lower())
+        inventory_checks = inventory_checks.filter(
+            Q(employee__first_name__icontains=search_text) |
+            Q(employee__last_name__icontains=search_text) |
+            Q(id__icontains=search_text)
+        )
+    paginator = Paginator(inventory_checks, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
-        'inventory_checks': inventory_checks,
+        'inventory_checks': page_obj,
         'title': "Danh sách kiểm kê hàng hóa",
     }
     return render(request, 'inventory/inventory_check_list.html', context)
@@ -374,15 +367,18 @@ def inventory_check_update(request, pk=None):
                 inventory_check.check_date = timezone.now()
             inventory_check.save()
 
-            # Lưu formset
             instances = formset.save(commit=False)
             for instance in instances:
                 instance.save()
-                print(f"Saved InventoryCheckDetail: {instance}")
-
-            # Xử lý các chi tiết bị xóa
-            for obj in formset.deleted_objects:
-                obj.delete()
+                # Cập nhật remaining_quantity nếu thực tế > lý thuyết
+                if instance.actual_quantity > instance.theoretical_quantity:
+                    product_details = ProductDetail.objects.filter(product=instance.product)
+                    for detail in product_details:
+                        if detail.remaining_quantity < instance.actual_quantity - instance.theoretical_quantity:
+                            detail.remaining_quantity = instance.actual_quantity - instance.theoretical_quantity
+                            detail.save()
+                        break  # Chỉ cập nhật lô đầu tiên để đơn giản, có thể tối ưu thêm
+            formset.save()
 
             print("InventoryCheckDetails in DB:", inventory_check.details.all())
             messages.success(request, "Lưu kiểm kê thành công!")
@@ -397,19 +393,12 @@ def inventory_check_update(request, pk=None):
 
     product_details = {}
     for product in products:
-        details = ProductDetail.objects.filter(product=product).first()
-        if details:
-            product_details[product.id] = {
-                'product_batch': details.product_batch,
-                'remaining_quantity': details.remaining_quantity,
-                'import_date': details.import_date,
-            }
-        else:
-            product_details[product.id] = {
-                'product_batch': f'LOT00{product.id}',
-                'remaining_quantity': product.quantity,
-                'import_date': product.created_at,
-            }
+        total_remaining = ProductDetail.objects.filter(product=product).aggregate(total=Sum('remaining_quantity'))['total'] or product.quantity
+        product_details[product.id] = {
+            'product_batch': ProductDetail.objects.filter(product=product).first().product_batch if ProductDetail.objects.filter(product=product).exists() else f'LOT00{product.id}',
+            'remaining_quantity': total_remaining,
+            'import_date': ProductDetail.objects.filter(product=product).first().import_date if ProductDetail.objects.filter(product=product).exists() else product.created_at,
+        }
 
     context = {
         'title': 'Chỉnh sửa kiểm kê hàng hóa' if pk else 'Tạo mới kiểm kê hàng hóa',
@@ -424,10 +413,14 @@ def inventory_check_update(request, pk=None):
 def inventory_check_delete(request, pk):
     inventory_check = get_object_or_404(InventoryCheck, pk=pk)
     if request.method == "POST":
-        inventory_check.delete()
-        messages.success(request, "Xóa kiểm kê thành công!")
-        return redirect('inventory_check_list')
-    return render(request, 'inventory/inventory_check_list.html', {
-        'inventory_checks': InventoryCheck.objects.all().order_by('-check_date'),
-        'title': "Danh sách kiểm kê hàng hóa",
+        try:
+            inventory_check.delete()
+            messages.success(request, "Xóa kiểm kê thành công!")
+            return redirect('inventory_check_list')
+        except Exception as e:
+            messages.error(request, f"Có lỗi xảy ra khi xóa kiểm kê: {str(e)}")
+            return redirect('inventory_check_list')
+    return render(request, 'inventory/inventory_check_confirm_delete.html', {
+        'inventory_check': inventory_check,
+        'title': "Xóa kiểm kê hàng hóa",
     })

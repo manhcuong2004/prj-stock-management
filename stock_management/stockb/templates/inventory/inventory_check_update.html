@@ -16,6 +16,9 @@
         border-radius: 8px;
         padding: 1rem;
     }
+    .warning-text {
+        color: orange;
+    }
 </style>
 {% endblock %}
 
@@ -107,7 +110,7 @@
                                         <span class="discrepancy">0</span>
                                     </td>
                                     <td>
-                                        <input type="text" class="form-control notes" name="{{ detail_form.prefix }}-notes" value="{{ detail_form.initial.notes|default:detail_form.notes.value|default:'' }}">
+                                        <input type="text" class="form-control notes" name="{{ detail_form.prefix }}-notes" value="{{ detail_form.initial.notes|default:detail_form.notes.value|default:'' }}" placeholder="Ghi chú nếu vượt lý thuyết">
                                     </td>
                                     <td class="text-center">
                                         <input type="checkbox" name="{{ detail_form.prefix }}-DELETE" {% if detail_form.DELETE.value %}checked{% endif %} style="display: none;">
@@ -151,76 +154,79 @@
                         const productBatch = productSelect.options[productSelect.selectedIndex].dataset.batch || 'Rikaki';
                         const theoreticalQuantity = parseInt(productSelect.options[productSelect.selectedIndex].dataset.theoretical) || 0;
 
-                        if (productId) {
-                            const noProductMessage = document.getElementById('no-product-message');
-                            if (noProductMessage) {
-                                noProductMessage.style.display = 'none';
-                            }
-
-                            let table = document.querySelector('.table');
-                            if (!table) {
-                                const tableHTML = `
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Tên sản phẩm</th>
-                                                <th>Tên lô</th>
-                                                <th>Số lượng lý thuyết</th>
-                                                <th>Số lượng thực tế</th>
-                                                <th>Chênh lệch</th>
-                                                <th>Ghi chú</th>
-                                                <th>Xóa</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="product-list"></tbody>
-                                    </table>
-                                `;
-                                const summaryBox = document.querySelector('.summary-box');
-                                summaryBox.insertAdjacentHTML('afterbegin', tableHTML);
-                                table = document.querySelector('.table');
-                            }
-
-                            const tableBody = document.getElementById('product-list');
-                            const newRow = document.createElement('tr');
-                            newRow.classList.add('product-row');
-                            newRow.innerHTML = `
-                                <td>
-                                    <select name="inventorycheckdetail_set-${formIndex}-product" class="form-control">
-                                        <option value="${productId}" selected>${productName}</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    ${productBatch}
-                                    <input type="hidden" name="inventorycheckdetail_set-${formIndex}-product_batch" value="${productBatch}">
-                                </td>
-                                <td>
-                                    <span class="theoretical-quantity">${theoreticalQuantity}</span>
-                                    <input type="hidden" name="inventorycheckdetail_set-${formIndex}-theoretical_quantity" value="${theoreticalQuantity}">
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control actual-quantity" style="width: 100px;" name="inventorycheckdetail_set-${formIndex}-actual_quantity" value="${theoreticalQuantity}">
-                                </td>
-                                <td>
-                                    <span class="discrepancy">0</span>
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control notes" name="inventorycheckdetail_set-${formIndex}-notes" value="">
-                                </td>
-                                <td class="text-center">
-                                    <input type="checkbox" name="inventorycheckdetail_set-${formIndex}-DELETE" style="display: none;">
-                                    <i class="bi bi-x-lg delete-row"></i>
-                                </td>
-                            `;
-                            tableBody.appendChild(newRow);
-
-                            const totalForms = document.querySelector('#id_inventorycheckdetail_set-TOTAL_FORMS');
-                            totalForms.value = parseInt(totalForms.value) + 1;
-                            formIndex++;
-
-                            productSelect.value = '';
-                            updateRowDiscrepancies();
-                            updateSummary();
+                        if (!productId) {
+                            alert('Vui lòng chọn một sản phẩm trước khi thêm!');
+                            return;
                         }
+
+                        const noProductMessage = document.getElementById('no-product-message');
+                        if (noProductMessage) {
+                            noProductMessage.style.display = 'none';
+                        }
+
+                        let table = document.querySelector('.table');
+                        if (!table) {
+                            const tableHTML = `
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên sản phẩm</th>
+                                            <th>Tên lô</th>
+                                            <th>Số lượng lý thuyết</th>
+                                            <th>Số lượng thực tế</th>
+                                            <th>Chênh lệch</th>
+                                            <th>Ghi chú</th>
+                                            <th>Xóa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-list"></tbody>
+                                </table>
+                            `;
+                            const summaryBox = document.querySelector('.summary-box');
+                            summaryBox.insertAdjacentHTML('afterbegin', tableHTML);
+                            table = document.querySelector('.table');
+                        }
+
+                        const tableBody = document.getElementById('product-list');
+                        const newRow = document.createElement('tr');
+                        newRow.classList.add('product-row');
+                        newRow.innerHTML = `
+                            <td>
+                                <select name="inventorycheckdetail_set-${formIndex}-product" class="form-control">
+                                    <option value="${productId}" selected>${productName}</option>
+                                </select>
+                            </td>
+                            <td>
+                                ${productBatch}
+                                <input type="hidden" name="inventorycheckdetail_set-${formIndex}-product_batch" value="${productBatch}">
+                            </td>
+                            <td>
+                                <span class="theoretical-quantity">${theoreticalQuantity}</span>
+                                <input type="hidden" name="inventorycheckdetail_set-${formIndex}-theoretical_quantity" value="${theoreticalQuantity}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control actual-quantity" style="width: 100px;" name="inventorycheckdetail_set-${formIndex}-actual_quantity" value="${theoreticalQuantity}">
+                            </td>
+                            <td>
+                                <span class="discrepancy">0</span>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control notes" name="inventorycheckdetail_set-${formIndex}-notes" value="" placeholder="Ghi chú nếu vượt lý thuyết">
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="inventorycheckdetail_set-${formIndex}-DELETE" style="display: none;">
+                                <i class="bi bi-x-lg delete-row"></i>
+                            </td>
+                        `;
+                        tableBody.appendChild(newRow);
+
+                        const totalForms = document.querySelector('#id_inventorycheckdetail_set-TOTAL_FORMS');
+                        totalForms.value = parseInt(totalForms.value) + 1;
+                        formIndex++;
+
+                        productSelect.value = '';
+                        updateRowDiscrepancies();
+                        updateSummary();
                     });
 
                     document.addEventListener('click', function(event) {
@@ -254,11 +260,19 @@
                         document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
                             const theoretical = parseInt(row.querySelector('.theoretical-quantity').textContent) || 0;
                             const actual = parseInt(row.querySelector('.actual-quantity').value) || 0;
+                            if (actual < 0) {
+                                alert('Số lượng thực tế không thể âm!');
+                                row.querySelector('.actual-quantity').value = 0;
+                            }
                             const discrepancy = actual - theoretical;
                             row.querySelector('.discrepancy').textContent = discrepancy;
                             row.querySelector('.discrepancy').classList.remove('text-success', 'text-danger');
                             if (discrepancy > 0) {
                                 row.querySelector('.discrepancy').classList.add('text-success');
+                                row.querySelector('.notes').classList.add('warning-text');
+                                if (!row.querySelector('.notes').value.trim()) {
+                                    alert('Vui lòng ghi chú lý do khi số lượng thực tế vượt lý thuyết!');
+                                }
                             } else if (discrepancy < 0) {
                                 row.querySelector('.discrepancy').classList.add('text-danger');
                             }
@@ -300,6 +314,15 @@
                     document.addEventListener('DOMContentLoaded', function() {
                         updateRowDiscrepancies();
                         updateSummary();
+                    });
+
+                    // Kiểm tra trước khi gửi form
+                    document.getElementById('check-form').addEventListener('submit', function(event) {
+                        const rows = document.querySelectorAll('.product-row:not([style*="display: none"])');
+                        if (rows.length === 0) {
+                            alert('Vui lòng thêm ít nhất một sản phẩm trước khi lưu!');
+                            event.preventDefault();
+                        }
                     });
                 </script>
 

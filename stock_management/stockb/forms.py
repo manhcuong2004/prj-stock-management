@@ -1,5 +1,7 @@
 from django import forms
-from .models import StockOut, StockOutDetail, Product
+from django.db.models import Sum
+from .models import StockOut, StockOutDetail, Product, InventoryCheck, InventoryCheckDetail, ProductDetail
+
 
 class StockOutForm(forms.ModelForm):
     class Meta:
@@ -13,6 +15,7 @@ class StockOutForm(forms.ModelForm):
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'value': '0'}),
         }
+
 
 class StockOutDetailForm(forms.ModelForm):
     product = forms.ModelChoiceField(
@@ -28,12 +31,11 @@ class StockOutDetailForm(forms.ModelForm):
             'discount': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
+
 StockOutDetailFormSet = forms.inlineformset_factory(
-    StockOut, StockOutDetail, form=StockOutDetailForm, extra=1, can_delete=True
+    StockOut, StockOutDetail, form=StockOutDetailForm, extra=0, can_delete=True
 )
 
-from django import forms
-from .models import InventoryCheck, InventoryCheckDetail
 
 class InventoryCheckForm(forms.ModelForm):
     class Meta:
@@ -45,7 +47,33 @@ class InventoryCheckForm(forms.ModelForm):
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho kiểm kê'}),
         }
 
+
 class InventoryCheckDetailForm(forms.ModelForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get('product')
+        if not product:
+            raise forms.ValidationError("Vui lòng chọn sản phẩm trước khi nhập số lượng!")
+        return cleaned_data
+
+    def clean_actual_quantity(self):
+        actual = self.cleaned_data['actual_quantity']
+        if actual < 0:
+            raise forms.ValidationError("Số lượng thực tế không thể âm!")
+
+        # Kiểm tra nếu product đã được gán
+        product = self.cleaned_data.get('product') or getattr(self.instance, 'product', None)
+        if not product:
+            return actual  # Trả về actual nếu chưa có product, sẽ được xử lý ở clean()
+
+        theoretical = self.instance.theoretical_quantity or 0
+        max_quantity = ProductDetail.objects.filter(product=product).aggregate(total=Sum('remaining_quantity'))[
+                           'total'] or 0
+        if actual > max_quantity:
+            if not self.cleaned_data.get('notes', '').strip():
+                raise forms.ValidationError("Vui lòng ghi chú lý do khi số lượng thực tế vượt quá lý thuyết!")
+        return actual
+
     class Meta:
         model = InventoryCheckDetail
         fields = ['product', 'product_batch', 'theoretical_quantity', 'actual_quantity', 'notes']
@@ -57,31 +85,6 @@ class InventoryCheckDetailForm(forms.ModelForm):
             'notes': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-InventoryCheckDetailFormSet = forms.inlineformset_factory(
-    InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=1, can_delete=True
-)
-
-class InventoryCheckForm(forms.ModelForm):
-    class Meta:
-        model = InventoryCheck
-        fields = ['check_date', 'employee', 'notes']
-        widgets = {
-            'check_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'employee': forms.Select(attrs={'class': 'form-select'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho kiểm kê'}),
-        }
-
-class InventoryCheckDetailForm(forms.ModelForm):
-    class Meta:
-        model = InventoryCheckDetail
-        fields = ['product', 'product_batch', 'theoretical_quantity', 'actual_quantity', 'notes']
-        widgets = {
-            'product': forms.Select(attrs={'class': 'form-control'}),
-            'product_batch': forms.HiddenInput(),
-            'theoretical_quantity': forms.HiddenInput(),
-            'actual_quantity': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 100px;'}),
-            'notes': forms.TextInput(attrs={'class': 'form-control'}),
-        }
 
 InventoryCheckDetailFormSet = forms.inlineformset_factory(
     InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=1, can_delete=True
