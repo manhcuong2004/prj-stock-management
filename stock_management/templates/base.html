@@ -162,18 +162,25 @@
                 {%endblock%}
             </div>
         </div>
+
         <div class="d-flex align-items-center">
-            <div class="dropdown name-user">
-                <button class="dropdown-toggle  text-dark bg-transparent border-0" id="dropdownMenuButton1"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    VLXD Nam Đàng
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="/">Trang chủ</a></li>
-                    <li><a class="dropdown-item" href="#">Thông tin</a></li>
-                    <li><a class="dropdown-item" href="#">Đăng xuất</a></li>
-                </ul>
+            {% if user.is_authenticated %}
+                <div class="dropdown name-user">
+                    <button class="dropdown-toggle text-dark bg-transparent border-0" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ user.username }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/">Trang chủ</a></li>
+                        <li><a class="dropdown-item" href="#">Thông tin</a></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Đăng xuất</a></li>
+                    </ul>
+                </div>
+            {% else %}
+            <div class="name-user">
+                <a class="bg-transparent text-dark border-0 text-decoration-none" href="{% url 'login' %}">Đăng nhập</a>
             </div>
+            {% endif %}
         </div>
     </div>
 
@@ -189,14 +196,13 @@
         <a href="/units"><i class="bi bi-building"></i> Đơn vị</a>
         <a href="/stock-out"><i class="bi bi-truck"></i> Xuất kho</a>
         <a href="/stock-in"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
-        <a href="/employees"><i class="bi bi-person-badge"></i> Nhân viên</a>
         <a href="/supplier"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
         <a href="#" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false">
             <i class="bi bi-box-seam"></i> Kiểm tra sản phẩm
         </a>
         <div class="collapse ms-4" id="kiemkeSubmenu">
-            <a href="/near-expiry" class="submenu">Gần đến ngày khuyến nghị</a>
-            <a href="/low-stock" class="submenu">Gần hết trong kho</a>
+            <a href="/check/near-expiry" class="submenu">Gần đến ngày khuyến nghị</a>
+            <a href="/check/low-stock" class="submenu">Gần hết trong kho</a>
         </div>
         <a href="/inventory-check"><i class="bi bi-clipboard-check"></i>Kiểm kê</a>
         <a href="/report"><i class="bi bi-file-bar-graph"></i>Báo cáo</a>

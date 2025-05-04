@@ -62,6 +62,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.csrf',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
@@ -127,6 +128,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
-
-# LOGIN_URL = '/login/'  # URL của trang đăng nhập
-# LOGIN_REDIRECT_URL = '/stock-out/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login'
+LOGIN_URL = '/login/'

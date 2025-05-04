@@ -13,6 +13,9 @@ urlpatterns = [
     path('stock-out/update/<int:pk>/', views.stock_out_update, name='stock_out_update'),
     path('stock-in/', views.stock_in, name='stock_in'),
     path('stock-in/create', views.stock_in_update, name='stock_in_create'),
+    path('stock-in/update/<int:pk>/', views.stock_in_update, name='stock_in_update'),
+
+
     path('units/', views.units_view, name='units'),
     path('units/create/', views.create_unit, name='create_unit'),
     path('report/', views.report_overview, name='report'),
@@ -28,12 +31,10 @@ urlpatterns = [
     path('product/create', views.product_update, name='product_update'),
     path('product/detail', views.product_detail, name='product_detail'),
 
-    # Nhân viên
-    path('employees/', views.employee_list, name='employee_list'),
-    path('employees/create/', views.employee_create, name='employee_create'),
-
     path('inventory-check/', views.inventory_check_list, name='inventory_check_list'),
     path('inventory-check/create/', views.inventory_check_create, name='inventory_check_create'),
     path('inventory-check/update/<int:pk>/', views.inventory_check_update, name='inventory_check_update'),
     path('inventory-check/delete/<int:pk>/', views.inventory_check_delete, name='inventory_check_delete'),
+
+
 ]
