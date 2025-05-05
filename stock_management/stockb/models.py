@@ -240,10 +240,10 @@ class InventoryCheckDetail(models.Model):
         return f"{self.product.product_name} (Batch: {self.product_batch or 'N/A'}) - Check #{self.inventory_check.id}"
 
 class Notification(models.Model):
-    message = models.TextField()  # Nội dung thông báo
-    created_at = models.DateTimeField(default=timezone.now)  # Thời gian tạo
-    is_read = models.BooleanField(default=False)  # Trạng thái đã đọc/chưa đọc
-
+    message = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    is_read = models.BooleanField(default=False)
+    # employee = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return self.message
 
