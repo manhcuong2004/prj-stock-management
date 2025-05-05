@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import report_views, index, stock_in_views, stock_out_views, check_views, unit_views, product_category_views, product_views
+from .views import report_views, index, stock_in_views, stock_out_views, check_views, unit_views, product_category_views,\
+    product_views, inventory_check_views, supplier_views
 
 urlpatterns = [
     path('', index.home, name='home'),
@@ -9,8 +10,10 @@ urlpatterns = [
     path('login/', index.login_view, name='login'),
 
     # Nhà cung cấp
-    # path('supplier', views.supplier_list_view, name='supplier_list'),
-    # path('supplier/create', views.supplier_create_view, name='supplier_create'),
+    path('supplier', supplier_views.supplier_list_view, name='supplier_list'),
+    path('supplier/create', supplier_views.supplier_create_view, name='supplier_create'),
+    path('supplier/<int:id>/update/', supplier_views.supplier_update_view, name='supplier_update'),
+    path('supplier/<int:id>/delete/', supplier_views.supplier_delete_view, name='supplier_delete'),
 
     # Kiểm tra
     path('check/near-expiry', check_views.near_expiry_list_view, name='near_expiry_list'),
@@ -55,10 +58,10 @@ urlpatterns = [
     path('product-category/<int:pk>/delete/', product_category_views.product_category_delete, name='product_category_delete'),
 
     # Kiểm kê
-    # path('inventory-check/', views.inventory_check_list, name='inventory_check_list'),
-    # path('inventory-check/create/', views.inventory_check_create, name='inventory_check_create'),
-    # path('inventory-check/update/<int:pk>/', views.inventory_check_update, name='inventory_check_update'),
-    # path('inventory-check/delete/<int:pk>/', views.inventory_check_delete, name='inventory_check_delete'),
+    path('inventory-check/', inventory_check_views.inventory_check_list, name='inventory_check_list'),
+    path('inventory-check/create/', inventory_check_views.inventory_check_update, name='inventory_check_create'),
+    path('inventory-check/update/<int:pk>/', inventory_check_views.inventory_check_update, name='inventory_check_update'),
+    path('inventory-check/delete/<int:pk>/', inventory_check_views.inventory_check_delete, name='inventory_check_delete'),
 
     # Báo cáo
     path('report/', report_views.report_overview, name='report'),

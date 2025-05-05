@@ -18,13 +18,10 @@
             <a class="nav-link  {% if filter_type == 'all' %}active{% endif %}" href="?filter=all">Tất cả đơn hàng</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if filter_type == 'in_progress' %}active{% endif %}" href="?filter=in_progress">Đơn hàng đang xử lí</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if filter_type == 'cancel' %}active{% endif %}" href="?filter=cancel">Đơn hàng đã hủy</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link {% if filter_type == 'paid' %}active{% endif %}" href="?filter=paid">Đã thanh toán</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if filter_type == 'paid' %}active{% endif %}" href="?filter=partially_paid">Còn nợ</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if filter_type == 'unpaid' %}active{% endif %}" href="?filter=unpaid">Chưa thanh toán</a>
@@ -48,7 +45,6 @@
                 <th scope="col">Mã</th>
                 <th scope="col">Ngày tạo</th>
                 <th scope="col">Nhà cung cấp</th>
-                <th scope="col">Trạng thái đơn</th>
                 <th scope="col">Thanh toán</th>
                 <th scope="col">Tổng tiền</th>
                 <th scope="col">Thao tác</th>
@@ -60,15 +56,6 @@
                 <td>#{{item.id}}</td>
                 <td>{{item.import_date|date:"d/m/Y H:i A"}}</td>
                 <td>{{item.supplier}}</td>
-                <td>
-                  {% if item.import_status == "IN_PROGRESS" %}
-                    <span class="badge bg-warning">Đang xử lí</span>
-                  {% elif item.import_status == "COMPLETED" %}
-                    <span class="badge bg-success">Hoàn thành</span>
-                  {% else %}
-                    <span class="badge bg-danger">Đã hủy</span>
-                  {% endif %}
-                </td>
                 <td>
                   {% if item.payment_status == "PAID" %}
                     <span class="badge bg-success">Đã thanh toán</span>

@@ -4,7 +4,7 @@ from django.db.models import Sum, F, Q, Count
 from django.utils import timezone
 
 from ..forms import ProductForm
-from ..models import Product, StockIn, StockInDetail, ProductCategory, ProductDetail, Supplier
+from ..models import Product, ProductCategory, ProductDetail, Supplier
 
 
 def product_view(request):

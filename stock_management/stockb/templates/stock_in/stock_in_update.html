@@ -72,14 +72,6 @@
 
         <div class="mb-3 d-flex gap-2">
             <span class="badge {% if form.instance.pk %}
-                                    {% if form.import_status.value == 'IN_PROGRESS' %}bg-warning
-                                    {% elif form.import_status.value == 'COMPLETED' %}bg-success
-                                    {% else %}bg-danger
-                                    {% endif %}
-                                {% else %}bg-warning{% endif %} badge-status">
-                Trạng thái đơn hàng: {{ form.instance.get_import_status_display|default:'Đang xử lý' }}
-            </span>
-            <span class="badge {% if form.instance.pk %}
                                     {% if form.payment_status.value == 'PAID' %}bg-success
                                     {% elif form.payment_status.value == 'PARTIALLY_PAID' %}bg-warning
                                     {% else %}bg-danger
@@ -200,9 +192,6 @@
                         <div class="col-md-6">
                             <div class="summary-box">
                                 <div class="d-flex justify-content-between">
-                                    <span>Số lượng sản phẩm</span><span class="total-items">0</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
                                     <span>Tổng tiền hàng</span><span class="total-amount">0 đ</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
@@ -211,6 +200,26 @@
                                 <hr>
                                 <div class="d-flex justify-content-between fw-bold">
                                     <span>Tổng giá trị đơn hàng</span><span class="final-amount">0 đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Đã thanh toán</span>
+                                    <span>
+                                        {{ form.amount_paid }}
+                                        <span class="amount-paid-display">{{ form.amount_paid.value|default:'0'|intcomma }} đ</span>
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Còn nợ</span>
+                                    <span class="remaining-debt">
+                                        {% if form.instance.pk %}
+                                            {{ form.instance.remaining_debt|floatformat:0|intcomma|default:'0' }} đ
+                                        {% else %}
+                                            0 đ
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Thực nhận</span><span class="actual-received">{{ form.amount_paid.value|default:'0'|intcomma }} đ</span>
                                 </div>
                             </div>
                         </div>
@@ -228,10 +237,6 @@
                     </div>
                     <div class="summary-box">
                         <div class="mb-2">
-                            <label class="form-label">Trạng thái đơn hàng</label>
-                            {{ form.import_status }}
-                        </div>
-                        <div>
                             <label class="form-label">Trạng thái thanh toán</label>
                             {{ form.payment_status }}
                         </div>
@@ -466,42 +471,53 @@
             }
         });
 
+        document.addEventListener('input', function(event) {
+            if (event.target.classList.contains('amount-paid')) {
+                updateSummary();
+            }
+        });
+
         function updateSummary() {
-            let totalItems = 0;
-            let totalAmount = 0;
-            let totalDiscount = 0;
+        let totalAmount = 0;
+        let totalDiscount = 0;
 
-            document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
-                const quantityInput = row.querySelector('input[name$="-quantity"]');
-                const priceElement = row.querySelector('.price');
-                const discountInput = row.querySelector('input[name$="-discount"]');
+        document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
+            const quantityInput = row.querySelector('input[name$="-quantity"]');
+            const priceElement = row.querySelector('.price');
+            const discountInput = row.querySelector('input[name$="-discount"]');
 
-                if (!quantityInput || !priceElement || !discountInput) {
-                    return;
-                }
+            if (!quantityInput || !priceElement || !discountInput) {
+                return;
+            }
 
-                const quantity = parseFloat(quantityInput.value) || 0;
-                const price = parseFloat(priceElement.dataset.price) || 0;
-                const discount = parseFloat(discountInput.value) || 0;
-                const total = quantity * price * (1 - discount / 100);
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceElement.dataset.price) || 0;
+            const discount = parseFloat(discountInput.value) || 0;
+            const total = quantity * price * (1 - discount / 100);
 
-                totalItems += quantity;
-                totalAmount += quantity * price;
-                totalDiscount += quantity * price * (discount / 100);
-            });
+            totalAmount += quantity * price;
+            totalDiscount += quantity * price * (discount / 100);
+        });
 
-            const finalAmount = totalAmount - totalDiscount;
+        const finalAmount = totalAmount - totalDiscount;
+        const amountPaidInput = document.querySelector('.amount-paid');
+        const amountPaid = amountPaidInput ? (parseFloat(amountPaidInput.value) || 0) : 0;
+        const remainingDebt = finalAmount - amountPaid;
 
-            const totalItemsElement = document.querySelector('.summary-box .total-items');
-            const totalAmountElement = document.querySelector('.summary-box .total-amount');
-            const totalDiscountElement = document.querySelector('.summary-box .total-discount');
-            const finalAmountElement = document.querySelector('.summary-box .final-amount');
+        const totalAmountElement = document.querySelector('.summary-box .total-amount');
+        const totalDiscountElement = document.querySelector('.summary-box .total-discount');
+        const finalAmountElement = document.querySelector('.summary-box .final-amount');
+        const amountPaidDisplayElement = document.querySelector('.summary-box .amount-paid-display');
+        const remainingDebtElement = document.querySelector('.summary-box .remaining-debt');
+        const actualReceivedElement = document.querySelector('.summary-box .actual-received');
 
-            if (totalItemsElement) totalItemsElement.textContent = totalItems;
-            if (totalAmountElement) totalAmountElement.textContent = totalAmount.toLocaleString('vi-VN') + ' đ';
-            if (totalDiscountElement) totalDiscountElement.textContent = totalDiscount.toLocaleString('vi-VN') + ' đ';
-            if (finalAmountElement) finalAmountElement.textContent = finalAmount.toLocaleString('vi-VN') + ' đ';
-        }
+        if (totalAmountElement) totalAmountElement.textContent = totalAmount.toLocaleString('vi-VN') + ' đ';
+        if (totalDiscountElement) totalDiscountElement.textContent = totalDiscount.toLocaleString('vi-VN') + ' đ';
+        if (finalAmountElement) finalAmountElement.textContent = finalAmount.toLocaleString('vi-VN') + ' đ';
+        if (amountPaidDisplayElement) amountPaidDisplayElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
+        if (remainingDebtElement) remainingDebtElement.textContent = remainingDebt.toLocaleString('vi-VN') + ' đ';
+        if (actualReceivedElement) actualReceivedElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
+    }
 
         document.addEventListener('DOMContentLoaded', function() {
             resetProductInputs();

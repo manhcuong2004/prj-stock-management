@@ -44,8 +44,8 @@ class Supplier(models.Model):
 class Product(models.Model):
     product_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
-    selling_price = models.DecimalField(max_digits=10, decimal_places=2)
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=0)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=0)
     minimum_stock = models.IntegerField(default=0)
     inspection_time = models.DateTimeField()
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
@@ -77,22 +77,12 @@ class StockIn(models.Model):
         ('PAID', 'Đã thanh toán'),
         ('PARTIALLY_PAID', 'Còn nợ'),
     ]
-    IMPORT_STATUS_CHOICES = [
-        ('IN_PROGRESS', 'Đang xử lí'),
-        ('COMPLETED', 'Completed'),
-        ('CANCELLED', 'Cancelled'),
-    ]
     import_date = models.DateTimeField()
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
         default='UNPAID'
-    )
-    import_status = models.CharField(
-        max_length=20,
-        choices=IMPORT_STATUS_CHOICES,
-        default='IN_PROGRESS'
     )
     notes = models.TextField(blank=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -107,26 +97,16 @@ class StockOut(models.Model):
         ('PARTIALLY_PAID', 'Còn nợ'),
         ('PAID', 'Đã thanh toán'),
     ]
-    EXPORT_STATUS_CHOICES = [
-        ('IN_PROGRESS', 'Đang xử lí'),
-        ('COMPLETED', 'Đã hoàn thành'),
-        ('CANCELLED', 'Đã hủy'),
-    ]
     export_date = models.DateTimeField()
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
         default='UNPAID'
     )
-    export_status = models.CharField(
-        max_length=20,
-        choices=EXPORT_STATUS_CHOICES,
-        default='IN_PROGRESS'
-    )
     notes = models.TextField(blank=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    amount_paid = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -202,7 +182,7 @@ class StockOutDetail(models.Model):
     product_detail= models.ForeignKey(ProductDetail,
                                       on_delete=models.CASCADE,
                                       related_name='product_details')
-    amount_paid = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
     discount = models.DecimalField(max_digits=5,
                                    decimal_places=2,
                                    default=0.00)
@@ -233,10 +213,10 @@ class InventoryCheck(models.Model):
 class InventoryCheckDetail(models.Model):
     inventory_check = models.ForeignKey(InventoryCheck, on_delete=models.CASCADE, related_name='details')
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
-    product_batch = models.CharField(max_length=100, blank=True)  # Lô hàng (nếu có)
-    theoretical_quantity = models.IntegerField()  # Số lượng lý thuyết
-    actual_quantity = models.IntegerField()  # Số lượng thực tế
-    discrepancy = models.IntegerField(editable=False)  # Chênh lệch
+    product_batch = models.ForeignKey('ProductDetail', on_delete=models.CASCADE)
+    theoretical_quantity = models.IntegerField()
+    actual_quantity = models.IntegerField()
+    discrepancy = models.IntegerField(editable=False)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

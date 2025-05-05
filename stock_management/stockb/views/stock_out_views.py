@@ -17,10 +17,8 @@ def stock_out(request):
     filter_type = request.GET.get('filter', 'all')
     search_text = request.GET.get('search', '')
 
-    if filter_type == 'in_progress':
-        stock_outs = stock_outs.filter(export_status='IN_PROGRESS')
-    elif filter_type == 'cancel':
-        stock_outs = stock_outs.filter(export_status='CANCELLED')
+    if filter_type == 'partially_paid':
+        stock_outs = stock_outs.filter(payment_status='PARTIALLY_PAID')
     elif filter_type == 'paid':
         stock_outs = stock_outs.filter(payment_status='PAID')
     elif filter_type == 'unpaid':
@@ -61,7 +59,6 @@ def stock_out(request):
             'export_date': stock_out.export_date,
             'customer': f"{stock_out.customer.first_name} {stock_out.customer.last_name}",
             'payment_status': stock_out.payment_status,
-            'export_status': stock_out.export_status,
             'total_amount': total_amount,
         })
     context = {

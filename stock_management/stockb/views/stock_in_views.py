@@ -17,10 +17,8 @@ def stock_in(request):
     filter_type = request.GET.get('filter', 'all')
     search_text = request.GET.get('search', '')
 
-    if filter_type == 'in_progress':
-        stock_ins = stock_ins.filter(import_status='IN_PROGRESS')
-    elif filter_type == 'cancel':
-        stock_ins = stock_ins.filter(import_status='CANCELLED')
+    if filter_type == 'partially_paid':
+        stock_ins = stock_ins.filter(payment_status='PARTIALLY_PAID')
     elif filter_type == 'paid':
         stock_ins = stock_ins.filter(payment_status='PAID')
     elif filter_type == 'unpaid':
@@ -42,7 +40,6 @@ def stock_in(request):
             'import_date': stock_in.import_date,
             'supplier': stock_in.supplier.company_name,
             'payment_status': stock_in.payment_status,
-            'import_status': stock_in.import_status,
             'total_amount': total_amount,
         })
     context = {

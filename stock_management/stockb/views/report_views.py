@@ -198,7 +198,7 @@ def ajax_dashboard_stats(request):
     )['total'] or 0
 
     no_phai_tra = StockInDetail.objects.filter(
-        import_record__payment_status='UNPAID',
+        import_record__payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
         import_record__import_date__range=(start_date, end_date)
     ).aggregate(
         total=Sum(
@@ -210,7 +210,7 @@ def ajax_dashboard_stats(request):
     )['total'] or 0
 
     no_phai_thu = StockOutDetail.objects.filter(
-        export_record__payment_status='UNPAID',
+        export_record__payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
         export_record__export_date__range=(start_date, end_date)
     ).aggregate(
         total=Sum(

@@ -6,12 +6,11 @@ from .models import StockOut, StockOutDetail, Product, ProductDetail, InventoryC
 class StockOutForm(forms.ModelForm):
     class Meta:
         model = StockOut
-        fields = ['notes', 'employee', 'customer', 'export_status', 'payment_status', 'amount_paid']
+        fields = ['notes', 'employee', 'customer', 'payment_status', 'amount_paid']
         widgets = {
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn hàng'}),
             'employee': forms.Select(attrs={'class': 'form-select'}),
             'customer': forms.Select(attrs={'class': 'form-select'}),
-            'export_status': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control amount-paid', 'min': '0', 'value': '0'}),
         }
@@ -61,13 +60,13 @@ from .models import StockIn, StockInDetail, Product, Supplier, User
 class StockInForm(forms.ModelForm):
     class Meta:
         model = StockIn
-        fields = ['notes', 'employee', 'supplier', 'import_status', 'payment_status']
+        fields = ['notes', 'employee', 'supplier', 'payment_status', 'amount_paid']
         widgets = {
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn nhập kho'}),
             'employee': forms.Select(attrs={'class': 'form-select'}),
             'supplier': forms.Select(attrs={'class': 'form-select'}),
-            'import_status': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
+            'amount_paid': forms.NumberInput(attrs={'class': 'form-control amount-paid', 'min': '0', 'value': '0'}),
         }
 
 class StockInDetailForm(forms.ModelForm):
@@ -121,31 +120,6 @@ class UnitForm(forms.ModelForm):
                 attrs={'class': 'form-control', 'placeholder': 'Nhập kí hiệu đơn vị', 'required': True}),
         }
 
-class InventoryCheckForm(forms.ModelForm):
-    class Meta:
-        model = InventoryCheck
-        fields = ['check_date', 'employee', 'notes']
-        widgets = {
-            'check_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'employee': forms.Select(attrs={'class': 'form-select'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho kiểm kê'}),
-        }
-
-class InventoryCheckDetailForm(forms.ModelForm):
-    class Meta:
-        model = InventoryCheckDetail
-        fields = ['product', 'product_batch', 'theoretical_quantity', 'actual_quantity', 'notes']
-        widgets = {
-            'product': forms.Select(attrs={'class': 'form-control'}),
-            'product_batch': forms.HiddenInput(),
-            'theoretical_quantity': forms.HiddenInput(),
-            'actual_quantity': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 100px;'}),
-            'notes': forms.TextInput(attrs={'class': 'form-control'}),
-        }
-
-InventoryCheckDetailFormSet = forms.inlineformset_factory(
-    InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=1, can_delete=True
-)
 
 class InventoryCheckForm(forms.ModelForm):
     class Meta:
@@ -158,19 +132,46 @@ class InventoryCheckForm(forms.ModelForm):
         }
 
 class InventoryCheckDetailForm(forms.ModelForm):
+    product = forms.ModelChoiceField(
+        queryset=Product.objects.all(),
+        widget=forms.HiddenInput(),
+        required=True
+    )
+    product_batch = forms.ModelChoiceField(
+        queryset=ProductDetail.objects.all(),
+        widget=forms.HiddenInput(),
+        required=True
+    )
+
     class Meta:
         model = InventoryCheckDetail
         fields = ['product', 'product_batch', 'theoretical_quantity', 'actual_quantity', 'notes']
         widgets = {
-            'product': forms.Select(attrs={'class': 'form-control'}),
-            'product_batch': forms.HiddenInput(),
             'theoretical_quantity': forms.HiddenInput(),
-            'actual_quantity': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 100px;'}),
+            'actual_quantity': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 100px;', 'min': '0'}),
             'notes': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get('product')
+        product_batch = cleaned_data.get('product_batch')
+        actual_quantity = cleaned_data.get('actual_quantity')
+
+        if product and product_batch:
+            if product_batch.product != product:
+                raise forms.ValidationError("Lô sản phẩm không thuộc sản phẩm đã chọn.")
+            cleaned_data['theoretical_quantity'] = product_batch.remaining_quantity
+        else:
+            raise forms.ValidationError("Vui lòng chọn sản phẩm và lô sản phẩm.")
+
+        if actual_quantity is None:
+            raise forms.ValidationError("Số lượng thực tế không được để trống.")
+
+        return cleaned_data
+
 InventoryCheckDetailFormSet = forms.inlineformset_factory(
-    InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=1, can_delete=True
+    InventoryCheck, InventoryCheckDetail, form=InventoryCheckDetailForm, extra=0, can_delete=True
 )
 
 class ProductForm(forms.ModelForm):
