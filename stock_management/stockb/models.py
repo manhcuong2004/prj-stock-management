@@ -59,6 +59,7 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+
 class Customer(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -70,6 +71,8 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
 
 class StockIn(models.Model):
     PAYMENT_STATUS_CHOICES = [('UNPAID', 'Chưa thanh toán'), ('PAID', 'Đã thanh toán'), ('PARTIALLY_PAID', 'Còn nợ')]

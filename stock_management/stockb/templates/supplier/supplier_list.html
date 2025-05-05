@@ -71,6 +71,12 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
+
+                {% if suppliers.has_other_pages %}
+                    {% include 'Pagination/pagination.html' with page_obj=suppliers %}
+                {% endif %}
+            </div>
         </div>
     </div>
 {% endblock %}

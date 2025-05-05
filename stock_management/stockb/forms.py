@@ -1,6 +1,8 @@
 from django import forms
 from django.db.models import Sum
-from .models import StockOut, StockOutDetail, Product, InventoryCheck, InventoryCheckDetail, ProductDetail, Unit
+from .models import StockOut, StockOutDetail, Product, InventoryCheck, InventoryCheckDetail, ProductDetail, Unit, \
+    Customer
+
 
 class StockOutForm(forms.ModelForm):
     class Meta:
@@ -13,6 +15,39 @@ class StockOutForm(forms.ModelForm):
             'export_status': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'value': '0'}),
+        }
+
+
+class CustomerForm(forms.ModelForm):
+    date_of_birth = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label='Ngày sinh'
+    )
+
+    gender = forms.ChoiceField(
+        choices=[('M', 'Nam'), ('F', 'Nữ'), ('O', 'Khác')],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Giới tính'
+    )
+
+    class Meta:
+        model = Customer
+        fields = ['first_name', 'last_name', 'email', 'phone', 'address']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tên khách hàng'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số điện thoại'}),
+            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Địa chỉ'}),
+        }
+        labels = {
+            'first_name': 'Tên khách hàng',
+            'last_name': 'Họ',
+            'email': 'Email',
+            'phone': 'Số điện thoại',
+            'address': 'Địa chỉ',
         }
 
 
