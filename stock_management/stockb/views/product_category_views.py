@@ -1,11 +1,12 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 from ..forms import ProductCategoryForm
 from ..models import Product, StockIn, StockInDetail, ProductCategory, ProductDetail
 from django.db.models import Sum, F, Q, Count
 
-
+@login_required
 def product_category_view(request):
     categories = ProductCategory.objects.all().order_by('category_name')
     search_text = request.GET.get('search', '').strip()
@@ -31,7 +32,7 @@ def product_category_view(request):
         "filter_product_status": filter_product_status,
     }
     return render(request, 'product_category/product_category_list.html', context)
-
+@login_required
 def product_category_create(request):
     form = ProductCategoryForm()
 
@@ -49,7 +50,7 @@ def product_category_create(request):
         "form": form,
     }
     return render(request, 'product_category/product_category_update.html', context)
-
+@login_required
 def product_category_detail(request, pk):
     category = get_object_or_404(ProductCategory, pk=pk)
     products = Product.objects.filter(category=category)
@@ -59,7 +60,7 @@ def product_category_detail(request, pk):
         "products": products,
     }
     return render(request, 'product_category/product_category_detail.html', context)
-
+@login_required
 def product_category_update(request, pk):
     category = get_object_or_404(ProductCategory, pk=pk)
     form = ProductCategoryForm(instance=category)
@@ -79,7 +80,7 @@ def product_category_update(request, pk):
         "category": category,
     }
     return render(request, 'product_category/product_category_update.html', context)
-
+@login_required
 def product_category_delete(request, pk):
     category = get_object_or_404(ProductCategory, pk=pk)
     if request.method == "POST":

@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum, F, Q, Count
 from django.utils import timezone
@@ -6,7 +7,7 @@ from django.utils import timezone
 from ..forms import ProductForm
 from ..models import Product, ProductCategory, ProductDetail, Supplier, Notification
 
-
+@login_required
 def product_view(request):
     products = Product.objects.all().order_by('product_name')
 
@@ -46,7 +47,7 @@ def product_view(request):
     }
     return render(request, 'product/product_list.html', context)
 
-
+@login_required
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product_details = ProductDetail.objects.filter(product=product).select_related('product__category', 'product__unit').order_by('status')
@@ -93,7 +94,7 @@ def product_update(request, pk=None):
         "form": form,
     }
     return render(request, 'product/product_update.html', context)
-
+@login_required
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
@@ -105,7 +106,7 @@ def product_delete(request, pk):
         Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('product')
     return redirect('product')
-
+@login_required
 def toggle_product_detail_status(request, pk):
     if request.method == 'POST':
         product_detail = get_object_or_404(ProductDetail, pk=pk)
@@ -121,7 +122,7 @@ def toggle_product_detail_status(request, pk):
     messages.error(request, 'Yêu cầu không hợp lệ.')
     product_detail = get_object_or_404(ProductDetail, pk=pk)
     return redirect('product_detail', pk=product_detail.product.id)
-
+@login_required
 def edit_product_detail(request, pk):
     if request.method == 'POST':
         product_detail = get_object_or_404(ProductDetail, pk=pk)
@@ -139,7 +140,7 @@ def edit_product_detail(request, pk):
     messages.error(request, 'Yêu cầu không hợp lệ.')
     product_detail = get_object_or_404(ProductDetail, pk=pk)
     return redirect('product_detail', pk=product_detail.product.id)
-
+@login_required
 def delete_product_detail(request, pk):
     if request.method == 'POST':
         product_detail = get_object_or_404(ProductDetail, pk=pk)

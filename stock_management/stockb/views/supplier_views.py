@@ -1,10 +1,11 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 
 from ..models import  Supplier
 
-
+@login_required
 def supplier_list_view(request):
     suppliers = Supplier.objects.all()
     context = {
@@ -12,7 +13,7 @@ def supplier_list_view(request):
         "suppliers": suppliers,
     }
     return render(request, 'supplier/supplier_list.html', context)
-
+@login_required
 def supplier_create_view(request):
     if request.method == 'POST':
         supplier_name = request.POST.get('supplier_name')
@@ -59,7 +60,7 @@ def supplier_create_view(request):
             return render(request, 'supplier/supplier_create.html', {'form_data': request.POST})
 
     return render(request, 'supplier/supplier_create.html', {"title": "Tạo mới nhà cung cấp", 'form_data': {}})
-
+@login_required
 def supplier_update_view(request, id):
     supplier = get_object_or_404(Supplier, id=id)
     if request.method == 'POST':
@@ -95,7 +96,7 @@ def supplier_update_view(request, id):
             return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
 
     return render(request, 'supplier/supplier_update.html', {'supplier': supplier, 'title': "Chỉnh sửa nhà cung cấp"})
-
+@login_required
 def supplier_delete_view(request, id):
     supplier = get_object_or_404(Supplier, id=id)
     if request.method == 'POST':

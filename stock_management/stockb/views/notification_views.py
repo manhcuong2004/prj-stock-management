@@ -1,8 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
 from ..models import Notification
 
-
+@login_required
 def get_notifications(request):
     unread_count = Notification.objects.filter(is_read=False).count()
     notifications = Notification.objects.all().order_by('-created_at')[:50]
@@ -15,7 +16,7 @@ def get_notifications(request):
         for notification in notifications
     ]
     return JsonResponse({'notifications': data, 'unread_count': unread_count})
-
+@login_required
 def mark_notifications_as_read(request):
     if request.method == 'POST':
         Notification.objects.filter(is_read=False).update(is_read=True)

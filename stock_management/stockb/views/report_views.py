@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import DecimalField
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -7,7 +8,7 @@ from django.db.models import Sum, F, ExpressionWrapper
 from django.utils import timezone
 
 from ..models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductCategory, ProductDetail
-
+@login_required
 def report_overview(request):
     today = timezone.now()
     start_date = today.replace(day=1)
@@ -152,7 +153,7 @@ def report_overview(request):
         'inventory_trend_data': months,
     }
     return render(request, 'report/overview.html', context)
-
+@login_required
 def ajax_dashboard_stats(request):
     date_range = request.GET.get('dateRange')
     try:
