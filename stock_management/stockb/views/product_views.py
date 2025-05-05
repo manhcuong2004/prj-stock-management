@@ -4,7 +4,7 @@ from django.db.models import Sum, F, Q, Count
 from django.utils import timezone
 
 from ..forms import ProductForm
-from ..models import Product, ProductCategory, ProductDetail, Supplier
+from ..models import Product, ProductCategory, ProductDetail, Supplier, Notification
 
 
 def product_view(request):
@@ -80,6 +80,10 @@ def product_update(request, pk=None):
                 product.created_at = timezone.now()
             product.save()
             messages.success(request, "Đã lưu sản phẩm thành công!")
+            action = "thêm" if not pk else "cập nhật"
+            message = f"NV001 đã {action} sản phẩm {product.product_name} thành công!"
+            messages.success(request, message)
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             return redirect('product')
         else:
             messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.")
@@ -93,15 +97,18 @@ def product_update(request, pk=None):
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
+        product_name = product.product_name
         product.delete()
         messages.success(request, "Đã xóa sản phẩm thành công!")
+        message = f"NV001 đã xóa sản phẩm {product_name} thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('product')
     return redirect('product')
 
 def toggle_product_detail_status(request, pk):
     if request.method == 'POST':
         product_detail = get_object_or_404(ProductDetail, pk=pk)
-        # Toggle trạng thái
         if product_detail.status == 'ACTIVE':
             product_detail.status = 'UNACTIVE'
             messages.success(request, f'Lô hàng {product_detail.product_batch} đã được tắt kích hoạt.')

@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import report_views, index, stock_in_views, stock_out_views, check_views, unit_views, product_category_views,\
-    product_views, inventory_check_views, supplier_views
+    product_views, inventory_check_views, supplier_views, notification_views
 
 urlpatterns = [
     path('', index.home, name='home'),
@@ -69,4 +69,8 @@ urlpatterns = [
     # Báo cáo
     path('report/', report_views.report_overview, name='report'),
     path('report/ajax/', report_views.ajax_dashboard_stats, name='ajax_dashboard_stats'),
+
+    # Thông báo
+    path('notifications/', notification_views.get_notifications, name='get_notifications'),
+    path('notifications/mark-as-read/', notification_views.mark_notifications_as_read, name='mark_notifications_as_read'),
 ]
