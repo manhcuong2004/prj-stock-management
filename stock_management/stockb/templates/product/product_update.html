@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{title}}
+{% endblock %}
+{% block content %}
+    <div class="mb-4">
+      <h5>Tạo mới sản phẩm</h5>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <form method="POST">
+            {% csrf_token %}
+
+            <h6 class="mb-3">Thông tin sản phẩm</h6>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="product_name" class="form-label">Tên sản phẩm</label>
+                    <input type="text" class="form-control" id="product_name" name="product_name" placeholder="Nhập tên sản phẩm">
+                </div>
+                <div class="col-md-6">
+                    <label for="unit" class="form-label">Đơn vị tính</label>
+                    <input type="text" class="form-control" id="unit" name="unit" placeholder="VD: Cái, Bao...">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplier" class="form-label">Nhà cung cấp</label>
+                    <input type="text" class="form-control" id="supplier" name="supplier" placeholder="Nhập tên nhà cung cấp">
+                </div>
+                <div class="col-md-6">
+                    <label for="category" class="form-label">Danh mục sản phẩm</label>
+                    <input type="text" class="form-control" id="category" name="category" placeholder="Nhập danh mục">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="description" class="form-label">Mô tả sản phẩm</label>
+                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
+            </div>
+
+            <h6 class="mb-3">Giá sản phẩm</h6>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="import_price" class="form-label">Giá nhập vào</label>
+                    <input type="number" class="form-control" id="import_price" name="import_price" placeholder="Giá nhập">
+                </div>
+                <div class="col-md-6">
+                    <label for="sale_price" class="form-label">Giá bán ra</label>
+                    <input type="number" class="form-control" id="sale_price" name="sale_price" placeholder="Giá bán">
+                </div>
+            </div>
+
+            <h6 class="mb-3">Thông tin kiểm tra & dự trù</h6>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="check_interval" class="form-label">Thời gian khuyến nghị kiểm tra</label>
+                    <input type="text" class="form-control" id="check_interval" name="check_interval" placeholder="VD: 6 tháng">
+                </div>
+                <div class="col-md-6">
+                    <label for="threshold" class="form-label">Mức báo dự trù</label>
+                    <input type="number" class="form-control" id="threshold" name="threshold" placeholder="VD: 100">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="/product" class="btn btn-secondary ms-2">Hủy</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

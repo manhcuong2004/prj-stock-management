@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5>Danh sách nhà cung cấp</h5>
+        <a href="{% url 'supplier_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Tạo nhà cung cấp
+        </a>
+    </div>
+
+    <!-- Hiển thị thông báo -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="container bg-white p-4 rounded shadow">
+        <div class="input-group mb-4">
+            <input type="text" class="form-control" placeholder="Tìm kiếm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Tên nhà cung cấp</th>
+                        <th scope="col">Tên công ty</th>
+                        <th scope="col">Mã thuế</th>
+                        <th scope="col">Số điện thoại</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Địa chỉ</th>
+                        <th scope="col">Chỉnh sửa</th>
+                        <th scope="col">Xóa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                        <tr>
+                            <td>{{ supplier.supplier_name }}</td>
+                            <td>
+                                {% if supplier.supplier_notes %}
+                                    {% if "Công ty: " in supplier.supplier_notes %}
+                                        {{ supplier.supplier_notes|slice:":10"|cut:"Công ty: " }}
+                                    {% else %}
+                                        {{ supplier.supplier_notes }}
+                                    {% endif %}
+                                {% else %}
+                                    Không có
+                                {% endif %}
+                            </td>
+                            <td>{{ supplier.tax_code }}</td>
+                            <td>{{ supplier.mobile_phone }}</td>
+                            <td>{{ supplier.email }}</td>
+                            <td>{{ supplier.address }}</td>
+                            <td>
+                                <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-warning btn-sm">Chỉnh sửa</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8">Không có nhà cung cấp nào.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

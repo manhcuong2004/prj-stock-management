@@ -1,107 +1,81 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% block title %}
-Thêm nhân viên mới - STOCKB
+    {{title}}
 {% endblock %}
-
-{% block breadcrumb_items %}
-<li class="breadcrumb-item"><a href="{% url 'employee_list' %}">Danh mục nhân viên</a></li>
-<li class="breadcrumb-item active" aria-current="page">Thêm nhân viên mới</li>
-{% endblock %}
-
 {% block content %}
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="mb-0">Hồ sơ nhân viên</h3>
-        <div>
-            <a href="{% url 'employee_list' %}" class="btn btn-secondary">Quay trở lại</a>
-            <button type="submit" form="employeeForm" class="btn btn-primary">Lưu</button>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Tạo mới nhân viên</h5>
     </div>
-    <div class="card-body">
-        <form id="employeeForm" method="post" action="#">
+    <div class="container bg-white p-4 rounded shadow">
+        <h5 class="mb-4">Thông tin nhân viên</h5>
+        <p class="text-muted mb-4">Vui lòng cung cấp các thông tin về nhà nhân viên sẽ tạo</p>
+
+        <form method="POST">
             {% csrf_token %}
-
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Thông tin cá nhân</h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplier_name" class="form-label">Tên nhân viên</label>
+                    <input type="text" class="form-control" id="supplier_name" name="supplier_name" placeholder="Têm nhân viên">
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="first_name">Tên</label>
-                                <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Nhập tên nhân viên">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="last_name">Họ</label>
-                                <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Nhập họ nhân viên">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="birth_date">Ngày sinh</label>
-                                <input type="date" id="birth_date" name="birth_date" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="gender">Giới tính</label>
-                                <select id="gender" name="gender" class="form-control">
-                                    <option value="M">Nam</option>
-                                    <option value="F">Nữ</option>
-                                    <option value="O">Khác</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="phone_number">Số điện thoại</label>
-                                <input type="text" id="phone_number" name="phone_number" class="form-control" placeholder="Nhập số điện thoại">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email" class="form-control" placeholder="Nhập địa chỉ email">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="role">Vai trò</label>
-                                <input type="text" id="role" name="role" class="form-control" placeholder="Nhập vai trò">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="password">Mật khẩu</label>
-                                <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label for="address">Địa chỉ</label>
-                                <textarea id="address" name="address" class="form-control" rows="3" placeholder="Nhập địa chỉ"></textarea>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6">
+                    <label for="company_name" class="form-label">Họ</label>
+                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Họ">
                 </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="tax_code" class="form-label">Ngày sinh</label>
+                    <input type="date" class="form-control" id="tax_code" name="tax_code" placeholder="Ngày sinh">
+                </div>
+                <div class="col-md-6">
+                    <label for="gender" class="form-label">Giới tính</label>
+                    <select class="form-select" name="gender" id="gender">
+                        <option selected>Nam</option>
+                        <option>Nữ</option>
+                        <option>Khác</option>
+                  </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-control" id="phone" name="phone" placeholder="Số điện thoại">
+                </div>
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email nhà cung cấp">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="password" class="form-label">Nhập mật khẩu</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Nhập mật khẩu">
+                </div>
+                <div class="col-md-6">
+                    <label for="re-password" class="form-label">Nhập lại mật khẩu</label>
+                    <input type="password" class="form-control" id="re-password" name="re-password" placeholder="Nhập lại mật khẩu">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="role" class="form-label">Nhập vai trò</label>
+                    <input type="text" class="form-control" id="role" name="role" placeholder="Nhập vai trò">
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Địa chỉ</label>
+                <input class="form-control" id="address" name="address" type="text" placeholder="Nhập địa chỉ">
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="/supplier" class="btn btn-secondary ms-2">Hủy</a>
             </div>
         </form>
     </div>
-</div>
 {% endblock %}

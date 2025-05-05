@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Danh sách nhân viên - STOCKB{% endblock %}
+{% block title %}Danh sách nhân viên{% endblock %}
 
-{% block breadcrumb_items %}
-<li class="breadcrumb-item active" aria-current="page">Danh mục nhân viên</li>
-{% endblock %}
+
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Danh sách nhân viên</h2>
-    <a href="{% url 'employee_create' %}" class="btn btn-primary">+ Thêm nhân viên mới</a>
-</div>
+        <h5>Danh sách nhân viên</h5>
+        <a href="create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Tạo mới Nhân viên
+        </a>
+    </div>
 
 <div class="card">
     <div class="card-body">
@@ -31,28 +32,45 @@
                         <th>Tên nhân viên</th>
                         <th>Số điện thoại</th>
                         <th>Email</th>
-                        <th>Ngày & Giờ tạo</th>
+                        <th>Giới tính</th>
+                        <th>Ngày sinh</th>
+                        <th>Địa chỉ</th>
+                        <th>Vai trò</th>
                         <th class="text-center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for employee in employees %}
                     <tr>
-                        <td>{{ employee.id }}</td>
-                        <td>{{ employee.last_name }} {{ employee.first_name }}</td>
-                        <td>{{ employee.phone_number }}</td>
-                        <td>{{ employee.email }}</td>
-                        <td>{{ employee.created_at|date:"H:i d, m, Y" }}</td>
+                        <td>1</td>
+                        <td>Cuờng</td>
+                        <td>0987654321</td>
+                        <td>hello@haravan.com</td>
+                        <td>Nam</td>
+                        <td>08/02/2025</td>
+                        <td>8 An thượng, Ngũ Hành Sơn, Đà Nẵng</td>
+                        <td>Nhân viên bán hàng</td>
                         <td class="text-center">
-                            <a href="{% url 'employee_update' employee.id %}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a href="{% url 'employee_delete' employee.id %}" class="btn btn-sm btn-outline-danger">Xóa</a>
+                            <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
+                            <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
                         </td>
                     </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center">Không có nhân viên nào</td>
-                    </tr>
-                    {% endfor %}
+<!--                    {% for employee in employees %}-->
+<!--                    <tr>-->
+<!--                        <td>{{ employee.id }}</td>-->
+<!--                        <td>{{ employee.last_name }} {{ employee.first_name }}</td>-->
+<!--                        <td>{{ employee.phone_number }}</td>-->
+<!--                        <td>{{ employee.email }}</td>-->
+<!--                        <td>{{ employee.created_at|date:"H:i d, m, Y" }}</td>-->
+<!--                        <td class="text-center">-->
+<!--                            <a href="{% url 'employee_update' employee.id %}" class="btn btn-sm btn-outline-primary">Sửa</a>-->
+<!--                            <a href="{% url 'employee_delete' employee.id %}" class="btn btn-sm btn-outline-danger">Xóa</a>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                    {% empty %}-->
+<!--                    <tr>-->
+<!--                        <td colspan="6" class="text-center">Không có nhân viên nào</td>-->
+<!--                    </tr>-->
+<!--                    {% endfor %}-->
                 </tbody>
             </table>
         </div>

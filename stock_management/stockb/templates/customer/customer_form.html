@@ -1,92 +1,63 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% block title %}
-Thêm khách hàng mới - STOCKB
+    {{title}}
 {% endblock %}
-
-{% block breadcrumb_items %}
-<li class="breadcrumb-item"><a href="{% url 'customer_list' %}">Danh mục khách hàng</a></li>
-<li class="breadcrumb-item active" aria-current="page">Thêm khách hàng mới</li>
-{% endblock %}
-
 {% block content %}
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="mb-0">Hồ sơ khách hàng</h3>
-        <div>
-            <a href="{% url 'customer_list' %}" class="btn btn-secondary">Quay trở lại</a>
-            <button type="submit" form="customerForm" class="btn btn-primary">Lưu</button>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Tạo mới khách hàng</h5>
     </div>
-    <div class="card-body">
-        <form id="customerForm" method="post" action="#">
+    <div class="container bg-white p-4 rounded shadow">
+        <h5 class="mb-4">Thông tin khách hàng</h5>
+        <p class="text-muted mb-4">Vui lòng cung cấp các thông tin về nhà khách hàng sẽ tạo</p>
+
+        <form method="POST">
             {% csrf_token %}
-
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Thông tin cá nhân</h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplier_name" class="form-label">Tên khách hàng</label>
+                    <input type="text" class="form-control" id="supplier_name" name="supplier_name" placeholder="Têm khách hàng">
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="first_name">Tên</label>
-                                <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Nhập tên khách hàng">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="last_name">Họ</label>
-                                <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Nhập họ khách hàng">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="birth_date">Ngày sinh</label>
-                                <input type="date" id="birth_date" name="birth_date" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="gender">Giới tính</label>
-                                <select id="gender" name="gender" class="form-control">
-                                    <option value="M">Nam</option>
-                                    <option value="F">Nữ</option>
-                                    <option value="O">Khác</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="phone_number">Số điện thoại</label>
-                                <input type="text" id="phone_number" name="phone_number" class="form-control" placeholder="Nhập số điện thoại">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email" class="form-control" placeholder="Nhập địa chỉ email">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label for="address">Địa chỉ</label>
-                                <textarea id="address" name="address" class="form-control" rows="3" placeholder="Nhập địa chỉ"></textarea>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6">
+                    <label for="company_name" class="form-label">Họ</label>
+                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Họ">
                 </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="tax_code" class="form-label">Ngày sinh</label>
+                    <input type="date" class="form-control" id="tax_code" name="tax_code" placeholder="Ngày sinh">
+                </div>
+                <div class="col-md-6">
+                    <label for="gender" class="form-label">Giới tính</label>
+                    <select class="form-select" name="gender" id="gender">
+                        <option selected>Nam</option>
+                        <option>Nữ</option>
+                        <option>Khác</option>
+                  </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-control" id="phone" name="phone" placeholder="Số điện thoại">
+                </div>
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email nhà cung cấp">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Địa chỉ</label>
+                <input class="form-control" id="address" name="address" type="text" placeholder="Nhập địa chỉ">
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="/supplier" class="btn btn-secondary ms-2">Hủy</a>
             </div>
         </form>
     </div>
-</div>
 {% endblock %}

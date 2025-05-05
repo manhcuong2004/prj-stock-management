@@ -141,17 +141,18 @@
             margin-top: 20px;
             padding: 20px;
             background: #F5F3F3;
-            height: calc(100vh - 20px); /* Đảm bảo rằng content chiếm toàn bộ không gian còn lại */
+            height: calc(100vh - 20px);
             overflow-y: auto;
         }
     {% block style %}
 
     {% endblock %}
     </style>
+    {% block extra_head %}
+    {% endblock %}
 </head>
 
 <body>
-
     <div class="header">
         <div class="left-container">
             <img src="{% static 'stockb-logo.png' %}" />
@@ -181,33 +182,41 @@
             <i class="bi bi-box-seam"></i>Sản phẩm
         </a>
         <div class="collapse ms-4" id="sanphamSubmenu">
-            <a href="#" class="submenu">Danh mục sản phẩm</a>
-            <a href="#" class="submenu">Sản phẩm trong kho</a>
+            <a href="/product-category" class="submenu">Danh mục sản phẩm</a>
+            <a href="/product" class="submenu">Sản phẩm trong kho</a>
         </div>
-        <a href="#"><i class="bi bi-people"></i> Khách hàng</a>
-        <a href="#"><i class="bi bi-building"></i> Đơn vị</a>
+        <a href="/customers"><i class="bi bi-people"></i> Khách hàng</a>
+        <a href="/units"><i class="bi bi-building"></i> Đơn vị</a>
         <a href="/stock-out"><i class="bi bi-truck"></i> Xuất kho</a>
         <a href="/stock-in"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
-        <a href="#"><i class="bi bi-person-badge"></i> Nhân viên</a>
-        <a href="#"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
+        <a href="/employees"><i class="bi bi-person-badge"></i> Nhân viên</a>
+        <a href="/supplier"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
         <a href="#" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false">
-            <i class="bi bi-box-seam"></i> Kiểm kê sản phẩm
+            <i class="bi bi-box-seam"></i> Kiểm tra sản phẩm
         </a>
         <div class="collapse ms-4" id="kiemkeSubmenu">
-            <a href="#" class="submenu">Gần đến ngày khuyến nghị</a>
-            <a href="#" class="submenu">Gần hết trong kho</a>
+            <a href="/near-expiry" class="submenu">Gần đến ngày khuyến nghị</a>
+            <a href="/low-stock" class="submenu">Gần hết trong kho</a>
         </div>
-        <a href="#"><i class="bi bi-file-bar-graph"></i> Báo cáo</a>
+        <a href="/inventory-check"><i class="bi bi-clipboard-check"></i>Kiểm kê</a>
+        <a href="/report"><i class="bi bi-file-bar-graph"></i>Báo cáo</a>
     </div>
     <div class="main-content">
         <div class="container mt-5">
             {% block content %}
+
                 <h1>Welcome to StockB!</h1>
             {% endblock %}
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+    {% block extra_js %}
+    {% endblock %}
 </body>
 
 </html>

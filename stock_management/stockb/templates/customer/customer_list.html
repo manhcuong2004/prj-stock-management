@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Danh sách khách hàng - STOCKB{% endblock %}
+{% block title %}Danh sách khách hàng{% endblock %}
 
-{% block breadcrumb_items %}
-<li class="breadcrumb-item active" aria-current="page">Danh mục khách hàng</li>
-{% endblock %}
+
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Danh sách khách hàng</h2>
-    <a href="{% url 'customer_create' %}" class="btn btn-primary">+ Thêm khách hàng mới</a>
-</div>
+        <h5>Danh sách khách hàng</h5>
+        <a href="create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Tạo mới khách hàng
+        </a>
+    </div>
 
 <div class="card">
     <div class="card-body">
@@ -31,20 +32,23 @@
                         <th>Tên khách hàng</th>
                         <th>Số điện thoại</th>
                         <th>Email</th>
-                        <th>Ngày & Giờ tạo</th>
+                        <th>Giới tính</th>
+                        <th>Ngày sinh</th>
+                        <th>Địa chỉ</th>
                         <th class="text-center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Thêm khách hàng Haravan Demo trực tiếp vào HTML -->
                     <tr>
                         <td>1</td>
-                        <td>Haravan Demo</td>
+                        <td>Cuờng</td>
                         <td>0987654321</td>
                         <td>hello@haravan.com</td>
-                        <td>08:30 07/04/2025</td>
+                        <td>Nam</td>
+                        <td>08/02/2025</td>
+                        <td>8 An thượng, Ngũ Hành Sơn, Đà Nẵng</td>
                         <td class="text-center">
-                            <a href="#" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
                             <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
                         </td>
                     </tr>
@@ -64,7 +68,6 @@
                     </tr>
                     {% endif %}
                     {% empty %}
-                    <!-- Không hiển thị thông báo vì đã có ít nhất một khách hàng (Haravan Demo) -->
                     {% endfor %}
                 </tbody>
             </table>
