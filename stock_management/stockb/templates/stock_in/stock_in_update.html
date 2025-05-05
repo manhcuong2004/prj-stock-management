@@ -37,15 +37,7 @@
             <div class="alert alert-danger">
                 <strong>Lỗi:</strong>
                 <ul>
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ field }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
                     {% for form in formset %}
-                        {% for error in form.non_field_errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
                         {% for field, errors in form.errors.items %}
                             <li>{{ error }}</li>
                         {% endfor %}
