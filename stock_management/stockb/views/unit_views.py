@@ -12,7 +12,12 @@ def unit_list(request):
     query = request.GET.get('q')
     if query:
         units = units.filter(name__icontains=query) | units.filter(symbol__icontains=query)
-    return render(request, 'units/units_list.html', {'units': units})
+
+    context = {
+        'title': 'Danh sách đơn vị',
+        'units': units
+    }
+    return render(request, 'units/units_list.html', context)
 
 @login_required
 def edit_unit(request, pk):
@@ -25,7 +30,13 @@ def edit_unit(request, pk):
             return redirect('units_list')
     else:
         form = UnitForm(instance=unit)
-    return render(request, 'units/edit_unit.html', {'form': form, 'unit': unit})
+
+    context = {
+        'title': 'Chỉnh sửa đơn vị',
+        'form': form,
+        'unit': unit
+    }
+    return render(request, 'units/edit_unit.html', context)
 
 @login_required
 def create_unit(request):
@@ -37,7 +48,11 @@ def create_unit(request):
             return redirect('units_list')
     else:
         form = UnitForm()
-    return render(request, 'units/create_unit.html', {'form': form})
+    context = {
+        'title': 'Tạo đơn vị',
+        'form': form,
+    }
+    return render(request, 'units/create_unit.html', context)
 
 @login_required
 def delete_unit(request, pk):
