@@ -7,10 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
         "progressBar": true
     };
 
-    // Hiển thị thông báo từ Django messages
-    {% for message in messages %}
-        toastr["{{ message.tags }}"]("{{ message }}");
-    {% endfor %}
+//    // Hiển thị thông báo từ Django messages
+//    {% for message in messages %}
+//        toastr["{{ message.tags }}"]("{{ message }}");
+//    {% endfor %}
 
     const notificationDropdown = document.getElementById('notificationDropdown');
     const unreadIndicator = document.getElementById('unreadIndicator');

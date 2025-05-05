@@ -25,18 +25,15 @@
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-
         {% if form.errors or formset.errors %}
             <div class="alert alert-danger">
                 <strong>Lỗi:</strong>
                 <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
                     {% for form in formset %}
                         {% for field, errors in form.errors.items %}
                             <li>{{ error }}</li>
@@ -110,7 +107,15 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {{ detail_form.product_batch }}
+                                            {% with product_detail=detail_form.instance.product_details.first %}
+                                                {% if detail_form.instance.pk and product_detail %}
+                                                    <input type="text" class="form-control" name="{{ detail_form.product_batch.name }}" value="{{ product_detail.product_batch|default:'' }}" required>
+                                                {% elif detail_form.product_batch.value %}
+                                                    <input type="text" class="form-control" name="{{ detail_form.product_batch.name }}" value="{{ detail_form.product_batch.value|default:'' }}" required>
+                                                {% else %}
+                                                    {{ detail_form.product_batch }}
+                                                {% endif %}
+                                            {% endwith %}
                                         </td>
                                         <td>
                                             {{ detail_form.quantity }}
@@ -131,7 +136,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="total">0 đ</span>
+                                            <span class="total">0đ</span>
                                         </td>
                                         <td class="text-center">
                                             <input type="checkbox" name="{{ detail_form.DELETE.name }}" id="{{ detail_form.DELETE.id_for_label }}" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
@@ -515,6 +520,15 @@
             resetProductInputs();
             updateRowTotals();
             updateSummary();
+
+            document.querySelectorAll('.product-row').forEach(row => {
+                const batchInput = row.querySelector('input[name$="-product_batch"]');
+                if (batchInput && batchInput.value) {
+                    batchInput.setAttribute('value', batchInput.value); // Đảm bảo giá trị hiển thị
+                } else if (batchInput) {
+                    console.log('Batch input is empty:', batchInput.name); // Debug nếu input trống
+                }
+            });
         });
 
         document.getElementById('order-form').addEventListener('submit', function(event) {

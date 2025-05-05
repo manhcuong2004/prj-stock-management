@@ -80,6 +80,13 @@ class StockInDetailForm(forms.ModelForm):
         required=True
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            product_detail = ProductDetail.objects.filter(stock_in_detail=self.instance).first()
+            if product_detail and product_detail.product_batch:
+                self.fields['product_batch'].initial = product_detail.product_batch
+
     class Meta:
         model = StockInDetail
         fields = ['product', 'quantity', 'discount', 'product_batch']

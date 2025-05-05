@@ -87,7 +87,6 @@ def stock_out_update(request, pk=None):
             for detail_form in formset:
                 if detail_form.cleaned_data:
                     if detail_form.cleaned_data.get('DELETE', False):
-                        # Xóa hàng nếu được đánh dấu DELETE
                         if detail_form.instance.pk:
                             detail_form.instance.delete()
                         continue
