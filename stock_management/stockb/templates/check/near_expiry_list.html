@@ -7,7 +7,6 @@
         <h5>Danh sách sản phẩm gần đến ngày hết hạn</h5>
     </div>
     <div class="container bg-white p-4 rounded shadow">
-        <!-- Form tìm kiếm -->
         <form method="get" class="input-group mb-4">
             <input type="text" name="q" class="form-control" placeholder="Tìm kiếm" value="{{ search_query }}">
             <button type="submit" class="input-group-text"><i class="bi bi-search"></i></button>
@@ -24,7 +23,7 @@
         </div>
         {% for item in near_expiry_products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a href="#" class="col-3">
+            <a href="/product/{{ item.detail.product.id }}" class="col-3">
                 {{ item.detail.product.product_name }}
             </a>
             <div class="col-1 text-end">

@@ -22,7 +22,7 @@
         <!-- Dữ liệu sản phẩm -->
         {% for item in low_stock_products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a href="#" class="col-5">
+            <a href="/product/{{ item.product.id }}" class="col-5">
                 {{ item.product.product_name }}
             </a>
             <div class="col-2 text-end">
