@@ -1,13 +1,15 @@
 import datetime
+import json
 from django.core.checks import messages
 from django.db import transaction
 from django.forms import formset_factory
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F, Q, Count
 from django.utils import timezone
+from django.http import JsonResponse
 from .forms import InventoryCheckForm, InventoryCheckDetailFormSet
 from .forms import StockOutForm, StockOutDetailFormSet, StockOutDetailForm
-from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail, Employee, ProductCategory, Supplier
+from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail, Employee, ProductCategory, Supplier, Notification
 from django.contrib import messages
 from .forms import ProductForm, ProductCategoryForm
 
@@ -15,6 +17,29 @@ from .forms import ProductForm, ProductCategoryForm
 def index(request):
     context = {"title": "Trang chủ"}
     return render(request, "main.html", context)
+
+# API để lấy danh sách thông báo
+def get_notifications(request):
+    # Lấy tổng số thông báo chưa đọc từ queryset gốc
+    unread_count = Notification.objects.filter(is_read=False).count()
+    # Lấy danh sách 50 thông báo mới nhất
+    notifications = Notification.objects.all().order_by('-created_at')[:50]
+    data = [
+        {
+            'message': notification.message,
+            'created_at': notification.created_at.strftime('%d/%m/%Y %H:%M'),
+            'is_read': notification.is_read,
+        }
+        for notification in notifications
+    ]
+    return JsonResponse({'notifications': data, 'unread_count': unread_count})
+
+# API để đánh dấu tất cả thông báo là đã đọc
+def mark_notifications_as_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 # View cho Product
 def product_view(request):
@@ -24,7 +49,6 @@ def product_view(request):
     filter_supplier = request.GET.get('supplier', '')
     filter_stock_status = request.GET.get('stock_status', '')
 
-    # Tìm kiếm
     if search_text:
         products = products.filter(
             Q(product_name__icontains=search_text) |
@@ -32,15 +56,12 @@ def product_view(request):
             Q(supplier__company_name__icontains=search_text)
         )
 
-    # Lọc theo danh mục
     if filter_category:
         products = products.filter(category__id=filter_category)
 
-    # Lọc theo nhà cung cấp
     if filter_supplier:
         products = products.filter(supplier__id=filter_supplier)
 
-    # Lọc theo trạng thái tồn kho
     if filter_stock_status == 'low_stock':
         products = products.filter(quantity__lte=F('minimum_stock'))
     elif filter_stock_status == 'out_of_stock':
@@ -87,7 +108,10 @@ def product_update(request, pk=None):
             if not product.created_at:
                 product.created_at = timezone.now()
             product.save()
-            messages.success(request, "Đã lưu sản phẩm thành công!")
+            action = "thêm" if not pk else "cập nhật"
+            message = f"NV001 đã {action} sản phẩm {product.product_name} thành công!"
+            messages.success(request, message)
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             return redirect('product')
         else:
             messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.")
@@ -101,8 +125,11 @@ def product_update(request, pk=None):
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
+        product_name = product.product_name
         product.delete()
-        messages.success(request, "Đã xóa sản phẩm thành công!")
+        message = f"NV001 đã xóa sản phẩm {product_name} thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('product')
     return redirect('product')
 
@@ -112,14 +139,12 @@ def product_category_view(request):
     search_text = request.GET.get('search', '').strip()
     filter_product_status = request.GET.get('product_status', '')
 
-    # Tìm kiếm
     if search_text:
         categories = categories.filter(
             Q(category_name__icontains=search_text) |
             Q(description__icontains=search_text)
         )
 
-    # Lọc theo trạng thái sản phẩm
     if filter_product_status == 'has_products':
         categories = categories.annotate(product_count=Count('product')).filter(product_count__gt=0)
     elif filter_product_status == 'no_products':
@@ -132,24 +157,6 @@ def product_category_view(request):
         "filter_product_status": filter_product_status,
     }
     return render(request, 'product_category/product_category_list.html', context)
-
-def product_category_create(request):
-    form = ProductCategoryForm()
-
-    if request.method == "POST":
-        form = ProductCategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Đã tạo danh mục thành công!")
-            return redirect('product_category')
-        else:
-            messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.")
-
-    context = {
-        "title": "Thêm danh mục mới",
-        "form": form,
-    }
-    return render(request, 'product_category/product_category_update.html', context)
 
 def product_category_detail(request, pk):
     category = get_object_or_404(ProductCategory, pk=pk)
@@ -169,7 +176,9 @@ def product_category_update(request, pk):
         form = ProductCategoryForm(request.POST, instance=category)
         if form.is_valid():
             category = form.save()
-            messages.success(request, "Đã cập nhật danh mục thành công!")
+            message = f"NV001 đã cập nhật danh mục {category.category_name} thành công!"
+            messages.success(request, message)
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             return redirect('product_category')
         else:
             messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.")
@@ -187,12 +196,15 @@ def product_category_delete(request, pk):
         if Product.objects.filter(category=category).exists():
             messages.error(request, "Không thể xóa danh mục vì vẫn còn sản phẩm liên kết!")
         else:
+            category_name = category.category_name
             category.delete()
-            messages.success(request, "Đã xóa danh mục thành công!")
+            message = f"NV001 đã xóa danh mục {category_name} thành công!"
+            messages.success(request, message)
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('product_category')
     return redirect('product_category')
 
-# Các view khác giữ nguyên
+# Các view khác
 def stock_out(request):
     stock_outs = StockOut.objects.all().order_by('-export_date')
     stock_out_list = []
@@ -298,6 +310,10 @@ def stock_out_update(request, pk=None):
                         )
                     detail.save()
 
+            action = "cập nhật" if pk else "tạo"
+            message = f"NV001 đã {action} đơn xuất kho {stock_out.id} thành công!"
+            messages.success(request, message)
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             return redirect('stock_out')
 
     products = Product.objects.all()
@@ -330,6 +346,11 @@ def stock_in(request):
 
 def stock_in_update(request):
     context = {"title": "Trang tạo mới đơn nhập kho"}
+    if request.method == 'POST':
+        message = "NV001 đã tạo đơn nhập kho thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
+        return redirect('stock_in')
     return render(request, "stock_in/stock_in_update.html", context)
 
 def supplier_list_view(request):
@@ -339,6 +360,9 @@ def supplier_list_view(request):
 def supplier_create_view(request):
     context = {"title": "Tạo mới nhà cung cấp"}
     if request.method == 'POST':
+        message = "NV001 đã tạo nhà cung cấp thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('supplier_list')
     return render(request, 'supplier/supplier_create.html', context)
 
@@ -356,6 +380,11 @@ def units_view(request):
 
 def create_unit(request):
     context = {"title": "Tạo mới đơn vị"}
+    if request.method == 'POST':
+        message = "NV001 đã tạo đơn vị thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
+        return redirect('units')
     return render(request, 'units/create_unit.html', context)
 
 def report_overview(request):
@@ -368,6 +397,11 @@ def customer_list(request):
 
 def customer_create(request):
     context = {"title": "Thêm mới khách hàng"}
+    if request.method == 'POST':
+        message = "NV001 đã tạo khách hàng thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
+        return redirect('customer_list')
     return render(request, "customer/customer_form.html", context)
 
 def employee_list(request):
@@ -376,6 +410,11 @@ def employee_list(request):
 
 def employee_create(request):
     context = {"title": "Thêm mới nhân viên"}
+    if request.method == 'POST':
+        message = "NV001 đã tạo nhân viên thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
+        return redirect('employee_list')
     return render(request, "employer/employee_form.html", context)
 
 def inventory_check_list(request):
@@ -411,18 +450,19 @@ def inventory_check_update(request, pk=None):
                 inventory_check.check_date = timezone.now()
             inventory_check.save()
 
-            # Lưu formset
             instances = formset.save(commit=False)
             for instance in instances:
                 instance.save()
                 print(f"Saved InventoryCheckDetail: {instance}")
 
-            # Xử lý các chi tiết bị xóa
             for obj in formset.deleted_objects:
                 obj.delete()
 
             print("InventoryCheckDetails in DB:", inventory_check.details.all())
-            messages.success(request, "Lưu kiểm kê thành công!")
+            action = "cập nhật" if pk else "tạo"
+            message = f"NV001 đã {action} kiểm kê {inventory_check.id} thành công!"
+            messages.success(request, message)
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             return redirect('inventory_check_list')
         else:
             print("Form Errors:", form.errors)
@@ -461,8 +501,11 @@ def inventory_check_update(request, pk=None):
 def inventory_check_delete(request, pk):
     inventory_check = get_object_or_404(InventoryCheck, pk=pk)
     if request.method == "POST":
+        inventory_check_id = inventory_check.id
         inventory_check.delete()
-        messages.success(request, "Xóa kiểm kê thành công!")
+        message = f"NV001 đã xóa kiểm kê {inventory_check_id} thành công!"
+        messages.success(request, message)
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('inventory_check_list')
     return render(request, 'inventory/inventory_check_list.html', {
         'inventory_checks': InventoryCheck.objects.all().order_by('-check_date')

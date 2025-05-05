@@ -152,3 +152,14 @@ class InventoryCheckDetail(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name} - Lô {self.product_batch}"
+
+class Notification(models.Model):
+    message = models.TextField()  # Nội dung thông báo
+    created_at = models.DateTimeField(default=timezone.now)  # Thời gian tạo
+    is_read = models.BooleanField(default=False)  # Trạng thái đã đọc/chưa đọc
+
+    def __str__(self):
+        return self.message
+
+    class Meta:
+        ordering = ['-created_at']  # Sắp xếp theo thời gian tạo, mới nhất trước

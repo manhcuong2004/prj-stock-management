@@ -1,15 +1,16 @@
 from django.urls import path
-from stockb import views
+from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('notifications/', views.get_notifications, name='get_notifications'),
+    path('notifications/mark-as-read/', views.mark_notifications_as_read, name='mark_notifications_as_read'),
     path('product/', views.product_view, name='product'),
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
     path('product/create/', views.product_update, name='product_create'),
     path('product/<int:pk>/update/', views.product_update, name='product_update'),
     path('product/<int:pk>/delete/', views.product_delete, name='product_delete'),
     path('product-category/', views.product_category_view, name='product_category'),
-    path('product-category/create/', views.product_category_create, name='product_category_create'),
     path('product-category/<int:pk>/', views.product_category_detail, name='product_category_detail'),
     path('product-category/<int:pk>/update/', views.product_category_update, name='product_category_update'),
     path('product-category/<int:pk>/delete/', views.product_category_delete, name='product_category_delete'),
@@ -24,11 +25,11 @@ urlpatterns = [
     path('low-stock/', views.low_stock_list_view, name='low_stock_list'),
     path('units/', views.units_view, name='units'),
     path('units/create/', views.create_unit, name='create_unit'),
-    path('report/', views.report_overview, name='report_overview'),
-    path('customer/', views.customer_list, name='customer_list'),
-    path('customer/create/', views.customer_create, name='customer_create'),
-    path('employee/', views.employee_list, name='employee_list'),
-    path('employee/create/', views.employee_create, name='employee_create'),
+    path('report/', views.report_overview, name='report'),
+    path('customers/', views.customer_list, name='customer_list'),
+    path('customers/create/', views.customer_create, name='customer_create'),
+    path('employees/', views.employee_list, name='employee_list'),
+    path('employees/create/', views.employee_create, name='employee_create'),
     path('inventory-check/', views.inventory_check_list, name='inventory_check_list'),
     path('inventory-check/create/', views.inventory_check_create, name='inventory_check_create'),
     path('inventory-check/<int:pk>/update/', views.inventory_check_update, name='inventory_check_update'),
