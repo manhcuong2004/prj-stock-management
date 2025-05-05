@@ -1,4 +1,4 @@
-from django.core.checks import messages
+from django.contrib import messages
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -38,7 +38,7 @@ def supplier_create_view(request):
             return render(request, 'supplier/supplier_create.html', {'form_data': request.POST})
 
         if company_name:
-            supplier_notes = f"Công ty: {company_name}\n{notes or ''}"
+            notes = f"Công ty: {company_name}\n{notes or ''}"
 
         try:
             Supplier.objects.create(

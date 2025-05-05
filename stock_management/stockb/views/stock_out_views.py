@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -133,3 +134,13 @@ def stock_out_update(request, pk=None):
         'employees': employees,
     }
     return render(request, 'stock_out/stock_out_update.html', context)
+
+
+@login_required
+def stock_out_delete(request, pk):
+    stock_out = get_object_or_404(StockOut, pk=pk)
+    if request.method == 'POST':
+        stock_out.delete()
+        messages.success(request, 'Đơn xuất đã được xóa thành công!')
+        return redirect('stock_out')
+    return render(request, 'stock_out/stock_out_list.html', {'stock_out': stock_out})

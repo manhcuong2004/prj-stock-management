@@ -68,7 +68,10 @@
                 <td>{{ item.total_amount|intcomma }}đ</td>
                 <td>
                   <a href="{% url 'stock_in_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
-                  <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
+                  <form method="POST" action="{% url 'stock_in_delete' pk=item.id %}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đơn nhập này không?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                  </form>
                 </td>
               </tr>
             </tbody>

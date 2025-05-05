@@ -39,15 +39,7 @@
         <div class="alert alert-danger">
             <strong>Lỗi:</strong>
             <ul>
-                {% for field, errors in form.errors.items %}
-                    {% for error in errors %}
-                        <li>{{ field }}: {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
                 {% for form in formset %}
-                    {% for field, errors in form.errors.items %}
-                        <li>Chi tiết {{ forloop.counter }} - {{ field }}: {{ errors }}</li>
-                    {% endfor %}
                     {% for error in form.non_field_errors %}
                         <li>{{ error }}</li>
                     {% endfor %}
@@ -230,11 +222,13 @@
 
         const productData = [
             {% for product in products %}
-                {
-                    id: {{ product.id }},
-                    name: "{{ product.product_name|escapejs }}",
-                    category_id: {{ product.category.id }}
-                },
+                {% if product.category %}
+                    {
+                        id: {{ product.id }},
+                        name: "{{ product.product_name|escapejs }}",
+                        category_id: {{ product.category.id }}
+                    },
+                {% endif %}
             {% endfor %}
         ];
 
@@ -265,13 +259,15 @@
 
         categorySelect.addEventListener('change', function() {
             const categoryId = parseInt(this.value);
-            console.log('Selected categoryId:', categoryId); // Debug
+            console.log('Selected categoryId:', categoryId);
             resetProductAndBatchSelects();
 
             if (categoryId) {
                 const filteredProducts = productData.filter(product => product.category_id === categoryId);
-                console.log('Filtered products:', filteredProducts); // Debug
+                console.log('Filtered products:', filteredProducts);
+
                 if (filteredProducts.length > 0) {
+                    productSelect.innerHTML = '<option value="">Chọn sản phẩm</option>';
                     filteredProducts.forEach(product => {
                         const option = document.createElement('option');
                         option.value = product.id;
@@ -288,15 +284,17 @@
 
         productSelect.addEventListener('change', function() {
             const productId = parseInt(this.value);
-            console.log('Selected productId:', productId); // Debug
+            console.log('Selected productId:', productId);
             batchSelect.innerHTML = '<option value="">Chọn lô</option>';
             batchSelect.disabled = true;
             addButton.disabled = true;
 
             if (productId) {
                 const filteredBatches = batchData.filter(batch => batch.product_id === productId);
-                console.log('Filtered batches:', filteredBatches); // Debug
+                console.log('Filtered batches:', filteredBatches);
+
                 if (filteredBatches.length > 0) {
+                    batchSelect.innerHTML = '<option value="">Chọn lô</option>';
                     filteredBatches.forEach(batch => {
                         const option = document.createElement('option');
                         option.value = batch.id;
@@ -313,7 +311,7 @@
         });
 
         batchSelect.addEventListener('change', function() {
-            console.log('Selected batchId:', this.value); // Debug
+            console.log('Selected batchId:', this.value);
             addButton.disabled = !this.value;
         });
 
@@ -327,6 +325,8 @@
             const theoreticalQuantity = parseInt(batchSelect.options[batchSelect.selectedIndex].dataset.theoretical) || 0;
 
             const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
+
+            console.log('Adding row - Product ID:', productId, 'Batch ID:', batchId);
 
             const existingRows = document.querySelectorAll('.product-row');
             for (let row of existingRows) {
@@ -497,8 +497,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('productData:', productData); // Debug
-            console.log('batchData:', batchData); // Debug
+            console.log('productData:', productData);
+            console.log('batchData:', batchData);
             resetProductAndBatchSelects();
             updateRowDiscrepancies();
             updateSummary();
@@ -506,7 +506,10 @@
 
         document.getElementById('check-form').addEventListener('submit', function(event) {
             console.log('Form submitted');
-            console.log(new FormData(this));
+            const formData = new FormData(this);
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
             if (!confirm('Bạn có chắc muốn lưu kiểm kê này?')) {
                 event.preventDefault();
             }

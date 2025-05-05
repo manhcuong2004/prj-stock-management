@@ -19,13 +19,16 @@ urlpatterns = [
     path('check/near-expiry', check_views.near_expiry_list_view, name='near_expiry_list'),
     path('check/low-stock', check_views.low_stock_list_view, name='low_stock_list'),
 
-    #Xuất nhập kho
+    #Xuất kho
     path('stock-out/', stock_out_views.stock_out, name='stock_out'),
     path('stock-out/create/', stock_out_views.stock_out_update, name='stock_out_create'),
     path('stock-out/update/<int:pk>/', stock_out_views.stock_out_update, name='stock_out_update'),
+    path('stock-out/<int:pk>/delete/', stock_out_views.stock_out_delete, name='stock_out_delete'),
+    #Nhập kho
     path('stock-in/', stock_in_views.stock_in, name='stock_in'),
     path('stock-in/create', stock_in_views.stock_in_update, name='stock_in_create'),
     path('stock-in/update/<int:pk>/', stock_in_views.stock_in_update, name='stock_in_update'),
+    path('stock-in/<int:pk>/delete/', stock_in_views.stock_in_delete, name='stock_in_delete'),
 
     #Đơn vị
     path('units/', unit_views.unit_list, name='units_list'),

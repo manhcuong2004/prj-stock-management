@@ -230,7 +230,6 @@ class InventoryCheckDetail(models.Model):
             if product_details.exists():
                 self.theoretical_quantity = product_details.first().remaining_quantity
             else:
-                # Nếu không có ProductDetail, lấy từ Product.quantity
                 self.theoretical_quantity = self.product.quantity
 
         # Tính chênh lệch

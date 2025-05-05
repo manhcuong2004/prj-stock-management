@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
@@ -5,7 +6,7 @@ from django.utils import timezone
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
 
-from ..forms import StockOutForm, StockOutDetailFormSet, StockInForm, StockInDetailFormSet
+from ..forms import   StockInForm, StockInDetailFormSet
 from ..models import  ProductCategory, Product, ProductDetail, StockIn, Supplier, StockInDetail
 
 
@@ -128,3 +129,12 @@ def stock_in_update(request, pk=None):
         'employees': employees,
     }
     return render(request, 'stock_in/stock_in_update.html', context)
+
+@login_required
+def stock_in_delete(request, pk):
+    stock_in = get_object_or_404(StockIn, pk=pk)
+    if request.method == 'POST':
+        stock_in.delete()
+        messages.success(request, 'Đơn nhập đã được xóa thành công!')
+        return redirect('stock_in')
+    return render(request, 'stock_in/stock_in_list.html', {'stock_in': stock_in})
