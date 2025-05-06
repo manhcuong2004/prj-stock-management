@@ -152,16 +152,35 @@
                 </div>
 
                 <div class="col-lg-8">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h5 class="card-title mb-1">Tỷ lệ xuất nhập kho</h5>
-                                    <p class="text-muted small mb-0">Phân bổ giá trị xuất nhập kho trong hệ thống</p>
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="card-title mb-1">Tỷ lệ xuất nhập kho</h5>
+                                            <p class="text-muted small mb-0">Phân bổ giá trị xuất nhập kho trong hệ thống</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="inventoryPieChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="chart-container">
-                                <canvas id="inventoryPieChart"></canvas>
+                        </div>
+                        <div class="col-12">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="card-title mb-1">Phân bổ hàng hóa theo danh mục</h5>
+                                            <p class="text-muted small mb-0">Tỷ lệ số lượng hàng hóa theo danh mục sản phẩm</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="categoryPieChart"></canvas>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -188,11 +207,12 @@
             maxDate: "today"
         });
 
-        // Initialize pie chart
-        let inventoryPieChart;
+        // Initialize charts
+        let inventoryPieChart, categoryPieChart;
         document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('inventoryPieChart').getContext('2d');
-            inventoryPieChart = new Chart(ctx, {
+            // Inventory Pie Chart (Tỷ lệ xuất nhập kho)
+            const inventoryCtx = document.getElementById('inventoryPieChart').getContext('2d');
+            inventoryPieChart = new Chart(inventoryCtx, {
                 type: 'pie',
                 data: {
                     labels: ['Nhập kho', 'Xuất kho'],
@@ -231,6 +251,52 @@
                 }
             });
 
+            // Category Pie Chart (Phân bổ hàng hóa theo danh mục)
+            const categoryCtx = document.getElementById('categoryPieChart').getContext('2d');
+            const categoryData = {{ overview_chart_data|safe }};
+            categoryPieChart = new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: categoryData.map(item => item.name),
+                    datasets: [{
+                        data: categoryData.map(item => item.value),
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(139, 92, 246, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context. label || '';
+                                    const value = context. raw || 0;
+                                    return `${label}: ${Math.round(value)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
             // Hàm gửi yêu cầu AJAX để cập nhật dữ liệu
             function updateDashboard() {
                 const selectedDates = dateRangePicker.selectedDates;
@@ -247,7 +313,7 @@
                                 return;
                             }
 
-                            // Cập nhật các số liệu
+                            // Cập nhật các chỉ số
                             document.querySelectorAll('.metric-value.text-dark')[0].textContent = data.so_don_hang;
                             document.querySelectorAll('.metric-value.text-dark')[1].textContent = `${data.doanh_thu.toLocaleString()}đ`;
                             document.querySelectorAll('.metric-value.text-dark')[2].textContent = `${data.gia_tri_nhap_kho.toLocaleString()}đ`;
@@ -257,9 +323,14 @@
                             document.querySelector('.progress-bar.bg-danger').style.width = `${data.no_phai_tra_progress}%`;
                             document.querySelector('.progress-bar.bg-success').style.width = `${data.no_phai_thu_progress}%`;
 
-                            // Cập nhật biểu đồ
+                            // Cập nhật biểu đồ xuất nhập kho
                             inventoryPieChart.data.datasets[0].data = [data.gia_tri_nhap_kho, data.gia_tri_xuat_kho];
                             inventoryPieChart.update();
+
+                            // Cập nhật biểu đồ phân bổ hàng hóa
+                            categoryPieChart.data.labels = data.overview_chart_data.map(item => item.name);
+                            categoryPieChart.data.datasets[0].data = data.overview_chart_data.map(item => item.value);
+                            categoryPieChart.update();
                         })
                         .catch(error => console.error('Error fetching data:', error));
                 }

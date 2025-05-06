@@ -1,7 +1,10 @@
 import datetime
 
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.checks import messages
-from django.db import transaction
+from django.contrib import messages
 from django.forms import formset_factory
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F, Q, Max
@@ -9,6 +12,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.core.paginator import Paginator
 from unidecode import unidecode
+<<<<<<< HEAD
 from .forms import InventoryCheckForm, InventoryCheckDetailFormSet, CustomerForm
 from .forms import StockOutForm, StockOutDetailFormSet, StockOutDetailForm
 from .models import InventoryCheck, Product, Employee, ProductDetail
@@ -21,6 +25,20 @@ def index(request):
     return render(request, "main.html")
 
 # Xuất nhập kho
+=======
+from datetime import timedelta
+from .forms import InventoryCheckForm, InventoryCheckDetailFormSet, StockInForm, StockInDetailFormSet, UnitForm
+from .models import InventoryCheck, Product, ProductDetail, Supplier, ProductCategory, Unit
+from .forms import StockOutForm, StockOutDetailFormSet, StockOutDetailForm
+from .models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductDetail
+
+
+# Create your views here.
+def index(request):
+    return render(request, "main.html")
+#Xuất nhập kho
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def stock_out(request):
     stock_outs = StockOut.objects.all().order_by('-export_date')
     stock_out_list = []
@@ -81,6 +99,7 @@ def stock_out(request):
     }
     return render(request, "stock_out/stock_out_list.html", context)
 
+<<<<<<< HEAD
 StockOutDetailFormSet = formset_factory(StockOutDetailForm, extra=0)
 def stock_out_update(request, pk=None):
     if pk:
@@ -107,44 +126,67 @@ def stock_out_update(request, pk=None):
         form = StockOutForm(request.POST, instance=stock_out if pk else None)
         formset = StockOutDetailFormSet(request.POST, prefix='stockoutdetail_set')
 
+=======
+@login_required
+def stock_out_update(request, pk=None):
+    stock_out = get_object_or_404(StockOut, pk=pk) if pk else None
+    form = StockOutForm(request.POST or None, instance=stock_out)
+    formset = StockOutDetailFormSet(request.POST or None, instance=stock_out or StockOut(), prefix='stockoutdetail_set')
+
+    if request.method == "POST":
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
         if form.is_valid() and formset.is_valid():
             stock_out = form.save(commit=False)
             if not stock_out.export_date:
                 stock_out.export_date = timezone.now()
+            stock_out.employee = request.user
             stock_out.save()
 
-            if pk:
-                stock_out.stockoutdetail_set.all().delete()
-
+            # Xử lý formset
             for detail_form in formset:
-                if detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
+                if detail_form.cleaned_data:
+                    if detail_form.cleaned_data.get('DELETE', False):
+                        # Xóa hàng nếu được đánh dấu DELETE
+                        if detail_form.instance.pk:
+                            detail_form.instance.delete()
+                        continue
+
                     detail = detail_form.save(commit=False)
                     detail.export_record = stock_out
-                    if detail.quantity and detail.product:
-                        detail.amount_paid = (
-                            detail.quantity * detail.product.selling_price * (1 - detail.discount / 100)
-                        )
-                    detail.save()
+                    detail.product_detail = detail_form.cleaned_data.get('product_detail')
 
-            return redirect('stock_out')
+                    if detail.quantity and detail.product and detail.product_detail:
+                        if detail.product_detail.product != detail.product:
+                            detail_form.add_error(None, f"Lô {detail.product_detail.product_batch} không thuộc sản phẩm đã chọn.")
+                            continue
+                        if detail.quantity > detail.product_detail.remaining_quantity:
+                            detail_form.add_error(None, f"Lô {detail.product_detail.product_batch} chỉ còn {detail.product_detail.remaining_quantity} sản phẩm.")
+                            continue
+                        detail.save()
+                        detail.product_detail.remaining_quantity -= detail.quantity
+                        detail.product_detail.save()
+                    else:
+                        detail_form.add_error(None, "Thông tin sản phẩm hoặc lô không hợp lệ.")
+                        continue
 
+            # Kiểm tra lỗi sau khi xử lý
+            if not any(formset.errors):
+                return redirect('stock_out')
+        else:
+            print("Form errors:", form.errors)
+            print("Formset errors:", formset.errors)
+
+    categories = ProductCategory.objects.all()
     products = Product.objects.all()
     customers = Customer.objects.all()
-    employees = Employee.objects.all()
-
-    product_details = {}
-    for product in products:
-        product_details[product.id] = {
-            'product_batch': f'LOT00{product.id}',
-            'remaining_quantity': 10,
-            'import_date': product.created_at if hasattr(product, 'created_at') else None,
-            'selling_price': int(product.selling_price) if hasattr(product, 'selling_price') else 0,
-        }
+    employees = User.objects.filter(is_superuser=False)
+    product_details = ProductDetail.objects.filter(remaining_quantity__gt=0)
 
     context = {
         'title': 'Chỉnh sửa đơn xuất kho' if pk else 'Tạo mới đơn xuất kho',
         'form': form,
         'formset': formset,
+        'categories': categories,
         'products': products,
         'product_details': product_details,
         'customers': customers,
@@ -152,15 +194,132 @@ def stock_out_update(request, pk=None):
     }
     return render(request, 'stock_out/stock_out_update.html', context)
 
+@login_required
 def stock_in(request):
+<<<<<<< HEAD
     context = {"title": "Trang nhập kho"}
+=======
+    stock_ins = StockIn.objects.all().order_by('-import_date')
+    stock_in_list = []
+
+    filter_type = request.GET.get('filter', 'all')
+    search_text = request.GET.get('search', '')
+
+    if filter_type == 'in_progress':
+        stock_ins = stock_ins.filter(import_status='IN_PROGRESS')
+    elif filter_type == 'cancel':
+        stock_ins = stock_ins.filter(import_status='CANCELLED')
+    elif filter_type == 'paid':
+        stock_ins = stock_ins.filter(payment_status='PAID')
+    elif filter_type == 'unpaid':
+        stock_ins = stock_ins.filter(payment_status='UNPAID')
+
+    if search_text:
+        search_text_ch = unidecode(search_text).lower()
+        stock_ins = stock_ins.filter(
+            Q(id__icontains=search_text_ch) |
+            Q(supplier__company_name__icontains=search_text_ch)
+        ).distinct()
+
+    for stock_in in stock_ins:
+        total_amount = StockInDetail.objects.filter(import_record=stock_in).aggregate(
+            total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
+        )['total'] or 0
+        stock_in_list.append({
+            'id': stock_in.id,
+            'import_date': stock_in.import_date,
+            'supplier': stock_in.supplier.company_name,
+            'product_batch': stock_in.product_batch,
+            'payment_status': stock_in.payment_status,
+            'import_status': stock_in.import_status,
+            'total_amount': total_amount,
+        })
+    context = {
+        "title": "Trang nhập kho",
+        'filter_type': filter_type,
+        "stock_in_list": stock_in_list,
+    }
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
     return render(request, "stock_in/stock_in_list.html", context)
 
-def stock_in_update(request):
-    context = {"title": "Trang tạo mới đơn nhập kho"}
-    return render(request, "stock_in/stock_in_update.html", context)
+@login_required
+def stock_in_update(request, pk=None):
+    stock_in = get_object_or_404(StockIn, pk=pk) if pk else None
+    form = StockInForm(request.POST or None, instance=stock_in)
+    formset = StockInDetailFormSet(request.POST or None, instance=stock_in or StockIn(), prefix='stockindetail_set')
 
+<<<<<<< HEAD
 # View cho danh sách nhà cung cấp
+=======
+    if request.method == "POST":
+        if form.is_valid() and formset.is_valid():
+            stock_in = form.save(commit=False)
+            if not stock_in.import_date:
+                stock_in.import_date = timezone.now()
+            stock_in.employee = request.user
+            stock_in.save()
+
+            # Lấy mã lô chung từ form
+            product_batch = form.cleaned_data.get('product_batch')
+
+            # Xử lý formset
+            for detail_form in formset:
+                if detail_form.cleaned_data:
+                    if detail_form.cleaned_data.get('DELETE', False):
+                        # Xóa hàng nếu được đánh dấu DELETE
+                        if detail_form.instance.pk:
+                            detail_form.instance.delete()
+                        continue
+
+                    detail = detail_form.save(commit=False)
+                    detail.import_record = stock_in
+                    detail.save()
+
+                    # Tạo hoặc cập nhật ProductDetail với mã lô chung
+                    product_detail, created = ProductDetail.objects.get_or_create(
+                        product=detail.product,
+                        product_batch=product_batch,
+                        defaults={
+                            'stock_in_detail': detail,
+                            'initial_quantity': detail.quantity,
+                            'remaining_quantity': detail.quantity,
+                            'import_date': stock_in.import_date,
+                        }
+                    )
+                    if not created:
+                        product_detail.initial_quantity += detail.quantity
+                        product_detail.remaining_quantity += detail.quantity
+                        product_detail.save()
+
+                    # Cập nhật số lượng sản phẩm
+                    detail.product.quantity += detail.quantity
+                    detail.product.save()
+
+            # Kiểm tra lỗi sau khi xử lý
+            if not any(formset.errors):
+                messages.success(request, 'Đơn nhập kho đã được lưu thành công!')
+                return redirect('stock_in')
+        else:
+            print("Form errors:", form.errors)
+            print("Formset errors:", formset.errors)
+
+    categories = ProductCategory.objects.all()
+    products = Product.objects.all()
+    suppliers = Supplier.objects.all()
+    employees = User.objects.filter(is_superuser=False)
+
+    context = {
+        'title': 'Chỉnh sửa đơn nhập kho' if pk else 'Tạo mới đơn nhập kho',
+        'form': form,
+        'formset': formset,
+        'categories': categories,
+        'products': products,
+        'suppliers': suppliers,
+        'employees': employees,
+    }
+    return render(request, 'stock_in/stock_in_update.html', context)
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def supplier_list_view(request):
     suppliers = Supplier.objects.all()
     context = {
@@ -169,7 +328,11 @@ def supplier_list_view(request):
     }
     return render(request, 'supplier/supplier_list.html', context)
 
+<<<<<<< HEAD
 # View cho tạo mới nhà cung cấp
+=======
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def supplier_create_view(request):
     if request.method == 'POST':
         supplier_name = request.POST.get('supplier_name')
@@ -263,11 +426,37 @@ def supplier_delete_view(request, id):
         return redirect('supplier_list')
     return render(request, 'supplier/supplier_confirm_delete.html', {'supplier': supplier, 'title': "Xóa nhà cung cấp"})
 
+@login_required
 def near_expiry_list_view(request):
-    context = {"title": "Hàng gần đến ngày khuyến nghị"}
+    today = timezone.now()
+    end_date = today + timedelta(days=30)
+    search_query = request.GET.get('q', '')
+    near_expiry_products = ProductDetail.objects.filter(
+        expiry_date__range=(today, end_date),
+        remaining_quantity__gt=0
+    ).select_related('product__category', 'product__unit').order_by('expiry_date')
+
+    if search_query:
+        near_expiry_products = near_expiry_products.filter(product__product_name__icontains=search_query)
+
+    products_with_days_left = []
+    for detail in near_expiry_products:
+        days_left = (detail.expiry_date - today).days
+        products_with_days_left.append({
+            'detail': detail,
+            'days_left': max(0, days_left),
+        })
+
+    context = {
+        "title": "Hàng gần đến ngày hết hạn",
+        "near_expiry_products": products_with_days_left,
+        "search_query": search_query,
+    }
     return render(request, 'check/near_expiry_list.html', context)
 
+@login_required
 def low_stock_list_view(request):
+<<<<<<< HEAD
     context = {"title": "Hàng gần hết trong kho"}
     return render(request, 'check/low_stock_list.html', context)
 
@@ -279,6 +468,53 @@ def unit_list(request):
     return render(request, 'units/units_list.html', {'units': units})
 
 # Tạo đơn vị
+=======
+    search_query = request.GET.get('q', '')
+    low_stock_products = []
+    products = Product.objects.all().prefetch_related('product_details').select_related('category', 'unit')
+
+    if search_query:
+        products = products.filter(product_name__icontains=search_query)
+
+    for product in products:
+        total_quantity = product.product_details.aggregate(total=Sum('remaining_quantity'))['total'] or 0
+        if total_quantity <= product.minimum_stock:
+            low_stock_products.append({
+                'product': product,
+                'total_quantity': total_quantity,
+                'minimum_stock': product.minimum_stock,
+            })
+
+    context = {
+        "title": "Hàng gần hết trong kho",
+        "low_stock_products": low_stock_products,
+        "search_query": search_query,
+    }
+    return render(request, 'check/low_stock_list.html', context)
+
+@login_required
+def unit_list(request):
+    units = Unit.objects.all()
+    query = request.GET.get('q')
+    if query:
+        units = units.filter(name__icontains=query) | units.filter(symbol__icontains=query)
+    return render(request, 'units/units_list.html', {'units': units})
+
+@login_required
+def edit_unit(request, pk):
+    unit = get_object_or_404(Unit, pk=pk)
+    if request.method == 'POST':
+        form = UnitForm(request.POST, instance=unit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đơn vị đã được cập nhật thành công!')
+            return redirect('units_list')
+    else:
+        form = UnitForm(instance=unit)
+    return render(request, 'units/edit_unit.html', {'form': form, 'unit': unit})
+
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def create_unit(request):
     if request.method == 'POST':
         form = UnitForm(request.POST)
@@ -290,6 +526,7 @@ def create_unit(request):
         form = UnitForm()
     return render(request, 'units/create_unit.html', {'form': form})
 
+<<<<<<< HEAD
 # Cập nhật đơn vị
 def edit_unit(request, pk):
     unit = get_object_or_404(Unit, pk=pk)
@@ -304,6 +541,9 @@ def edit_unit(request, pk):
     return render(request, 'units/edit_unit.html', {'form': form, 'unit': unit})
 
 # Xóa đơn vị
+=======
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def delete_unit(request, pk):
     unit = get_object_or_404(Unit, pk=pk)
     if request.method == 'POST':
@@ -312,6 +552,7 @@ def delete_unit(request, pk):
         return redirect('units_list')
     return render(request, 'units/units_list.html', {'unit': unit})
 
+<<<<<<< HEAD
 import datetime
 from django.shortcuts import render
 from django.db.models import Sum, Count, F, ExpressionWrapper, DecimalField
@@ -319,6 +560,9 @@ from django.utils import timezone
 from django.http import JsonResponse
 from .models import StockOut, StockOutDetail, StockIn, StockInDetail, ProductCategory
 
+=======
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def report_overview(request):
     today = timezone.now()
     start_date = today.replace(day=1)  # Bắt đầu từ ngày đầu tháng
@@ -593,33 +837,93 @@ def ajax_dashboard_stats(request):
     })
 
 
+@login_required
 def product_category_view(request):
     context = {"title": "Danh mục sản phẩm"}
     return render(request, 'product_category/product_category_list.html', context)
+<<<<<<< HEAD
 
 def product_category_update(request):
     context = {"title": "Tạo mới danh mục sản phẩm"}
     return render(request, 'product_category/product_category_update.html', context)
 
+=======
+@login_required
+def product_category_update(request):
+    context = {"title": "Tạo mới danh mục sản phẩm"}
+    return render(request, 'product_category/product_category_update.html', context)
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def product_category_detail(request):
     context = {"title": "Chi tiết sản phẩm"}
     return render(request, 'product_category/product_category_detail.html', context)
 
+@login_required
 def product_view(request):
-    context = {"title": "Danh sách sản phẩm"}
+    products = Product.objects.all().order_by('product_name')
+    search_text = request.GET.get('search', '').strip()
+    filter_category = request.GET.get('category', '')
+    filter_supplier = request.GET.get('supplier', '')
+    filter_stock_status = request.GET.get('stock_status', '')
+
+    if search_text:
+        products = products.filter(
+            Q(product_name__icontains=search_text) |
+            Q(category__category_name__icontains=search_text) |
+            Q(supplier__company_name__icontains=search_text)
+        )
+
+    if filter_category:
+        products = products.filter(category__id=filter_category)
+
+    # Lọc theo nhà cung cấp
+    if filter_supplier:
+        products = products.filter(supplier__id=filter_supplier)
+
+    # Lọc theo trạng thái tồn kho
+    if filter_stock_status == 'low_stock':
+        products = products.filter(quantity__lte=F('minimum_stock'))
+    elif filter_stock_status == 'out_of_stock':
+        products = products.filter(quantity=0)
+
+    categories = ProductCategory.objects.all()
+    suppliers = Supplier.objects.all()
+    context = {
+        "title": "Danh sách sản phẩm",
+        "products": products,
+        "search_text": search_text,
+        "categories": categories,
+        "suppliers": suppliers,
+        "filter_category": filter_category,
+        "filter_supplier": filter_supplier,
+        "filter_stock_status": filter_stock_status,
+    }
     return render(request, 'product/product_list.html', context)
 
+<<<<<<< HEAD
 def product_update(request):
     context = {"title": "Tạo mới sản phẩm"}
     return render(request, 'product/product_update.html', context)
 
+=======
+@login_required
+def product_update(request):
+    context = {"title": "Tạo mới sản phẩm"}
+    return render(request, 'product/product_update.html', context)
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def product_detail(request):
     context = {"title": "Danh sách sản phẩm"}
     return render(request, 'product/product_detail.html', context)
 
+<<<<<<< HEAD
 # Khách hàng
 from django.db import connection
 
+=======
+#Khách hàng
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def customer_list(request):
     # Chỉ chọn các trường hiện có trong database
     customers = Customer.objects.only(
@@ -647,8 +951,12 @@ def customer_list(request):
         'customers': page_obj
     }
     return render(request, "customer/customer_list.html", context)
+<<<<<<< HEAD
 
 
+=======
+@login_required
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 def customer_create(request):
     if request.method == 'POST':
         # Lấy dữ liệu từ form
@@ -689,6 +997,7 @@ def customer_create(request):
     }
     return render(request, "customer/customer_form.html", context)
 
+<<<<<<< HEAD
 
 def customer_update(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
@@ -825,8 +1134,11 @@ def reset_autoincrement_for_customer(deleted_id):
             print(f"Đã đặt lại sequence cho bảng Customer: {new_seq_value}")
     except Exception as e:
         print(f"Lỗi khi đặt lại sequence: {str(e)}")
+=======
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 
 
+@login_required
 def inventory_check_list(request):
     inventory_checks = InventoryCheck.objects.all().order_by('-check_date')
     if request.GET.get('search'):
@@ -844,10 +1156,10 @@ def inventory_check_list(request):
         'title': "Danh sách kiểm kê hàng hóa",
     }
     return render(request, 'inventory/inventory_check_list.html', context)
-
+@login_required
 def inventory_check_create(request):
     return inventory_check_update(request)
-
+@login_required
 def inventory_check_update(request, pk=None):
     if pk:
         inventory_check = get_object_or_404(InventoryCheck, pk=pk)
@@ -885,15 +1197,13 @@ def inventory_check_update(request, pk=None):
             formset.save()
 
             print("InventoryCheckDetails in DB:", inventory_check.details.all())
-            messages.success(request, "Lưu kiểm kê thành công!")
             return redirect('inventory_check_list')
         else:
             print("Form Errors:", form.errors)
             print("Formset Errors:", formset.errors)
-            messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin.")
 
     products = Product.objects.all()
-    employees = Employee.objects.all()
+    employees = User.objects.all()
 
     product_details = {}
     for product in products:
@@ -914,9 +1224,11 @@ def inventory_check_update(request, pk=None):
     }
     return render(request, 'inventory/inventory_check_update.html', context)
 
+@login_required
 def inventory_check_delete(request, pk):
     inventory_check = get_object_or_404(InventoryCheck, pk=pk)
     if request.method == "POST":
+<<<<<<< HEAD
         try:
             inventory_check.delete()
             messages.success(request, "Xóa kiểm kê thành công!")
@@ -928,3 +1240,26 @@ def inventory_check_delete(request, pk):
         'inventory_check': inventory_check,
         'title': "Xóa kiểm kê hàng hóa",
     })
+=======
+        inventory_check.delete()
+        return redirect('inventory_check_list')
+    return render(request, 'inventory/inventory_check_list.html', {
+        'inventory_checks': InventoryCheck.objects.all().order_by('-check_date')
+    })
+
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('/')
+        else:
+            messages.error(request, "Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.")
+
+    return render(request, 'login.html')
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0

@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 
+=======
+{% block title %}
+    {{ title }}
+{% endblock %}
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5>Danh sách nhà cung cấp</h5>
@@ -54,6 +60,7 @@
                                 {% endif %}
                             </td>
                             <td>{{ supplier.tax_code }}</td>
+<<<<<<< HEAD
                             <td>{{ supplier.mobile_phone }}</td>
                             <td>{{ supplier.email }}</td>
                             <td>{{ supplier.address }}</td>
@@ -62,6 +69,16 @@
                             </td>
                             <td>
                                 <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-danger btn-sm">Xóa</a>
+=======
+                            <td>{{ supplier.phone }}</td>
+                            <td>{{ supplier.email }}</td>
+                            <td>{{ supplier.address }}</td>
+                            <td>
+                                <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-sm btn-outline-danger">Xóa</a>
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
                             </td>
                         </tr>
                     {% empty %}

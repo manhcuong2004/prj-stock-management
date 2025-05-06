@@ -21,13 +21,10 @@
             <a class="nav-link  {% if filter_type == 'all' %}active{% endif %}" href="?filter=all">Tất cả đơn hàng</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if filter_type == 'in_progress' %}active{% endif %}" href="?filter=in_progress">Đơn hàng đang xử lí</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if filter_type == 'cancel' %}active{% endif %}" href="?filter=cancel">Đơn hàng đã hủy</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link {% if filter_type == 'paid' %}active{% endif %}" href="?filter=paid">Đã thanh toán</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if filter_type == 'partially_paid' %}active{% endif %}" href="?filter=partially_paid">Còn nợ</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if filter_type == 'unpaid' %}active{% endif %}" href="?filter=unpaid">Chưa thanh toán</a>
@@ -51,7 +48,6 @@
                 <th scope="col">Mã</th>
                 <th scope="col">Ngày tạo</th>
                 <th scope="col">Khách hàng</th>
-                <th scope="col">Trạng thái đơn</th>
                 <th scope="col">Thanh toán</th>
                 <th scope="col">Tổng tiền</th>
                 <th scope="col">Thao tác</th>
@@ -64,15 +60,6 @@
                 <td>{{item.export_date|date:"d/m/Y H:i A"}}</td>
                 <td>{{item.customer}}</td>
                 <td>
-                  {% if item.export_status == "IN_PROGRESS" %}
-                    <span class="badge bg-warning">Đang xử lí</span>
-                  {% elif item.export_status == "COMPLETED" %}
-                    <span class="badge bg-success">Hoàn thành</span>
-                  {% else %}
-                    <span class="badge bg-danger">Đã hủy</span>
-                  {% endif %}
-                </td>
-                <td>
                   {% if item.payment_status == "PAID" %}
                     <span class="badge bg-success">Đã thanh toán</span>
                   {% elif item.payment_status == "PARTIALLY_PAID" %}
@@ -84,26 +71,10 @@
                 <td>{{ item.total_amount|intcomma }}đ</td>
                 <td>
                   <a href="{% url 'stock_out_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
-                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
-                    Xóa
-                  </button>
-                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalCenterTitle">Xác nhận xoá</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                          Bạn có chắc chắn muốn xoá đơn hàng này không?
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                          <button type="button" class="btn btn-danger">Xóa</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <form method="POST" action="{% url 'stock_out_delete' pk=item.id %}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đơn xuất này không?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                  </form>
                 </td>
               </tr>
             </tbody>

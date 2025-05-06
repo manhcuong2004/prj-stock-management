@@ -4,69 +4,122 @@
 {% endblock %}
 {% block content %}
     <div class="mb-4">
-      <h5>Tạo mới sản phẩm</h5>
+      <h5>{{ title }}</h5>
     </div>
     <div class="container bg-white p-4 rounded shadow">
+        <h5 class="mb-4">Thông tin sản phẩm</h5>
         <form method="POST">
             {% csrf_token %}
-
-            <h6 class="mb-3">Thông tin sản phẩm</h6>
-            <div class="row mb-3">
+            <div class="row">
                 <div class="col-md-6">
-                    <label for="product_name" class="form-label">Tên sản phẩm</label>
-                    <input type="text" class="form-control" id="product_name" name="product_name" placeholder="Nhập tên sản phẩm">
+                    <div class="mb-3">
+                        <label class="form-label">Tên sản phẩm</label>
+                        {{ form.product_name }}
+                        {% if form.product_name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.product_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label  class="form-label">Mô tả</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Giá nhập vào</label>
+                        {{ form.purchase_price }}
+                        {% if form.purchase_price.errors %}
+                            <div class="text-danger">
+                                {% for error in form.purchase_price.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giá bán ra</label>
+                        {{ form.selling_price }}
+                        {% if form.selling_price.errors %}
+                            <div class="text-danger">
+                                {% for error in form.selling_price.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <label for="unit" class="form-label">Đơn vị tính</label>
-                    <input type="text" class="form-control" id="unit" name="unit" placeholder="VD: Cái, Bao...">
+                    <div class="mb-3">
+                        <label class="form-label">Số lượng tồn kho tối thiểu</label>
+                        {{ form.minimum_stock }}
+                        {% if form.minimum_stock.errors %}
+                            <div class="text-danger">
+                                {% for error in form.minimum_stock.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label  class="form-label">Thời gian kiểm tra</label>
+                        {{ form.inspection_time }}
+                        {% if form.inspection_time.errors %}
+                            <div class="text-danger">
+                                {% for error in form.inspection_time.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Danh mục</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger">
+                                {% for error in form.category.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label  class="form-label">Đơn vị</label>
+                        {{ form.unit }}
+                        {% if form.unit.errors %}
+                            <div class="text-danger">
+                                {% for error in form.unit.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nhà cung cấp</label>
+                        {{ form.supplier }}
+                        {% if form.supplier.errors %}
+                            <div class="text-danger">
+                                {% for error in form.supplier.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="supplier" class="form-label">Nhà cung cấp</label>
-                    <input type="text" class="form-control" id="supplier" name="supplier" placeholder="Nhập tên nhà cung cấp">
-                </div>
-                <div class="col-md-6">
-                    <label for="category" class="form-label">Danh mục sản phẩm</label>
-                    <input type="text" class="form-control" id="category" name="category" placeholder="Nhập danh mục">
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label for="description" class="form-label">Mô tả sản phẩm</label>
-                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
-            </div>
-
-            <h6 class="mb-3">Giá sản phẩm</h6>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="import_price" class="form-label">Giá nhập vào</label>
-                    <input type="number" class="form-control" id="import_price" name="import_price" placeholder="Giá nhập">
-                </div>
-                <div class="col-md-6">
-                    <label for="sale_price" class="form-label">Giá bán ra</label>
-                    <input type="number" class="form-control" id="sale_price" name="sale_price" placeholder="Giá bán">
-                </div>
-            </div>
-
-            <h6 class="mb-3">Thông tin kiểm tra & dự trù</h6>
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <label for="check_interval" class="form-label">Thời gian khuyến nghị kiểm tra</label>
-                    <input type="text" class="form-control" id="check_interval" name="check_interval" placeholder="VD: 6 tháng">
-                </div>
-                <div class="col-md-6">
-                    <label for="threshold" class="form-label">Mức báo dự trù</label>
-                    <input type="number" class="form-control" id="threshold" name="threshold" placeholder="VD: 100">
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end mt-4">
                 <button type="submit" class="btn btn-primary">Lưu</button>
-                <a href="/product" class="btn btn-secondary ms-2">Hủy</a>
+                <a href="{% url 'product' %}" class="btn btn-secondary ms-2">Hủy</a>
             </div>
         </form>
     </div>
-
 {% endblock %}

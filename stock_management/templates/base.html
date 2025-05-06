@@ -144,30 +144,6 @@
             height: calc(100vh - 20px);
             overflow-y: auto;
         }
-
-    /* Pagination Styles */
-    .pagination {
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    .pagination .page-item.active .page-link {
-        background-color: #0D6EFD;
-        border-color: #0D6EFD;
-    }
-
-    .pagination .page-link {
-        color: #0D6EFD;
-    }
-
-    .pagination .page-link:hover {
-        background-color: #E9ECEF;
-        color: #0D6EFD;
-    }
-
-    .pagination .page-item.disabled .page-link {
-        color: #6c757d;
-    }
     {% block style %}
 
     {% endblock %}
@@ -213,6 +189,7 @@
         <a href="/units"><i class="bi bi-building"></i> Đơn vị</a>
         <a href="/stock-out"><i class="bi bi-truck"></i> Xuất kho</a>
         <a href="/stock-in"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
+        <a href="/employees"><i class="bi bi-person-badge"></i> Nhân viên</a>
         <a href="/supplier"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
         <a href="#" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false">
             <i class="bi bi-box-seam"></i> Kiểm tra sản phẩm

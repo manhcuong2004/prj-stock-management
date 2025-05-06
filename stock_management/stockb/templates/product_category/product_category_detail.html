@@ -4,7 +4,11 @@
 {% endblock %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5>Danh sách sản phẩm trong danh mục</h5>
+        <h5>Danh sách sản phẩm trong danh mục - {{ category.category_name }}</h5>
+        <a class="btn btn-secondary" href="{% url 'product_category' %}">
+            <i class="bi bi-arrow-90deg-left"></i>
+            Quay lại
+        </a>
     </div>
     <div class="container bg-white p-4 rounded shadow">
         <div class="input-group mb-4">
@@ -17,62 +21,19 @@
             <div class="col-2 text-end">Giá</div>
         </div>
 
+        {% for product in products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9" href="/product/detail">
-                Xi măng VSA
+            <a class="col-9" href="{% url 'product_detail' product.pk %}">
+                {{ product.product_name }}
             </a>
-
             <div class="col-2 text-end">
-                <span>0</span>đ
+                <span>{{ product.selling_price }}</span>đ
             </div>
         </div>
-        <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9">
-                Xi măng Thịnh phát
-            </a>
-
-            <div class="col-2 text-end">
-                <span>1200</span>đ
-            </div>
+        {% empty %}
+        <div class="row py-2">
+            <div class="col-12">Không có sản phẩm nào trong danh mục này.</div>
         </div>
-
-        <div class="add-product mt-4">
-            <form>
-                <div class="input-group mb-3">
-                  <input type="text" id="new-product" class="form-control" placeholder="Nhập tên sản phẩm mới" list="suggestions">
-                  <button type="button" class="btn btn-success" id="add-product-btn" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
-                    Thêm sản phẩm
-                  </button>
-                </div>
-
-                <datalist id="suggestions">
-                  <option value="Bao xi măng thịnh phát">
-                  <option value="Xi măng Holcim">
-                  <option value="Xi măng Sài Gòn">
-                  <option value="Xi măng Vicem Bỉm Sơn">
-                  <option value="Xi măng Nghi Sơn - Loại 30kg">
-                </datalist>
-                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLongTitle">Cảnh báo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      <div class="modal-body">
-                        Bạn có chắc muốn di chuyển sản phẩm từ danh mục A sang danh mục B không ?
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="button" class="btn btn-primary" onclick="location.reload()">Lưu</button>
-                      </div>
-                    </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+        {% endfor %}
     </div>
-
 {% endblock %}

@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 
+=======
+{% block title %}
+    {{title}}
+{% endblock %}
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="mb-0">Chỉnh sửa đơn vị</h5>
@@ -11,7 +17,11 @@
             {% csrf_token %}
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
+<<<<<<< HEAD
                     {{ form.unit_.label_tag }}
+=======
+                    {{ form.unit_name.label_tag }}
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
                     {{ form.unit_name }}
                 </div>
                 <div class="col-md-6">

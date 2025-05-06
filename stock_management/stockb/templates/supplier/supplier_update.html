@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 
+=======
+{% block title %}
+    {{ title }}
+{% endblock %}
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
 {% block content %}
     <div class="container bg-white p-4 rounded shadow">
         <h5 class="mb-4">Chỉnh sửa nhà cung cấp</h5>
@@ -23,10 +29,17 @@
                 <div class="col-md-6">
                     <label for="company" class="form-label">Công ty</label>
                     <select class="form-select" id="company" name="company">
+<<<<<<< HEAD
                         <option value="" {% if not supplier.supplier_notes or "Công ty: " not in supplier.supplier_notes %}selected{% endif %}>Chọn công ty</option>
                         <option value="Visa" {% if "Công ty: Visa" in supplier.supplier_notes %}selected{% endif %}>Visa</option>
                         <option value="Mastercard" {% if "Công ty: Mastercard" in supplier.supplier_notes %}selected{% endif %}>Mastercard</option>
                         <option value="Paypal" {% if "Công ty: Paypal" in supplier.supplier_notes %}selected{% endif %}>Paypal</option>
+=======
+                        <option value="" {% if not supplier.notes or "Công ty: " not in supplier.notes %}selected{% endif %}>Chọn công ty</option>
+                        <option value="Visa" {% if "Công ty: Visa" in supplier.notes %}selected{% endif %}>Visa</option>
+                        <option value="Mastercard" {% if "Công ty: Mastercard" in supplier.notes %}selected{% endif %}>Mastercard</option>
+                        <option value="Paypal" {% if "Công ty: Paypal" in supplier.notes %}selected{% endif %}>Paypal</option>
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
                     </select>
                 </div>
             </div>
@@ -44,8 +57,13 @@
 
             <div class="row mb-3">
                 <div class="col-md-6">
+<<<<<<< HEAD
                     <label for="mobile_phone" class="form-label">Số điện thoại</label>
                     <input type="text" class="form-control" id="mobile_phone" name="mobile_phone" value="{{ supplier.mobile_phone }}" required>
+=======
+                    <label for="phone" class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-control" id="phone" name="phone" value="{{ supplier.phone }}" required>
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
                 </div>
                 <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
@@ -54,12 +72,21 @@
             </div>
 
             <div class="mb-3">
+<<<<<<< HEAD
                 <label for="supplier_notes" class="form-label">Ghi chú</label>
                 <textarea class="form-control" id="supplier_notes" name="supplier_notes" rows="3">
                     {% if "Công ty: " in supplier.supplier_notes %}
                         {{ supplier.supplier_notes|slice:"10:" }}
                     {% else %}
                         {{ supplier.supplier_notes }}
+=======
+                <label for="notes" class="form-label">Ghi chú</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3">
+                    {% if "Công ty: " in supplier.notes %}
+                        {{ supplier.notes|slice:"10:" }}
+                    {% else %}
+                        {{ supplier.notes }}
+>>>>>>> d3698f53c449ea7292de40625f825062f8b78ce0
                     {% endif %}
                 </textarea>
             </div>
