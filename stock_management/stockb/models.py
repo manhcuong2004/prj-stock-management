@@ -138,6 +138,7 @@ class StockInDetail(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+
 class ProductDetail(models.Model):
     STATUS_CHOICES = [
         ('ACTIVE', 'Kích hoạt'),
@@ -148,6 +149,7 @@ class ProductDetail(models.Model):
     initial_quantity = models.IntegerField()
     remaining_quantity = models.IntegerField()
     import_date = models.DateTimeField()
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -169,6 +171,7 @@ class ProductDetail(models.Model):
 
         if self.import_date and self.product.inspection_time:
             self.expiry_date = self.import_date + timedelta(days=self.product.inspection_time)
+
         super().save(*args, **kwargs)
 
 
@@ -199,12 +202,41 @@ class StockOutDetail(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if self.quantity > self.product_detail.remaining_quantity:
+        old_quantity = 0
+        old_product_detail = None
+
+        if self.pk:
+            try:
+                old_instance = StockOutDetail.objects.get(pk=self.pk)
+                old_quantity = old_instance.quantity
+                old_product_detail = old_instance.product_detail
+            except StockOutDetail.DoesNotExist:
+                old_quantity = 0
+                old_product_detail = None
+
+        quantity_diff = self.quantity - old_quantity
+
+        if quantity_diff > self.product_detail.remaining_quantity:
             raise ValueError(
                 f"Số lượng xuất ({self.quantity}) vượt quá số lượng tồn kho "
                 f"({self.product_detail.remaining_quantity}) cho lô {self.product_detail.product_batch}"
             )
+
+        if quantity_diff != 0:
+            self.product_detail.remaining_quantity -= quantity_diff
+            self.product_detail.save()
+
+        if old_product_detail and old_product_detail != self.product_detail:
+            old_product_detail.remaining_quantity += old_quantity
+            old_product_detail.save()
+
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.product_detail:
+            self.product_detail.remaining_quantity += self.quantity
+            self.product_detail.save()
+        super().delete(*args, **kwargs)
 
 
 

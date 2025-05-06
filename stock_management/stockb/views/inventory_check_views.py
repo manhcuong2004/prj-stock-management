@@ -3,17 +3,28 @@ from django.contrib.auth.models import User
 from django.core.checks import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.db.models import Q
 
 from ..forms import InventoryCheckForm, InventoryCheckDetailFormSet
-from ..models import Product, ProductDetail, Supplier, InventoryCheck, ProductCategory
+from ..models import Product, ProductDetail, InventoryCheck, ProductCategory
 
 
 @login_required
 def inventory_check_list(request):
     inventory_checks = InventoryCheck.objects.all().order_by('-check_date')
+
+    search_query = request.GET.get('search', '')
+    if search_query:
+        inventory_checks = inventory_checks.filter(
+            Q(id__icontains=search_query) |
+            Q(notes__icontains=search_query) |
+            Q(employee__username__icontains=search_query)
+        )
+
     context = {
         'title': "Kiểm kê hàng hóa",
         'inventory_checks': inventory_checks,
+        'search_query': search_query
     }
     return render(request, 'inventory/inventory_check_list.html', context)
 
@@ -33,7 +44,6 @@ def inventory_check_update(request, pk=None):
             inventory_check = form.save(commit=False)
             if not inventory_check.check_date:
                 inventory_check.check_date = timezone.now()
-            inventory_check.employee = request.user
             inventory_check.save()
 
             instances = formset.save(commit=False)

@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.shortcuts import render, get_object_or_404, redirect
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
@@ -77,56 +77,56 @@ def stock_out_update(request, pk=None):
 
     if request.method == "POST":
         print("Formset data:", request.POST)
-        # Xử lý DELETE trước khi kiểm tra is_valid
-        for detail_form in formset:
-            form_prefix = detail_form.prefix
-            delete_key = f"{form_prefix}-DELETE"
-            if delete_key in request.POST and detail_form.instance.pk:
-                try:
-                    detail_form.instance.delete()
-                    print("Deleted StockOutDetail with id:", detail_form.instance.pk)
-                except Exception as e:
-                    print("Error deleting StockOutDetail:", e)
-
         if form.is_valid() and formset.is_valid():
+            # Lưu StockOut
             stock_out = form.save(commit=False)
             if not stock_out.export_date:
                 stock_out.export_date = timezone.now()
-            stock_out.employee = request.user
+            stock_out.updated_at = timezone.now()
             stock_out.save()
 
-            # Xử lý formset (giữ nguyên logic không liên quan đến DELETE)
+            # Xử lý formset
             for detail_form in formset:
-                if detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
+                if detail_form.cleaned_data.get('DELETE', False) and detail_form.instance.pk:
+                    try:
+                        detail_form.instance.delete()
+                        print("Deleted StockOutDetail with id:", detail_form.instance.pk)
+                    except Exception as e:
+                        print("Error deleting StockOutDetail:", e)
+                        detail_form.add_error(None, f"Lỗi khi xóa chi tiết: {str(e)}")
+                        continue
+                elif detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
                     detail = detail_form.save(commit=False)
                     detail.export_record = stock_out
                     detail.product_detail = detail_form.cleaned_data.get('product_detail')
 
                     if detail.quantity and detail.product and detail.product_detail:
-                        if detail.product_detail.product != detail.product:
-                            detail_form.add_error(None, f"Lô {detail.product_detail.product_batch} không thuộc sản phẩm đã chọn.")
+                        try:
+                            detail.save()
+                        except ValueError as e:
+                            detail_form.add_error(None, str(e))
                             continue
-                        if detail.quantity > detail.product_detail.remaining_quantity:
-                            detail_form.add_error(None, f"Lô {detail.product_detail.product_batch} chỉ còn {detail.product_detail.remaining_quantity} sản phẩm.")
-                            continue
-                        detail.save()
-                        detail.product_detail.remaining_quantity -= detail.quantity
-                        detail.product_detail.save()
                     else:
                         detail_form.add_error(None, "Thông tin sản phẩm hoặc lô không hợp lệ.")
                         continue
 
-            # Kiểm tra lỗi sau khi xử lý
             if not any(formset.errors):
+                messages.success(request, f"{'Cập nhật' if pk else 'Tạo mới'} đơn xuất kho thành công!")
                 return redirect('stock_out')
+            else:
+                messages.error(request, "Có lỗi trong form, vui lòng kiểm tra lại.")
+                print("Form errors:", form.errors)
+                print("Formset errors:", formset.errors)
         else:
+            messages.error(request, "Có lỗi trong form, vui lòng kiểm tra lại.")
             print("Form errors:", form.errors)
             print("Formset errors:", formset.errors)
 
+    group = Group.objects.get(name="Quan ly")
     categories = ProductCategory.objects.all()
     products = Product.objects.all()
     customers = Customer.objects.all()
-    employees = User.objects.filter(is_superuser=False)
+    employees = User.objects.filter(is_superuser=False, groups=group)
     product_details = ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE")
 
     context = {
@@ -140,6 +140,7 @@ def stock_out_update(request, pk=None):
         'employees': employees,
     }
     return render(request, 'stock_out/stock_out_update.html', context)
+
 @login_required
 def stock_out_delete(request, pk):
     stock_out = get_object_or_404(StockOut, pk=pk)

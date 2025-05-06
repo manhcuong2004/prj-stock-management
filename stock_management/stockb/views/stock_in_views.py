@@ -63,7 +63,6 @@ def stock_in_update(request, pk=None):
             stock_in = form.save(commit=False)
             if not stock_in.import_date:
                 stock_in.import_date = timezone.now()
-            stock_in.employee = request.user
             stock_in.save()
 
             # Xử lý formset
