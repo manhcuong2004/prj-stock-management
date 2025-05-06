@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block style %}
+    .check-code {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .summary-box {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    .discrepancy.text-success { color: green; }
+    .discrepancy.text-danger { color: red; }
+    .alert {
+        margin-bottom: 1rem;
+    }
+    .delete-checkbox {
+        display: none;
+    }
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors or formset.errors %}
+        <div class="alert alert-danger">
+            <strong>Lỗi:</strong>
+            <ul>
+                {% for form in formset %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="check-code">MÃ <span class="text-dark">#{% if form.instance.pk %}{{ form.instance.pk }}{% else %}Mới{% endif %}</span></div>
+            <small class="text-muted">
+                {% if form.instance.check_date %}
+                    {{ form.instance.check_date|date:"d/m/Y H:i A" }}
+                {% else %}
+                    {% now "d/m/Y H:i A" %}
+                {% endif %}
+            </small>
+        </div>
+        <div>
+            <a href="{% url 'inventory_check_list' %}" class="btn btn-outline-secondary me-2">Quay lại danh sách</a>
+        </div>
+    </div>
+
+    <form id="check-form" method="POST">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="row">
+            <div class="col-md-9">
+                <div class="summary-box">
+                    {% if formset.forms %}
+                    <table class="table" id="product-table">
+                        <thead>
+                            <tr>
+                                <th>Danh mục</th>
+                                <th>Sản phẩm</th>
+                                <th>Lô</th>
+                                <th>Số lượng lý thuyết</th>
+                                <th>Số lượng thực tế</th>
+                                <th>Chênh lệch</th>
+                                <th>Ghi chú</th>
+                                <th>Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list">
+                            {% for detail_form in formset %}
+                                {% with product_id=detail_form.product.value batch_id=detail_form.product_batch.value %}
+                                {% if product_id and batch_id %}
+                                <tr class="product-row">
+                                    <td>
+                                        {% for product in products %}
+                                            {% if product.id == product_id|add:0 %}
+                                                {{ product.category.category_name }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for product in products %}
+                                            {% if product.id == product_id|add:0 %}
+                                                {{ product.product_name }}
+                                                <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ product_id }}">
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if detail_form.instance.pk %}
+                                            <input type="hidden" name="{{ detail_form.prefix }}-id" value="{{ detail_form.instance.pk }}">
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for detail in product_details %}
+                                            {% if detail.id == batch_id|add:0 %}
+                                                {{ detail.product_batch }}
+                                            {% endif %}
+                                        {% endfor %}
+                                        <input type="hidden" name="{{ detail_form.prefix }}-product_batch" value="{{ batch_id }}">
+                                    </td>
+                                    <td>
+                                        <span class="theoretical-quantity">{{ detail_form.theoretical_quantity.value|default:'0' }}</span>
+                                        {{ detail_form.theoretical_quantity }}
+                                    </td>
+                                    <td>
+                                        {{ detail_form.actual_quantity }}
+                                    </td>
+                                    <td>
+                                        <span class="discrepancy">0</span>
+                                    </td>
+                                    <td>
+                                        {{ detail_form.notes }}
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="checkbox" name="{{ detail_form.DELETE.name }}" id="{{ detail_form.DELETE.id_for_label }}" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
+                                        <i class="bi bi-x-lg delete-row"></i>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <p id="no-product-message">Chưa có lô</p>
+                    {% endif %}
+                    <div class="add-product">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="input-group mb-3">
+                                    <select id="category-select" class="form-control">
+                                        <option value="">Chọn danh mục</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}">{{ category.category_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group mb-3">
+                                    <select id="product-select" class="form-control" disabled>
+                                        <option value="">Chọn sản phẩm</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group mb-3">
+                                    <select id="batch-select" class="form-control" disabled>
+                                        <option value="">Chọn lô</option>
+                                    </select>
+                                    <button type="button" class="btn btn-success" id="add-product-btn" disabled>Thêm lô</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="summary-box">
+                            <h6>Ghi Chú Kiểm Kê</h6>
+                            {{ form.notes }}
+                            <p><strong>Ghi Chú Hiện Có:</strong><br>{{ form.instance.notes|default:'Không có' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="summary-box">
+                            <div class="d-flex justify-content-between">
+                                <span>Tổng số lô</span><span class="total-items">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Tổng chênh lệch</span><span class="total-discrepancy">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="summary-box mb-3">
+                    <h6>Thông Tin Kiểm Kê</h6>
+                    <div class="mb-2">
+                        <label class="form-label">Nhân Viên Thực Hiện</label>
+                        {{ form.employee }}
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Ngày Kiểm Kê</label>
+                        {{ form.check_date }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Lưu Kiểm Kê</button>
+        </div>
+    </form>
+
+    <script>
+        // Đếm số hàng thực tế hiển thị
+        let initialRows = document.querySelectorAll('.product-row').length;
+        let formIndex = initialRows;
+        document.querySelector('#id_inventorycheckdetail_set-TOTAL_FORMS').value = initialRows;
+
+        const productData = [
+            {% for product in products %}
+                {% if product.category %}
+                    {
+                        id: {{ product.id }},
+                        name: "{{ product.product_name|escapejs }}",
+                        category_id: {{ product.category.id }}
+                    },
+                {% endif %}
+            {% endfor %}
+        ];
+
+        const batchData = [
+            {% for detail in product_details %}
+                {
+                    id: {{ detail.id }},
+                    product_id: {{ detail.product.id }},
+                    product_batch: "{{ detail.product_batch|escapejs }}",
+                    remaining_quantity: {{ detail.remaining_quantity }},
+                    import_date: "{{ detail.import_date|date:'Y-m-d'|default:'' }}"
+                },
+            {% endfor %}
+        ];
+
+        const categorySelect = document.getElementById('category-select');
+        const productSelect = document.getElementById('product-select');
+        const batchSelect = document.getElementById('batch-select');
+        const addButton = document.getElementById('add-product-btn');
+
+        function resetProductAndBatchSelects() {
+            productSelect.innerHTML = '<option value="">Chọn sản phẩm</option>';
+            batchSelect.innerHTML = '<option value="">Chọn lô</option>';
+            productSelect.disabled = true;
+            batchSelect.disabled = true;
+            addButton.disabled = true;
+        }
+
+        categorySelect.addEventListener('change', function() {
+            const categoryId = parseInt(this.value);
+            console.log('Selected categoryId:', categoryId);
+            resetProductAndBatchSelects();
+
+            if (categoryId) {
+                const filteredProducts = productData.filter(product => product.category_id === categoryId);
+                console.log('Filtered products:', filteredProducts);
+
+                if (filteredProducts.length > 0) {
+                    productSelect.innerHTML = '<option value="">Chọn sản phẩm</option>';
+                    filteredProducts.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.text = product.name;
+                        productSelect.appendChild(option);
+                    });
+                    productSelect.disabled = false;
+                } else {
+                    productSelect.innerHTML = '<option value="">Không có sản phẩm</option>';
+                    productSelect.disabled = true;
+                }
+            }
+        });
+
+        productSelect.addEventListener('change', function() {
+            const productId = parseInt(this.value);
+            console.log('Selected productId:', productId);
+            batchSelect.innerHTML = '<option value="">Chọn lô</option>';
+            batchSelect.disabled = true;
+            addButton.disabled = true;
+
+            if (productId) {
+                const filteredBatches = batchData.filter(batch => batch.product_id === productId);
+                console.log('Filtered batches:', filteredBatches);
+
+                if (filteredBatches.length > 0) {
+                    batchSelect.innerHTML = '<option value="">Chọn lô</option>';
+                    filteredBatches.forEach(batch => {
+                        const option = document.createElement('option');
+                        option.value = batch.id;
+                        option.text = `${batch.product_batch} (Còn: ${batch.remaining_quantity}${batch.import_date ? ', Nhập: ' + batch.import_date : ''})`;
+                        option.dataset.theoretical = batch.remaining_quantity;
+                        batchSelect.appendChild(option);
+                    });
+                    batchSelect.disabled = false;
+                } else {
+                    batchSelect.innerHTML = '<option value="">Không có lô</option>';
+                    batchSelect.disabled = true;
+                }
+            }
+        });
+
+        batchSelect.addEventListener('change', function() {
+            console.log('Selected batchId:', this.value);
+            addButton.disabled = !this.value;
+        });
+
+        document.getElementById('add-product-btn').addEventListener('click', function(event) {
+            event.preventDefault();
+            const categoryId = categorySelect.value;
+            const productId = productSelect.value;
+            const productName = productSelect.options[productSelect.selectedIndex].text;
+            const batchId = batchSelect.value;
+            const batchName = batchSelect.options[batchSelect.selectedIndex].text.split(' (')[0];
+            const theoreticalQuantity = parseInt(batchSelect.options[batchSelect.selectedIndex].dataset.theoretical) || 0;
+
+            const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
+
+            console.log('Adding row - Product ID:', productId, 'Batch ID:', batchId);
+
+            const existingRows = document.querySelectorAll('.product-row');
+            for (let row of existingRows) {
+                const rowProductId = row.querySelector('input[name$="-product"]').value;
+                const rowBatchId = row.querySelector('input[name$="-product_batch"]').value;
+                if (rowProductId === productId && rowBatchId === batchId) {
+                    alert('Sản phẩm và lô đã tồn tại!');
+                    return;
+                }
+            }
+
+            if (productId && batchId) {
+                const noProductMessage = document.getElementById('no-product-message');
+                if (noProductMessage) {
+                    noProductMessage.style.display = 'none';
+                }
+
+                let table = document.querySelector('#product-table');
+                if (!table) {
+                    const tableHTML = `
+                        <table class="table" id="product-table">
+                            <thead>
+                                <tr>
+                                    <th>Danh mục</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Lô</th>
+                                    <th>Số lượng lý thuyết</th>
+                                    <th>Số lượng thực tế</th>
+                                    <th>Chênh lệch</th>
+                                    <th>Ghi chú</th>
+                                    <th>Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="product-list"></tbody>
+                        </table>
+                    `;
+                    document.querySelector('.summary-box').insertAdjacentHTML('afterbegin', tableHTML);
+                    table = document.querySelector('#product-table');
+                }
+
+                const tableBody = document.getElementById('product-list');
+                const newRow = document.createElement('tr');
+                newRow.classList.add('product-row');
+                newRow.innerHTML = `
+                    <td>${categoryName}</td>
+                    <td>
+                        ${productName}
+                        <input type="hidden" name="inventorycheckdetail_set-${formIndex}-product" value="${productId}">
+                    </td>
+                    <td>
+                        ${batchName}
+                        <input type="hidden" name="inventorycheckdetail_set-${formIndex}-product_batch" value="${batchId}">
+                    </td>
+                    <td>
+                        <span class="theoretical-quantity">${theoreticalQuantity}</span>
+                        <input type="hidden" name="inventorycheckdetail_set-${formIndex}-theoretical_quantity" value="${theoreticalQuantity}">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control actual-quantity" style="width: 100px;" name="inventorycheckdetail_set-${formIndex}-actual_quantity" value="${theoreticalQuantity}" min="0" required>
+                    </td>
+                    <td>
+                        <span class="discrepancy">0</span>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control notes" name="inventorycheckdetail_set-${formIndex}-notes" value="">
+                    </td>
+                    <td class="text-center">
+                        <input type="checkbox" name="inventorycheckdetail_set-${formIndex}-DELETE" class="delete-checkbox">
+                        <i class="bi bi-x-lg delete-row"></i>
+                    </td>
+                `;
+                tableBody.appendChild(newRow);
+
+                const totalForms = document.querySelector('#id_inventorycheckdetail_set-TOTAL_FORMS');
+                totalForms.value = parseInt(totalForms.value) + 1;
+                formIndex++;
+
+                categorySelect.value = '';
+                resetProductAndBatchSelects();
+
+                updateRowDiscrepancies();
+                updateSummary();
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('delete-row')) {
+                const row = event.target.closest('tr');
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.checked = true;
+                    row.style.display = 'none';
+                } else {
+                    row.remove();
+                    const totalForms = document.querySelector('#id_inventorycheckdetail_set-TOTAL_FORMS');
+                    totalForms.value = parseInt(totalForms.value) - 1;
+                    formIndex--;
+                }
+
+                updateSummary();
+
+                const visibleRows = document.querySelectorAll('.product-row:not([style*="display: none"])');
+                if (visibleRows.length === 0) {
+                    const table = document.querySelector('#product-table');
+                    if (table) {
+                        table.remove();
+                    }
+                    const noProductMessage = document.createElement('p');
+                    noProductMessage.id = 'no-product-message';
+                    noProductMessage.textContent = 'Chưa có lô';
+                    document.querySelector('.summary-box').insertBefore(noProductMessage, document.querySelector('.summary-box').firstChild);
+                }
+            }
+        });
+
+        function updateRowDiscrepancies() {
+            document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
+                const theoreticalInput = row.querySelector('input[name$="-theoretical_quantity"]');
+                const actualInput = row.querySelector('input[name$="-actual_quantity"]');
+                if (!theoreticalInput || !actualInput) return;
+
+                const theoretical = parseInt(theoreticalInput.value) || 0;
+                const actual = parseInt(actualInput.value) || 0;
+                const discrepancy = actual - theoretical;
+                const discrepancyElement = row.querySelector('.discrepancy');
+                discrepancyElement.textContent = discrepancy;
+                discrepancyElement.classList.remove('text-success', 'text-danger');
+                if (discrepancy > 0) {
+                    discrepancyElement.classList.add('text-success');
+                } else if (discrepancy < 0) {
+                    discrepancyElement.classList.add('text-danger');
+                }
+            });
+        }
+
+        document.addEventListener('input', function(event) {
+            if (event.target.classList.contains('actual-quantity')) {
+                updateRowDiscrepancies();
+                updateSummary();
+            }
+        });
+
+        function updateSummary() {
+            let totalItems = 0;
+            let totalDiscrepancy = 0;
+
+            document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
+                const discrepancyElement = row.querySelector('.discrepancy');
+                if (discrepancyElement) {
+                    const discrepancy = parseInt(discrepancyElement.textContent) || 0;
+                    totalItems += 1;
+                    totalDiscrepancy += discrepancy;
+                }
+            });
+
+            const totalItemsElement = document.querySelector('.summary-box .total-items');
+            const totalDiscrepancyElement = document.querySelector('.summary-box .total-discrepancy');
+            if (totalItemsElement) totalItemsElement.textContent = totalItems;
+            if (totalDiscrepancyElement) {
+                totalDiscrepancyElement.textContent = totalDiscrepancy;
+                totalDiscrepancyElement.classList.remove('text-success', 'text-danger');
+                if (totalDiscrepancy > 0) {
+                    totalDiscrepancyElement.classList.add('text-success');
+                } else if (totalDiscrepancy < 0) {
+                    totalDiscrepancyElement.classList.add('text-danger');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('productData:', productData);
+            console.log('batchData:', batchData);
+            resetProductAndBatchSelects();
+            updateRowDiscrepancies();
+            updateSummary();
+        });
+
+        document.getElementById('check-form').addEventListener('submit', function(event) {
+            console.log('Form submitted');
+            const formData = new FormData(this);
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+            if (!confirm('Bạn có chắc muốn lưu kiểm kê này?')) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</div>
+{% endblock %}

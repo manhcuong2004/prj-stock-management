@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{title}}
+{% endblock %}
+{% block header-name %}
+    Sản phẩm
+{%endblock%}
+{% load humanize %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5>Danh sách đơn hàng xuất</h5>
+      <a href="create" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i>
+          Tạo đơn hàng
+      </a>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <ul class="nav nav-tabs mb-3">
+          <li class="nav-item">
+            <a class="nav-link  {% if filter_type == 'all' %}active{% endif %}" href="?filter=all">Tất cả đơn hàng</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if filter_type == 'paid' %}active{% endif %}" href="?filter=paid">Đã thanh toán</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if filter_type == 'partially_paid' %}active{% endif %}" href="?filter=partially_paid">Còn nợ</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if filter_type == 'unpaid' %}active{% endif %}" href="?filter=unpaid">Chưa thanh toán</a>
+          </li>
+        </ul>
+
+        <div class="input-group mb-4">
+           <form class="d-inline-block float-end w-100" method="GET">
+            <div class="input-group">
+                <input type="hidden" name="filter" value="{{ filter_type }}">
+                <input type="text" name="search" class="form-control" placeholder="Tìm kiếm dựa theo mã hàng hoặc tên khách hàng" value="{{ search_text }}">
+                <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Mã</th>
+                <th scope="col">Ngày tạo</th>
+                <th scope="col">Khách hàng</th>
+                <th scope="col">Thanh toán</th>
+                <th scope="col">Tổng tiền</th>
+                <th scope="col">Thao tác</th>
+              </tr>
+            </thead>
+            {% for item in stock_out_list %}
+            <tbody>
+              <tr>
+                <td>#{{item.id}}</td>
+                <td>{{item.export_date|date:"d/m/Y H:i A"}}</td>
+                <td>{{item.customer}}</td>
+                <td>
+                  {% if item.payment_status == "PAID" %}
+                    <span class="badge bg-success">Đã thanh toán</span>
+                  {% elif item.payment_status == "PARTIALLY_PAID" %}
+                    <span class="badge bg-warning">Còn nợ</span>
+                  {% else %}
+                    <span class="badge bg-danger">Chưa thanh toán</span>
+                  {% endif %}
+                </td>
+                <td>{{ item.total_amount|intcomma }}đ</td>
+                <td>
+                  <a href="{% url 'stock_out_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
+                  <form method="POST" action="{% url 'stock_out_delete' pk=item.id %}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đơn xuất này không?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+            {% endfor %}
+          </table>
+    </div>
+  </div>
+{% endblock %}

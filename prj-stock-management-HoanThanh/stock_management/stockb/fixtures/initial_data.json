@@ -1,0 +1,822 @@
+[
+  {
+    "model": "stockb.ProductCategory",
+    "pk": 1,
+    "fields": {
+      "category_name": "Vật liệu thô",
+      "description": "Xi măng, cát, sỏi, đá",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductCategory",
+    "pk": 2,
+    "fields": {
+      "category_name": "Vật liệu hoàn thiện",
+      "description": "Gạch lát, sơn, ngói",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductCategory",
+    "pk": 3,
+    "fields": {
+      "category_name": "Kim khí xây dựng",
+      "description": "Thép, sắt, đinh, vít",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductCategory",
+    "pk": 4,
+    "fields": {
+      "category_name": "Vật liệu cách nhiệt",
+      "description": "Tôn, xốp, bông thủy tinh",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductCategory",
+    "pk": 5,
+    "fields": {
+      "category_name": "Ống nước và phụ kiện",
+      "description": "Ống nhựa, van, co nối",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Unit",
+    "pk": 1,
+    "fields": {
+      "unit_name": "Tấn",
+      "unit_symbol": "t",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Unit",
+    "pk": 2,
+    "fields": {
+      "unit_name": "Khối",
+      "unit_symbol": "m³",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Unit",
+    "pk": 3,
+    "fields": {
+      "unit_name": "Mét vuông",
+      "unit_symbol": "m²",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Unit",
+    "pk": 4,
+    "fields": {
+      "unit_name": "Cái",
+      "unit_symbol": "pcs",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Unit",
+    "pk": 5,
+    "fields": {
+      "unit_name": "Mét",
+      "unit_symbol": "m",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Supplier",
+    "pk": 1,
+    "fields": {
+      "supplier_name": "Công ty Xi măng Hà Tiên",
+      "company_name": "Hà Tiên Cement",
+      "tax_code": "1234567890",
+      "address": "123 Đường Nguyễn Văn Cừ, TP.HCM",
+      "phone": "0901234567",
+      "email": "contact@hatien.com",
+      "notes": "Cung cấp xi măng chất lượng cao",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Supplier",
+    "pk": 2,
+    "fields": {
+      "supplier_name": "Công ty Cát Sỏi Việt Nam",
+      "company_name": "VN Sand & Gravel",
+      "tax_code": "9876543210",
+      "address": "456 Đường Láng, Hà Nội",
+      "phone": "0912345678",
+      "email": "sales@vnsand.com",
+      "notes": "Cung cấp cát, sỏi, đá xây dựng",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Supplier",
+    "pk": 3,
+    "fields": {
+      "supplier_name": "Công ty Thép Pomina",
+      "company_name": "Pomina Steel",
+      "tax_code": "1122334455",
+      "address": "789 Đường Lê Lợi, Đà Nẵng",
+      "phone": "0923456789",
+      "email": "info@pomina.com",
+      "notes": "Cung cấp thép xây dựng",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Supplier",
+    "pk": 4,
+    "fields": {
+      "supplier_name": "Công ty Sơn Nippon",
+      "company_name": "Nippon Paint VN",
+      "tax_code": "5566778899",
+      "address": "101 Đường Trần Phú, Huế",
+      "phone": "0934567890",
+      "email": "sales@nippon.com",
+      "notes": "Cung cấp sơn nội ngoại thất",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Supplier",
+    "pk": 5,
+    "fields": {
+      "supplier_name": "Công ty Ống Nhựa Tiền Phong",
+      "company_name": "Tiền Phong Plastic",
+      "tax_code": "2233445566",
+      "address": "202 Đường Hùng Vương, Cần Thơ",
+      "phone": "0945678901",
+      "email": "contact@tienphong.com",
+      "notes": "Cung cấp ống nhựa và phụ kiện",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Product",
+    "pk": 1,
+    "fields": {
+      "product_name": "Xi măng PC40",
+      "description": "Xi măng xây dựng chất lượng cao",
+      "quantity": 1000,
+      "purchase_price": 1200000.00,
+      "selling_price": 1500000.00,
+      "minimum_stock": 100,
+      "inspection_time": "2025-04-15T10:00:00Z",
+      "category": 1,
+      "unit": 1,
+      "supplier": 1,
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Product",
+    "pk": 2,
+    "fields": {
+      "product_name": "Cát xây tô",
+      "description": "Cát sạch dùng để xây và tô tường",
+      "quantity": 500,
+      "purchase_price": 200000.00,
+      "selling_price": 250000.00,
+      "minimum_stock": 50,
+      "inspection_time": "2025-04-15T10:00:00Z",
+      "category": 1,
+      "unit": 2,
+      "supplier": 2,
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Product",
+    "pk": 3,
+    "fields": {
+      "product_name": "Thép cây D12",
+      "description": "Thép cây đường kính 12mm",
+      "quantity": 200,
+      "purchase_price": 15000000.00,
+      "selling_price": 18000000.00,
+      "minimum_stock": 20,
+      "inspection_time": "2025-04-15T10:00:00Z",
+      "category": 3,
+      "unit": 1,
+      "supplier": 3,
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Product",
+    "pk": 4,
+    "fields": {
+      "product_name": "Sơn ngoại thất Nippon",
+      "description": "Sơn chống thấm cao cấp",
+      "quantity": 300,
+      "purchase_price": 800000.00,
+      "selling_price": 1000000.00,
+      "minimum_stock": 30,
+      "inspection_time": "2025-04-15T10:00:00Z",
+      "category": 2,
+      "unit": 4,
+      "supplier": 4,
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Product",
+    "pk": 5,
+    "fields": {
+      "product_name": "Ống nhựa PVC D50",
+      "description": "Ống nhựa dẫn nước đường kính 50mm",
+      "quantity": 400,
+      "purchase_price": 50000.00,
+      "selling_price": 70000.00,
+      "minimum_stock": 40,
+      "inspection_time": "2025-04-15T10:00:00Z",
+      "category": 5,
+      "unit": 5,
+      "supplier": 5,
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Customer",
+    "pk": 1,
+    "fields": {
+      "first_name": "Nguyễn",
+      "last_name": "Văn A",
+      "email": "vana@gmail.com",
+      "phone": "0901234567",
+      "address": "123 Đường Láng, Hà Nội",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Customer",
+    "pk": 2,
+    "fields": {
+      "first_name": "Trần",
+      "last_name": "Thị B",
+      "email": "thib@gmail.com",
+      "phone": "0912345678",
+      "address": "456 Đường Nguyễn Huệ, TP.HCM",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Customer",
+    "pk": 3,
+    "fields": {
+      "first_name": "Lê",
+      "last_name": "Văn C",
+      "email": "vanc@gmail.com",
+      "phone": "0923456789",
+      "address": "789 Đường Lê Lợi, Đà Nẵng",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Customer",
+    "pk": 4,
+    "fields": {
+      "first_name": "Phạm",
+      "last_name": "Thị D",
+      "email": "thid@gmail.com",
+      "phone": "0934567890",
+      "address": "101 Đường Trần Phú, Huế",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.Customer",
+    "pk": 5,
+    "fields": {
+      "first_name": "Hoàng",
+      "last_name": "Văn E",
+      "email": "vane@gmail.com",
+      "phone": "0945678901",
+      "address": "202 Đường Hùng Vương, Cần Thơ",
+      "created_at": "2025-04-01T08:00:00Z",
+      "updated_at": "2025-04-01T08:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockIn",
+    "pk": 1,
+    "fields": {
+      "import_date": "2025-04-10T09:00:00Z",
+      "total_amount": 1200000000.00,
+      "payment_status": "PAID",
+      "import_status": "COMPLETED",
+      "notes": "Nhập lô xi măng PC40",
+      "employee": 1,
+      "supplier": 1,
+      "product_batch": "XM20250401",
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockIn",
+    "pk": 2,
+    "fields": {
+      "import_date": "2025-04-10T09:00:00Z",
+      "total_amount": 100000000.00,
+      "payment_status": "UNPAID",
+      "import_status": "IN_PROGRESS",
+      "notes": "Nhập lô cát xây tô",
+      "employee": 1,
+      "supplier": 2,
+      "product_batch": "CAT20250401",
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockIn",
+    "pk": 3,
+    "fields": {
+      "import_date": "2025-04-10T09:00:00Z",
+      "total_amount": 3000000000.00,
+      "payment_status": "PARTIALLY_PAID",
+      "import_status": "COMPLETED",
+      "notes": "Nhập lô thép cây D12",
+      "employee": 1,
+      "supplier": 3,
+      "product_batch": "THEP20250401",
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockIn",
+    "pk": 4,
+    "fields": {
+      "import_date": "2025-04-10T09:00:00Z",
+      "total_amount": 240000000.00,
+      "payment_status": "PAID",
+      "import_status": "COMPLETED",
+      "notes": "Nhập lô sơn ngoại thất",
+      "employee": 1,
+      "supplier": 4,
+      "product_batch": "SON20250401",
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockIn",
+    "pk": 5,
+    "fields": {
+      "import_date": "2025-04-10T09:00:00Z",
+      "total_amount": 20000000.00,
+      "payment_status": "UNPAID",
+      "import_status": "IN_PROGRESS",
+      "notes": "Nhập lô ống nhựa PVC",
+      "employee": 1,
+      "supplier": 5,
+      "product_batch": "ONG20250401",
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockInDetail",
+    "pk": 1,
+    "fields": {
+      "import_record": 1,
+      "product": 1,
+      "quantity": 1000,
+      "discount": 0.00,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockInDetail",
+    "pk": 2,
+    "fields": {
+      "import_record": 2,
+      "product": 2,
+      "quantity": 500,
+      "discount": 5.00,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockInDetail",
+    "pk": 3,
+    "fields": {
+      "import_record": 3,
+      "product": 3,
+      "quantity": 200,
+      "discount": 0.00,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockInDetail",
+    "pk": 4,
+    "fields": {
+      "import_record": 4,
+      "product": 4,
+      "quantity": 300,
+      "discount": 10.00,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockInDetail",
+    "pk": 5,
+    "fields": {
+      "import_record": 5,
+      "product": 5,
+      "quantity": 400,
+      "discount": 0.00,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductDetail",
+    "pk": 1,
+    "fields": {
+      "product": 1,
+      "stock_in_detail": 1,
+      "product_batch": "XM20250401",
+      "initial_quantity": 1000,
+      "remaining_quantity": 990,
+      "import_date": "2025-04-10T09:00:00Z",
+      "expiry_date": null,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductDetail",
+    "pk": 2,
+    "fields": {
+      "product": 2,
+      "stock_in_detail": 2,
+      "product_batch": "CAT20250401",
+      "initial_quantity": 500,
+      "remaining_quantity": 480,
+      "import_date": "2025-04-10T09:00:00Z",
+      "expiry_date": null,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductDetail",
+    "pk": 3,
+    "fields": {
+      "product": 3,
+      "stock_in_detail": 3,
+      "product_batch": "THEP20250401",
+      "initial_quantity": 200,
+      "remaining_quantity": 195,
+      "import_date": "2025-04-10T09:00:00Z",
+      "expiry_date": null,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductDetail",
+    "pk": 4,
+    "fields": {
+      "product": 4,
+      "stock_in_detail": 4,
+      "product_batch": "SON20250401",
+      "initial_quantity": 300,
+      "remaining_quantity": 290,
+      "import_date": "2025-04-10T09:00:00Z",
+      "expiry_date": "2026-04-10T09:00:00Z",
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.ProductDetail",
+    "pk": 5,
+    "fields": {
+      "product": 5,
+      "stock_in_detail": 5,
+      "product_batch": "ONG20250401",
+      "initial_quantity": 400,
+      "remaining_quantity": 350,
+      "import_date": "2025-04-10T09:00:00Z",
+      "expiry_date": null,
+      "created_at": "2025-04-10T09:00:00Z",
+      "updated_at": "2025-04-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOut",
+    "pk": 1,
+    "fields": {
+      "export_date": "2025-04-12T10:00:00Z",
+      "payment_status": "PAID",
+      "export_status": "COMPLETED",
+      "notes": "Bán xi măng cho khách",
+      "employee": 1,
+      "customer": 1,
+      "amount_paid": 15000000.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOut",
+    "pk": 2,
+    "fields": {
+      "export_date": "2025-04-12T10:00:00Z",
+      "payment_status": "UNPAID",
+      "export_status": "IN_PROGRESS",
+      "notes": "Bán cát xây tô",
+      "employee": 1,
+      "customer": 2,
+      "amount_paid": 0.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOut",
+    "pk": 3,
+    "fields": {
+      "export_date": "2025-04-12T10:00:00Z",
+      "payment_status": "PARTIALLY_PAID",
+      "export_status": "COMPLETED",
+      "notes": "Bán thép cây D12",
+      "employee": 1,
+      "customer": 3,
+      "amount_paid": 9000000.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOut",
+    "pk": 4,
+    "fields": {
+      "export_date": "2025-04-12T10:00:00Z",
+      "payment_status": "PAID",
+      "export_status": "COMPLETED",
+      "notes": "Bán sơn ngoại thất",
+      "employee": 1,
+      "customer": 4,
+      "amount_paid": 10000000.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOut",
+    "pk": 5,
+    "fields": {
+      "export_date": "2025-04-12T10:00:00Z",
+      "payment_status": "UNPAID",
+      "export_status": "IN_PROGRESS",
+      "notes": "Bán ống nhựa PVC",
+      "employee": 1,
+      "customer": 5,
+      "amount_paid": 0.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOutDetail",
+    "pk": 1,
+    "fields": {
+      "export_record": 1,
+      "product": 1,
+      "quantity": 10,
+      "product_detail": 1,
+      "amount_paid": 15000000.00,
+      "discount": 0.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOutDetail",
+    "pk": 2,
+    "fields": {
+      "export_record": 2,
+      "product": 2,
+      "quantity": 20,
+      "product_detail": 2,
+      "amount_paid": 0.00,
+      "discount": 0.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOutDetail",
+    "pk": 3,
+    "fields": {
+      "export_record": 3,
+      "product": 3,
+      "quantity": 5,
+      "product_detail": 3,
+      "amount_paid": 9000000.00,
+      "discount": 0.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOutDetail",
+    "pk": 4,
+    "fields": {
+      "export_record": 4,
+      "product": 4,
+      "quantity": 10,
+      "product_detail": 4,
+      "amount_paid": 10000000.00,
+      "discount": 5.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.StockOutDetail",
+    "pk": 5,
+    "fields": {
+      "export_record": 5,
+      "product": 5,
+      "quantity": 50,
+      "product_detail": 5,
+      "amount_paid": 0.00,
+      "discount": 0.00,
+      "created_at": "2025-04-12T10:00:00Z",
+      "updated_at": "2025-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheck",
+    "pk": 1,
+    "fields": {
+      "check_date": "2025-04-15T10:00:00Z",
+      "employee": 1,
+      "notes": "Kiểm kho định kỳ tháng 4/2025",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheck",
+    "pk": 2,
+    "fields": {
+      "check_date": "2025-04-15T10:00:00Z",
+      "employee": 1,
+      "notes": "Kiểm kho đột xuất",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheck",
+    "pk": 3,
+    "fields": {
+      "check_date": "2025-04-15T10:00:00Z",
+      "employee": 1,
+      "notes": "Kiểm kho trước nhập hàng mới",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheck",
+    "pk": 4,
+    "fields": {
+      "check_date": "2025-04-15T10:00:00Z",
+      "employee": 1,
+      "notes": "Kiểm kho cuối quý",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheck",
+    "pk": 5,
+    "fields": {
+      "check_date": "2025-04-15T10:00:00Z",
+      "employee": 1,
+      "notes": "Kiểm kho lô hàng cũ",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheckDetail",
+    "pk": 1,
+    "fields": {
+      "inventory_check": 1,
+      "product": 1,
+      "product_batch": "XM20250401",
+      "theoretical_quantity": 990,
+      "actual_quantity": 988,
+      "discrepancy": -2,
+      "notes": "Thiếu 2 tấn xi măng",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheckDetail",
+    "pk": 2,
+    "fields": {
+      "inventory_check": 2,
+      "product": 2,
+      "product_batch": "CAT20250401",
+      "theoretical_quantity": 480,
+      "actual_quantity": 480,
+      "discrepancy": 0,
+      "notes": "Đúng số lượng",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheckDetail",
+    "pk": 3,
+    "fields": {
+      "inventory_check": 3,
+      "product": 3,
+      "product_batch": "THEP20250401",
+      "theoretical_quantity": 195,
+      "actual_quantity": 194,
+      "discrepancy": -1,
+      "notes": "Thiếu 1 tấn thép",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheckDetail",
+    "pk": 4,
+    "fields": {
+      "inventory_check": 4,
+      "product": 4,
+      "product_batch": "SON20250401",
+      "theoretical_quantity": 290,
+      "actual_quantity": 292,
+      "discrepancy": 2,
+      "notes": "Thừa 2 thùng sơn",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "stockb.InventoryCheckDetail",
+    "pk": 5,
+    "fields": {
+      "inventory_check": 5,
+      "product": 5,
+      "product_batch": "ONG20250401",
+      "theoretical_quantity": 350,
+      "actual_quantity": 350,
+      "discrepancy": 0,
+      "notes": "Đúng số lượng",
+      "created_at": "2025-04-15T10:00:00Z",
+      "updated_at": "2025-04-15T10:00:00Z"
+    }
+  }
+]

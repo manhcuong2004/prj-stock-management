@@ -1,0 +1,251 @@
+from django.db import models
+from django.utils import timezone
+from django.contrib.auth.models import User
+
+
+class ProductCategory(models.Model):
+    category_name = models.CharField(max_length=100)
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.category_name
+
+
+class Unit(models.Model):
+    unit_name = models.CharField(max_length=50)
+    unit_symbol = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.unit_name} ({self.unit_symbol})"
+
+
+class Supplier(models.Model):
+    supplier_name = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100)
+    tax_code = models.CharField(max_length=50)
+    address = models.TextField()
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.company_name
+
+
+class Product(models.Model):
+    product_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=0)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=0)
+    minimum_stock = models.IntegerField(default=0)
+    inspection_time = models.DateTimeField()
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.product_name
+
+
+class Customer(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20)
+    address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class StockIn(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('UNPAID', 'Chưa thanh toán'),
+        ('PAID', 'Đã thanh toán'),
+        ('PARTIALLY_PAID', 'Còn nợ'),
+    ]
+    import_date = models.DateTimeField()
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='UNPAID'
+    )
+    notes = models.TextField(blank=True)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class StockOut(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('UNPAID', 'Chưa thanh toán'),
+        ('PARTIALLY_PAID', 'Còn nợ'),
+        ('PAID', 'Đã thanh toán'),
+    ]
+    export_date = models.DateTimeField()
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='UNPAID'
+    )
+    notes = models.TextField(blank=True)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def total_amount(self):
+        total = sum(
+            detail.quantity * detail.product.selling_price * (1 - detail.discount / 100)
+            for detail in self.stockoutdetail_set.all()
+        )
+        return total
+
+    def remaining_debt(self):
+        return self.total_amount() - self.amount_paid
+
+    def __str__(self):
+        return f"StockOut #{self.id} - {self.customer.first_name} {self.customer.last_name}"
+
+
+class StockInDetail(models.Model):
+    import_record = models.ForeignKey(StockIn, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    discount = models.DecimalField(max_digits=5,
+                                   decimal_places=2,
+                                   default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class ProductDetail(models.Model):
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Kích hoạt'),
+        ('UNACTIVE', 'Tắt kích hoạt'),
+    ]
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_details')
+    stock_in_detail = models.ForeignKey(StockInDetail, on_delete=models.CASCADE, related_name='product_details')
+    product_batch = models.CharField(max_length=100)
+    initial_quantity = models.IntegerField()
+    remaining_quantity = models.IntegerField()
+    import_date = models.DateTimeField()
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='ACTIVE'
+    )
+    expiry_date = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'product_batch')
+
+    def __str__(self):
+        return f"{self.product.product_name} - Lô {self.product_batch}"
+
+    def save(self, *args, **kwargs):
+        if not self.initial_quantity:
+            self.initial_quantity = self.stock_in_detail.quantity
+        self.remaining_quantity = self.calculate_remaining_quantity()
+        super().save(*args, **kwargs)
+
+    def calculate_remaining_quantity(self):
+        exported_quantity = sum(
+            detail.quantity
+            for detail in StockOutDetail.objects.filter(
+                product_detail=self
+            )
+        )
+        return max(0, self.initial_quantity - exported_quantity)
+
+class StockOutDetail(models.Model):
+    export_record = models.ForeignKey(StockOut, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    product_detail= models.ForeignKey(ProductDetail,
+                                      on_delete=models.CASCADE,
+                                      related_name='product_details')
+    amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
+    discount = models.DecimalField(max_digits=5,
+                                   decimal_places=2,
+                                   default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.quantity > self.product_detail.remaining_quantity:
+            raise ValueError(
+                f"Số lượng xuất ({self.quantity}) vượt quá số lượng tồn kho "
+                f"({self.product_detail.remaining_quantity}) cho lô {self.product_detail.product_batch}"
+            )
+        super().save(*args, **kwargs)
+
+
+
+class InventoryCheck(models.Model):
+    check_date = models.DateTimeField(default=timezone.now)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Inventory Check #{self.id} - {self.check_date.strftime('%d/%m/%Y %H:%M')}"
+
+
+class InventoryCheckDetail(models.Model):
+    inventory_check = models.ForeignKey(InventoryCheck, on_delete=models.CASCADE, related_name='details')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    product_batch = models.ForeignKey('ProductDetail', on_delete=models.CASCADE)
+    theoretical_quantity = models.IntegerField()
+    actual_quantity = models.IntegerField()
+    discrepancy = models.IntegerField(editable=False)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('inventory_check', 'product', 'product_batch')
+
+    def save(self, *args, **kwargs):
+        if not self.theoretical_quantity:
+            product_details = ProductDetail.objects.filter(product=self.product, product_batch=self.product_batch)
+            if product_details.exists():
+                self.theoretical_quantity = product_details.first().remaining_quantity
+            else:
+                self.theoretical_quantity = self.product.quantity
+
+        # Tính chênh lệch
+        self.discrepancy = self.actual_quantity - self.theoretical_quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.product_name} (Batch: {self.product_batch or 'N/A'}) - Check #{self.inventory_check.id}"
+
+class Notification(models.Model):
+    message = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    is_read = models.BooleanField(default=False)
+    # employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.message
+
+    class Meta:
+        ordering = ['-created_at']  # Sắp xếp theo thời gian tạo, mới nhất trước
