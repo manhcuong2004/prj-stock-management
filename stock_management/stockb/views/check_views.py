@@ -9,7 +9,7 @@ from ..models import Product, ProductDetail
 @login_required
 def near_expiry_list_view(request):
     today = timezone.now()
-    end_date = today + timedelta(days=1000)
+    end_date = today + timedelta(days=30)
     search_query = request.GET.get('q', '')
     near_expiry_products = ProductDetail.objects.filter(
         expiry_date__range=(today, end_date),

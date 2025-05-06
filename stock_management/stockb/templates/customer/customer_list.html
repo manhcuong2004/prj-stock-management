@@ -2,75 +2,96 @@
 
 {% block title %}Danh sách khách hàng{% endblock %}
 
-
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-        <h5>Danh sách khách hàng</h5>
-        <a href="create" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i>
-            Tạo mới khách hàng
-        </a>
-    </div>
-
-<div class="card">
-    <div class="card-body">
-        <div class="mb-3">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search" id="searchInput">
-                <button class="btn btn-outline-secondary" type="button">
-                    <i class="bi bi-search"></i>
-                </button>
-            </div>
+<div class="container-fluid">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách khách hàng</h6>
+            <a href="{% url 'customer_create' %}" class="btn-create">
+                <i class="bi bi-plus-circle"></i>
+                Tạo mới khách hàng
+            </a>
         </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>Mã</th>
-                        <th>Tên khách hàng</th>
-                        <th>Số điện thoại</th>
-                        <th>Email</th>
-                        <th>Giới tính</th>
-                        <th>Ngày sinh</th>
-                        <th>Địa chỉ</th>
-                        <th class="text-center">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Cuờng</td>
-                        <td>0987654321</td>
-                        <td>hello@haravan.com</td>
-                        <td>Nam</td>
-                        <td>08/02/2025</td>
-                        <td>8 An thượng, Ngũ Hành Sơn, Đà Nẵng</td>
-                        <td class="text-center">
-                            <a href="#" class="btn btn-sm btn-outline-warning">Sửa</a>
-                            <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
-                        </td>
-                    </tr>
+            <div class="mb-3">
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm..." value="{{ request.GET.search|default:'' }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
 
-                    {% for customer in customers %}
-                    {% if customer.email != "hello@haravan.com" %}  <!-- Tránh hiển thị trùng lặp nếu đã có trong DB -->
-                    <tr>
-                        <td>{{ customer.id }}</td>
-                        <td>{{ customer.last_name }} {{ customer.first_name }}</td>
-                        <td>{{ customer.phone_number }}</td>
-                        <td>{{ customer.email }}</td>
-                        <td>{{ customer.created_at|date:"H:i d, m, Y" }}</td>
-                        <td class="text-center">
-                            <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a href="{% url 'customer_delete' customer.id %}" class="btn btn-sm btn-outline-danger">Xóa</a>
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% empty %}
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th>Địa chỉ</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.id }}</td>
+                            <td>{{ customer.last_name }} {{ customer.first_name }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.email|default:"Không có" }}</td>
+                            <td>{{ customer.address }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ customer.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                    <!-- Modal xác nhận xóa -->
+                                    <div class="modal fade" id="deleteModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ customer.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ customer.id }}">Xác nhận xóa</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Bạn có chắc chắn muốn xóa khách hàng <strong>{{ customer.last_name }} {{ customer.first_name }}</strong> không?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                    <form action="{% url 'customer_delete' customer.id %}" method="post" style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Không có dữ liệu khách hàng</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include 'Pagination/pagination.html' with page_obj=customers %}
         </div>
     </div>
 </div>
@@ -78,19 +99,13 @@
 
 {% block extra_js %}
 <script>
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const input = this.value.toLowerCase();
-        const rows = document.querySelectorAll('tbody tr');
-
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(input)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[name="search"]');
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                e.target.form.submit();
             }
         });
     });
 </script>
 {% endblock %}
-

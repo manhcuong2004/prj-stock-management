@@ -27,26 +27,6 @@
 
 {% block content %}
 <div class="container-fluid">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    {% if form.errors or formset.errors %}
-        <div class="alert alert-danger">
-            <strong>Lỗi:</strong>
-            <ul>
-                {% for form in formset %}
-                    {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>

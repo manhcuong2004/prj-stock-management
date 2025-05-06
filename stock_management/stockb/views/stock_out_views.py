@@ -76,6 +76,18 @@ def stock_out_update(request, pk=None):
     formset = StockOutDetailFormSet(request.POST or None, instance=stock_out or StockOut(), prefix='stockoutdetail_set')
 
     if request.method == "POST":
+        print("Formset data:", request.POST)
+        # Xử lý DELETE trước khi kiểm tra is_valid
+        for detail_form in formset:
+            form_prefix = detail_form.prefix
+            delete_key = f"{form_prefix}-DELETE"
+            if delete_key in request.POST and detail_form.instance.pk:
+                try:
+                    detail_form.instance.delete()
+                    print("Deleted StockOutDetail with id:", detail_form.instance.pk)
+                except Exception as e:
+                    print("Error deleting StockOutDetail:", e)
+
         if form.is_valid() and formset.is_valid():
             stock_out = form.save(commit=False)
             if not stock_out.export_date:
@@ -83,14 +95,9 @@ def stock_out_update(request, pk=None):
             stock_out.employee = request.user
             stock_out.save()
 
-            # Xử lý formset
+            # Xử lý formset (giữ nguyên logic không liên quan đến DELETE)
             for detail_form in formset:
-                if detail_form.cleaned_data:
-                    if detail_form.cleaned_data.get('DELETE', False):
-                        if detail_form.instance.pk:
-                            detail_form.instance.delete()
-                        continue
-
+                if detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
                     detail = detail_form.save(commit=False)
                     detail.export_record = stock_out
                     detail.product_detail = detail_form.cleaned_data.get('product_detail')
@@ -120,7 +127,7 @@ def stock_out_update(request, pk=None):
     products = Product.objects.all()
     customers = Customer.objects.all()
     employees = User.objects.filter(is_superuser=False)
-    product_details = ProductDetail.objects.filter(remaining_quantity__gt=0, status = "ACTIVE")
+    product_details = ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE")
 
     context = {
         'title': 'Chỉnh sửa đơn xuất kho' if pk else 'Tạo mới đơn xuất kho',
@@ -133,8 +140,6 @@ def stock_out_update(request, pk=None):
         'employees': employees,
     }
     return render(request, 'stock_out/stock_out_update.html', context)
-
-
 @login_required
 def stock_out_delete(request, pk):
     stock_out = get_object_or_404(StockOut, pk=pk)

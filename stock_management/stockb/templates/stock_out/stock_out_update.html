@@ -38,7 +38,6 @@
                         {% for error in form.non_field_errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
-
                     {% endfor %}
                 </ul>
             </div>
@@ -143,7 +142,7 @@
                                             <span class="total">0 đ</span>
                                         </td>
                                         <td class="text-center">
-                                            <input type="checkbox" name="{{ detail_form.DELETE.name }}" id="{{ detail_form.DELETE.id_for_label }}" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
+                                            <input type="checkbox" name="{{ detail_form.prefix }}-DELETE" id="{{ detail_form.prefix }}-DELETE" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
                                             <i class="bi bi-x-lg delete-row"></i>
                                         </td>
                                     </tr>

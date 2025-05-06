@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -47,7 +49,7 @@ class Product(models.Model):
     purchase_price = models.DecimalField(max_digits=10, decimal_places=0)
     selling_price = models.DecimalField(max_digits=10, decimal_places=0)
     minimum_stock = models.IntegerField(default=0)
-    inspection_time = models.DateTimeField()
+    inspection_time = models.IntegerField(default=0)
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
@@ -164,7 +166,12 @@ class ProductDetail(models.Model):
     def save(self, *args, **kwargs):
         if self.initial_quantity is None:
             self.initial_quantity = 0
+
+        if self.import_date and self.product.inspection_time:
+            self.expiry_date = self.import_date + timedelta(days=self.product.inspection_time)
         super().save(*args, **kwargs)
+
+
 
     def calculate_remaining_quantity(self):
         exported_quantity = sum(
@@ -174,6 +181,8 @@ class ProductDetail(models.Model):
             )
         )
         return max(0, self.initial_quantity - exported_quantity)
+
+
 
 class StockOutDetail(models.Model):
     export_record = models.ForeignKey(StockOut, on_delete=models.CASCADE)

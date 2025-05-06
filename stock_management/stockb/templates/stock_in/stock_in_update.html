@@ -19,9 +19,9 @@
     .alert {
         margin-bottom: 1rem;
     }
-<!--    .delete-checkbox {-->
-<!--        display: none;-->
-<!--    }-->
+    .delete-checkbox {
+        display: none;
+    }
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
@@ -34,17 +34,11 @@
                             <li>{{ field }}: {{ error }}</li>
                         {% endfor %}
                     {% endfor %}
-                    {% if formset.non_form_errors %}
-                        {% for error in formset.non_form_errors %}
+                    {% for form in formset %}
+                        {% for error in form.non_field_errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
-                    {% endif %}
-                    {% for subform in formset %}
-                        {% for field, errors in subform.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ subform.prefix }} - {{ field }}: {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
+
                     {% endfor %}
                 </ul>
             </div>
@@ -108,9 +102,8 @@
                                                         <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ product_id }}">
                                                     {% endif %}
                                                 {% endfor %}
-                                                {% if not product_id %}
-                                                    <!-- Fallback nếu product_id không có giá trị -->
-                                                    <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ detail_form.instance.product.id|default:'' }}">
+                                                {% if not product_id and detail_form.instance.product %}
+                                                    <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ detail_form.instance.product.id }}">
                                                 {% endif %}
                                             {% endwith %}
                                             {% if detail_form.instance.pk %}
@@ -142,7 +135,7 @@
                                             <span class="total">0đ</span>
                                         </td>
                                         <td class="text-center">
-                                            <input type="checkbox" name="{{ detail_form.DELETE.name }}" id="{{ detail_form.DELETE.id_for_label }}" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
+                                            <input type="checkbox" name="{{ detail_form.prefix }}-DELETE" id="{{ detail_form.prefix }}-DELETE" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
                                             <i class="bi bi-x-lg delete-row"></i>
                                         </td>
                                     </tr>
@@ -209,7 +202,7 @@
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span>Còn nợ</span>
+                                    <span>Thực trả</span>
                                     <span class="remaining-debt">
                                         {% if form.instance.pk %}
                                             {{ form.instance.remaining_debt|floatformat:0|intcomma|default:'0' }} đ
@@ -219,7 +212,7 @@
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span>Thực nhận</span><span class="actual-received">{{ form.amount_paid.value|default:'0'|intcomma }} đ</span>
+                                    <span>Còn nợ</span><span class="actual-received">{{ form.amount_paid.value|default:'0'|intcomma }} đ</span>
                                 </div>
                             </div>
                         </div>
@@ -392,7 +385,7 @@
                         <span class="total">${productPrice.toLocaleString('vi-VN')} đ</span>
                     </td>
                     <td class="text-center">
-                        <input type="checkbox" name="stockindetail_set-${formIndex}-DELETE" class="delete-checkbox">
+                        <input type="checkbox" name="stockindetail_set-${formIndex}-DELETE" id="stockindetail_set-${formIndex}-DELETE" class="delete-checkbox">
                         <i class="bi bi-x-lg delete-row"></i>
                     </td>
                 `;

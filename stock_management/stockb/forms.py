@@ -15,10 +15,12 @@ class StockOutForm(forms.ModelForm):
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control amount-paid', 'min': '0', 'value': '0'}),
         }
 
+
 class StockOutDetailForm(forms.ModelForm):
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
     )
     product_detail = forms.ModelChoiceField(
         queryset=ProductDetail.objects.filter(remaining_quantity__gt=0),
@@ -30,26 +32,36 @@ class StockOutDetailForm(forms.ModelForm):
         model = StockOutDetail
         fields = ['product', 'quantity', 'discount', 'product_detail']
         widgets = {
-            'quantity': forms.NumberInput(attrs={'class': 'form-control quantity', 'style': 'width: 100px;', 'min': '1'}),
+            'quantity': forms.NumberInput(
+                attrs={'class': 'form-control quantity', 'style': 'width: 100px;', 'min': '1'}),
             'discount': forms.NumberInput(attrs={'class': 'form-control discount', 'min': '0', 'max': '100'}),
         }
 
     def clean(self):
         cleaned_data = super().clean()
+        if cleaned_data.get('DELETE', False):
+            self.errors.clear()
+            return cleaned_data
+
+        # Validation bình thường nếu không có DELETE
         product = cleaned_data.get('product')
         quantity = cleaned_data.get('quantity')
         product_detail = cleaned_data.get('product_detail')
 
+        if not product:
+            self.add_error('product', 'This field is required.')
+        if not quantity or quantity <= 0:
+            self.add_error('quantity', 'Quantity must be greater than 0.')
+        if not product_detail:
+            self.add_error('product_detail', 'Vui lòng chọn lô sản phẩm.')
         if product and quantity and product_detail:
             if product_detail.product != product:
-                raise forms.ValidationError("Lô sản phẩm không thuộc sản phẩm đã chọn.")
+                self.add_error('product_detail', 'Lô sản phẩm không thuộc sản phẩm đã chọn.')
             if quantity > product_detail.remaining_quantity:
-                raise forms.ValidationError(
-                    f"Lô {product_detail.product_batch} chỉ còn {product_detail.remaining_quantity} sản phẩm."
-                )
-        elif product and quantity and not product_detail:
-            raise forms.ValidationError("Vui lòng chọn lô sản phẩm.")
+                self.add_error('quantity',
+                               f"Lô {product_detail.product_batch} chỉ còn {product_detail.remaining_quantity} sản phẩm.")
         return cleaned_data
+
 StockOutDetailFormSet = forms.inlineformset_factory(
     StockOut, StockOutDetail, form=StockOutDetailForm, extra=0, can_delete=True
 )
@@ -212,7 +224,7 @@ class ProductForm(forms.ModelForm):
             'purchase_price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': '0.01'}),
             'selling_price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': '0.01'}),
             'minimum_stock': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'inspection_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'inspection_time': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         }
 
     category = forms.ModelChoiceField(

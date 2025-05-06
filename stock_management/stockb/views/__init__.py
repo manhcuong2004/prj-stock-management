@@ -6,3 +6,7 @@ from .check_views import *
 from .unit_views import *
 from .product_category_views import *
 from .product_views import *
+from .notification_views import *
+from .customer_views import *
+from .supplier_views import *
+from .inventory_check_views import *
