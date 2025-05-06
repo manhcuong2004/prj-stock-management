@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 
+
 class ProductCategory(models.Model):
     category_name = models.CharField(max_length=100)
     description = models.TextField(

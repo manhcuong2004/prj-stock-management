@@ -23,13 +23,8 @@
                     <input type="text" class="form-control" id="supplier_name" name="supplier_name" value="{{ supplier.supplier_name }}" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="company" class="form-label">Công ty</label>
-                    <select class="form-select" id="company" name="company">
-                        <option value="" {% if not supplier.notes or "Công ty: " not in supplier.notes %}selected{% endif %}>Chọn công ty</option>
-                        <option value="Visa" {% if "Công ty: Visa" in supplier.notes %}selected{% endif %}>Visa</option>
-                        <option value="Mastercard" {% if "Công ty: Mastercard" in supplier.notes %}selected{% endif %}>Mastercard</option>
-                        <option value="Paypal" {% if "Công ty: Paypal" in supplier.notes %}selected{% endif %}>Paypal</option>
-                    </select>
+                    <label for="company_name" class="form-label">Công ty</label>
+                    <input type="text" class="form-control" id="company_name" name="company_name" value="{{ supplier.company_name }}" required>
                 </div>
             </div>
 
@@ -57,13 +52,7 @@
 
             <div class="mb-3">
                 <label for="notes" class="form-label">Ghi chú</label>
-                <textarea class="form-control" id="notes" name="notes" rows="3">
-                    {% if "Công ty: " in supplier.notes %}
-                        {{ supplier.notes|slice:"10:" }}
-                    {% else %}
-                        {{ supplier.notes }}
-                    {% endif %}
-                </textarea>
+                <textarea class="form-control" id="notes" name="notes" rows="3">{{ supplier.notes }}</textarea>
             </div>
 
             <div class="d-flex justify-content-end">

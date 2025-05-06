@@ -51,7 +51,7 @@ def supplier_create_view(request):
                 notes=notes,
                 company_name=company_name or "",
                 created_at=timezone.now(),
-                update_at=timezone.now(),
+                updated_at=timezone.now(),
             )
             messages.success(request, 'Thêm nhà cung cấp thành công!')
             return redirect('supplier_list')
@@ -87,7 +87,7 @@ def supplier_update_view(request, id):
             return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
 
         try:
-            supplier.update_at = timezone.now()
+            supplier.updated_at = timezone.now()
             supplier.save()
             messages.success(request, 'Cập nhật nhà cung cấp thành công!')
             return redirect('supplier_list')
