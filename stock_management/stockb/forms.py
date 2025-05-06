@@ -1,6 +1,7 @@
 from django import forms
 from .models import StockOut, StockOutDetail, Product, ProductDetail, InventoryCheck, InventoryCheckDetail, Unit, \
     ProductCategory, StockIn, StockInDetail, Supplier
+from django.contrib.auth.models import User, Group
 
 
 class StockOutForm(forms.ModelForm):
@@ -14,6 +15,8 @@ class StockOutForm(forms.ModelForm):
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control amount-paid', 'min': '0', 'value': '0'}),
         }
+
+
 
 
 class StockOutDetailForm(forms.ModelForm):

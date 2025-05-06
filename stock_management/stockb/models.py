@@ -284,7 +284,6 @@ class Notification(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
     is_read = models.BooleanField(default=False)
-    # employee = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return self.message
 

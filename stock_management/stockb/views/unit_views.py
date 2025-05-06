@@ -1,10 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-
+from django.utils import timezone
 from ..forms import UnitForm
-from ..models import StockOut, Unit
-
+from ..models import StockOut, Unit, Notification
 
 @login_required
 def unit_list(request):
@@ -20,13 +19,39 @@ def unit_list(request):
     return render(request, 'units/units_list.html', context)
 
 @login_required
+def create_unit(request):
+    if request.method == 'POST':
+        form = UnitForm(request.POST)
+        if form.is_valid():
+            unit = form.save()
+            messages.success(request, 'Đơn vị đã được tạo thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã thêm đơn vị {unit.name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
+            return redirect('units_list')
+    else:
+        form = UnitForm()
+    context = {
+        'title': 'Tạo đơn vị',
+        'form': form,
+    }
+    return render(request, 'units/create_unit.html', context)
+
+@login_required
 def edit_unit(request, pk):
     unit = get_object_or_404(Unit, pk=pk)
     if request.method == 'POST':
         form = UnitForm(request.POST, instance=unit)
         if form.is_valid():
-            form.save()
+            unit = form.save()
             messages.success(request, 'Đơn vị đã được cập nhật thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã cập nhật đơn vị {unit.name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('units_list')
     else:
         form = UnitForm(instance=unit)
@@ -39,26 +64,16 @@ def edit_unit(request, pk):
     return render(request, 'units/edit_unit.html', context)
 
 @login_required
-def create_unit(request):
-    if request.method == 'POST':
-        form = UnitForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Đơn vị đã được tạo thành công!')
-            return redirect('units_list')
-    else:
-        form = UnitForm()
-    context = {
-        'title': 'Tạo đơn vị',
-        'form': form,
-    }
-    return render(request, 'units/create_unit.html', context)
-
-@login_required
 def delete_unit(request, pk):
     unit = get_object_or_404(Unit, pk=pk)
     if request.method == 'POST':
+        unit_name = unit.name
         unit.delete()
         messages.success(request, 'Đơn vị đã được xóa thành công!')
+        Notification.objects.create(
+            message=f"{request.user.username} đã xóa đơn vị {unit_name} thành công!",
+            created_at=timezone.now(),
+            is_read=False
+        )
         return redirect('units_list')
     return render(request, 'units/units_list.html', {'unit': unit})

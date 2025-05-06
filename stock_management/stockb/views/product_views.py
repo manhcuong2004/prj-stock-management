@@ -10,9 +10,6 @@ from ..models import Product, ProductCategory, ProductDetail, Supplier, Notifica
 @login_required
 def product_view(request):
     products = Product.objects.all().order_by('product_name')
-
-
-
     search_text = request.GET.get('search', '').strip()
     filter_category = request.GET.get('category', '')
     filter_supplier = request.GET.get('supplier', '')
@@ -26,7 +23,6 @@ def product_view(request):
         )
     if filter_category:
         products = products.filter(category__id=filter_category)
-
     if filter_supplier:
         products = products.filter(supplier__id=filter_supplier)
 
@@ -60,6 +56,7 @@ def product_detail(request, pk):
     }
     return render(request, 'product/product_detail.html', context)
 
+@login_required
 def product_update(request, pk=None):
     if pk:
         product = get_object_or_404(Product, pk=pk)
@@ -78,9 +75,9 @@ def product_update(request, pk=None):
                 product.created_at = timezone.now()
             product.save()
             action = "thêm" if not pk else "cập nhật"
+            username = request.user.username
+            message = f"{username} đã {action} sản phẩm {product.product_name} thành công!"
             messages.success(request, "Đã lưu sản phẩm thành công!")
-            message = f"NV001 đã {action} sản phẩm {product.product_name} thành công!"
-            messages.success(request, message)
             Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             return redirect('product')
         else:
@@ -91,34 +88,39 @@ def product_update(request, pk=None):
         "form": form,
     }
     return render(request, 'product/product_update.html', context)
+
 @login_required
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
         product_name = product.product_name
         product.delete()
+        username = request.user.username
+        message = f"{username} đã xóa sản phẩm {product_name} thành công!"
         messages.success(request, "Đã xóa sản phẩm thành công!")
-        message = f"NV001 đã xóa sản phẩm {product_name} thành công!"
-        messages.success(request, message)
         Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('product')
     return redirect('product')
+
 @login_required
 def toggle_product_detail_status(request, pk):
     if request.method == 'POST':
         product_detail = get_object_or_404(ProductDetail, pk=pk)
-        # Toggle trạng thái
         if product_detail.status == 'ACTIVE':
             product_detail.status = 'UNACTIVE'
+            message = f"{request.user.username} đã tắt kích hoạt lô hàng {product_detail.product_batch}."
             messages.success(request, f'Lô hàng {product_detail.product_batch} đã được tắt kích hoạt.')
         else:
             product_detail.status = 'ACTIVE'
+            message = f"{request.user.username} đã kích hoạt lô hàng {product_detail.product_batch}."
             messages.success(request, f'Lô hàng {product_detail.product_batch} đã được kích hoạt.')
         product_detail.save()
+        Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         return redirect('product_detail', pk=product_detail.product.id)
     messages.error(request, 'Yêu cầu không hợp lệ.')
     product_detail = get_object_or_404(ProductDetail, pk=pk)
     return redirect('product_detail', pk=product_detail.product.id)
+
 @login_required
 def edit_product_detail(request, pk):
     if request.method == 'POST':
@@ -128,7 +130,9 @@ def edit_product_detail(request, pk):
             if new_quantity >= 0:
                 product_detail.remaining_quantity = new_quantity
                 product_detail.save()
+                message = f"{request.user.username} đã cập nhật số lượng lô hàng {product_detail.product_batch}."
                 messages.success(request, f'Cập nhật số lượng lô {product_detail.product_batch} thành công.')
+                Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
             else:
                 messages.error(request, 'Số lượng không được âm.')
         except (ValueError, TypeError):
@@ -137,17 +141,59 @@ def edit_product_detail(request, pk):
     messages.error(request, 'Yêu cầu không hợp lệ.')
     product_detail = get_object_or_404(ProductDetail, pk=pk)
     return redirect('product_detail', pk=product_detail.product.id)
+
 @login_required
 def delete_product_detail(request, pk):
     if request.method == 'POST':
         product_detail = get_object_or_404(ProductDetail, pk=pk)
         product_id = product_detail.product.id
         try:
+            product_batch = product_detail.product_batch
             product_detail.delete()
-            messages.success(request, f'Lô hàng {product_detail.product_batch} đã được xóa.')
+            message = f"{request.user.username} đã xóa lô hàng {product_batch}."
+            messages.success(request, f'Lô hàng {product_batch} đã được xóa.')
+            Notification.objects.create(message=message, created_at=timezone.now(), is_read=False)
         except Exception as e:
             messages.error(request, f'Không thể xóa lô hàng {product_detail.product_batch}: {str(e)}')
         return redirect('product_detail', pk=product_id)
     messages.error(request, 'Yêu cầu không hợp lệ.')
     product_detail = get_object_or_404(ProductDetail, pk=pk)
     return redirect('product_detail', pk=product_detail.product.id)
+
+@login_required
+def notification_list(request):
+    search_text = request.GET.get('search', '').strip()
+    filter_read_status = request.GET.get('read_status', '')
+    notifications = Notification.objects.all().order_by('-created_at')
+    if search_text:
+        notifications = notifications.filter(message__icontains=search_text)
+    if filter_read_status:
+        notifications = notifications.filter(is_read=filter_read_status == 'read')
+    unread_notifications = Notification.objects.filter(is_read=False).count()
+    context = {
+        'title': 'Danh sách thông báo',
+        'notifications': notifications,
+        'unread_count': unread_notifications,
+        'search_text': search_text,
+        'filter_read_status': filter_read_status,
+    }
+    return render(request, 'notification/notification_list.html', context)
+
+@login_required
+def mark_notification_read(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    if request.method == 'POST':
+        notification.is_read = True
+        notification.save()
+        messages.success(request, 'Thông báo đã được đánh dấu là đã đọc.')
+        return redirect('notification_list')
+    return redirect('notification_list')
+
+@login_required
+def delete_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    if request.method == 'POST':
+        notification.delete()
+        messages.success(request, 'Thông báo đã được xóa.')
+        return redirect('notification_list')
+    return redirect('notification_list')

@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, F, Max
 from django.shortcuts import render, redirect, get_object_or_404
-from ..models import Customer, StockOut
+from ..models import Customer, StockOut, Notification
 from django.contrib import messages
 from django.utils import timezone
 from django.db import connection
@@ -62,6 +62,11 @@ def customer_create(request):
             )
             customer.save()
             messages.success(request, 'Thêm khách hàng thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã thêm khách hàng {last_name} {first_name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('customer_list')
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
@@ -94,6 +99,11 @@ def customer_update(request, pk):
             customer.updated_at = timezone.now()
             customer.save()
             messages.success(request, 'Cập nhật khách hàng thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã cập nhật khách hàng {customer.last_name} {customer.first_name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('customer_list')
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
@@ -103,7 +113,6 @@ def customer_update(request, pk):
         "customer": customer
     }
     return render(request, "customer/customer_update.html", context)
-
 @login_required
 def customer_delete(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
@@ -122,13 +131,15 @@ def customer_delete(request, pk):
             if related_orders and request.POST.get('force_delete') == 'true':
                 StockOut.objects.filter(customer=customer).delete()
 
-            # Xóa khách hàng
             customer.delete()
-
             reset_autoincrement_for_customer(customer_id)
 
             messages.success(request, f'Đã xóa khách hàng {customer_name} thành công và đặt lại ID!')
-
+            Notification.objects.create(
+                message=f"{request.user.username} đã xóa khách hàng {customer_name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('customer_list')
         except Exception as e:
             messages.error(request, f'Lỗi khi xóa khách hàng: {str(e)}')

@@ -5,10 +5,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
-
-from ..forms import   StockInForm, StockInDetailFormSet
-from ..models import  ProductCategory, Product, ProductDetail, StockIn, Supplier, StockInDetail
-
+from ..forms import StockInForm, StockInDetailFormSet
+from ..models import ProductCategory, Product, ProductDetail, StockIn, Supplier, StockInDetail, Notification
 
 @login_required
 def stock_in(request):
@@ -50,27 +48,24 @@ def stock_in(request):
     }
     return render(request, "stock_in/stock_in_list.html", context)
 
-
 @login_required
 def stock_in_update(request, pk=None):
     stock_in = get_object_or_404(StockIn, pk=pk) if pk else None
+    action = "cập nhật" if pk else "thêm"
     form = StockInForm(request.POST or None, instance=stock_in)
     formset = StockInDetailFormSet(request.POST or None, instance=stock_in or StockIn(), prefix='stockindetail_set')
 
     if request.method == "POST":
         if form.is_valid() and formset.is_valid():
-            # Lưu StockIn
             stock_in = form.save(commit=False)
             if not stock_in.import_date:
                 stock_in.import_date = timezone.now()
             stock_in.save()
 
-            # Xử lý formset
             for detail_form in formset:
                 if detail_form.cleaned_data:
                     if detail_form.cleaned_data.get('DELETE', False):
                         if detail_form.instance.pk:
-                            # Xóa ProductDetail liên quan nếu có
                             if detail_form.instance.product_detail:
                                 detail_form.instance.product_detail.delete()
                             detail_form.instance.delete()
@@ -86,16 +81,14 @@ def stock_in_update(request, pk=None):
                         detail_form.add_error(None, "Thông tin sản phẩm, mã lô hoặc số lượng không hợp lệ.")
                         continue
 
-                    # Kiểm tra nếu đang cập nhật
                     if detail.pk and detail.product_detail:
                         product_detail = detail.product_detail
                         product_detail.product_batch = product_batch
                         product_detail.initial_quantity = quantity
-                        product_detail.remaining_quantity = quantity  # Cập nhật lại
+                        product_detail.remaining_quantity = quantity
                         product_detail.import_date = stock_in.import_date
                         product_detail.save()
                     else:
-                        # Tạo ProductDetail mới
                         product_detail = ProductDetail(
                             product=product,
                             product_batch=product_batch,
@@ -106,14 +99,19 @@ def stock_in_update(request, pk=None):
                         )
                         product_detail.save()
 
-                    # Gán ProductDetail vào StockInDetail
                     detail.product_detail = product_detail
                     detail.save()
 
-            # Kiểm tra lỗi sau khi xử lý
             if not any(formset.errors):
+                messages.success(request, f'{action.capitalize()} đơn nhập kho thành công!')
+                Notification.objects.create(
+                    message=f"{request.user.username} đã {action} đơn nhập kho ID {stock_in.id} thành công!",
+                    created_at=timezone.now(),
+                    is_read=False
+                )
                 return redirect('stock_in')
         else:
+            messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.")
             print("Form errors:", form.errors)
             print("Formset errors:", formset.errors)
 
@@ -137,7 +135,13 @@ def stock_in_update(request, pk=None):
 def stock_in_delete(request, pk):
     stock_in = get_object_or_404(StockIn, pk=pk)
     if request.method == 'POST':
+        stock_in_id = stock_in.id
         stock_in.delete()
         messages.success(request, 'Đơn nhập đã được xóa thành công!')
+        Notification.objects.create(
+            message=f"{request.user.username} đã xóa đơn nhập kho ID {stock_in_id} thành công!",
+            created_at=timezone.now(),
+            is_read=False
+        )
         return redirect('stock_in')
     return render(request, 'stock_in/stock_in_list.html', {'stock_in': stock_in})

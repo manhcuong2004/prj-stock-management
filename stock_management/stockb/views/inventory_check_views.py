@@ -1,13 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.checks import messages
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.db.models import Q
-
 from ..forms import InventoryCheckForm, InventoryCheckDetailFormSet
-from ..models import Product, ProductDetail, InventoryCheck, ProductCategory
-
+from ..models import Product, ProductDetail, InventoryCheck, ProductCategory, Notification
 
 @login_required
 def inventory_check_list(request):
@@ -28,13 +26,14 @@ def inventory_check_list(request):
     }
     return render(request, 'inventory/inventory_check_list.html', context)
 
-
 @login_required
 def inventory_check_update(request, pk=None):
     if pk:
         inventory_check = get_object_or_404(InventoryCheck, pk=pk)
+        action = "cập nhật"
     else:
         inventory_check = InventoryCheck()
+        action = "thêm"
 
     form = InventoryCheckForm(request.POST or None, instance=inventory_check)
     formset = InventoryCheckDetailFormSet(request.POST or None, instance=inventory_check, prefix='inventorycheckdetail_set')
@@ -56,8 +55,15 @@ def inventory_check_update(request, pk=None):
             for obj in formset.deleted_objects:
                 obj.delete()
 
+            messages.success(request, f'{action.capitalize()} kiểm kê hàng hóa thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã {action} kiểm kê hàng hóa ID {inventory_check.id} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('inventory_check_list')
         else:
+            messages.error(request, 'Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.')
             error_messages = []
             if form.errors:
                 error_messages.append(f"Form errors: {form.errors}")
@@ -86,7 +92,14 @@ def inventory_check_update(request, pk=None):
 def inventory_check_delete(request, pk):
     inventory_check = get_object_or_404(InventoryCheck, pk=pk)
     if request.method == "POST":
+        check_id = inventory_check.id
         inventory_check.delete()
+        messages.success(request, 'Xóa kiểm kê hàng hóa thành công!')
+        Notification.objects.create(
+            message=f"{request.user.username} đã xóa kiểm kê hàng hóa ID {check_id} thành công!",
+            created_at=timezone.now(),
+            is_read=False
+        )
         return redirect('inventory_check_list')
     return render(request, 'inventory/inventory_check_list.html', {
         'inventory_checks': InventoryCheck.objects.all().order_by('-check_date')

@@ -2,8 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
-
-from ..models import  Supplier
+from ..models import Supplier, Notification
 
 @login_required
 def supplier_list_view(request):
@@ -13,6 +12,7 @@ def supplier_list_view(request):
         "suppliers": suppliers,
     }
     return render(request, 'supplier/supplier_list.html', context)
+
 @login_required
 def supplier_create_view(request):
     if request.method == 'POST':
@@ -42,7 +42,7 @@ def supplier_create_view(request):
             notes = f"Công ty: {company_name}\n{notes or ''}"
 
         try:
-            Supplier.objects.create(
+            supplier = Supplier.objects.create(
                 supplier_name=supplier_name,
                 tax_code=tax_code,
                 address=address,
@@ -54,12 +54,18 @@ def supplier_create_view(request):
                 update_at=timezone.now(),
             )
             messages.success(request, 'Thêm nhà cung cấp thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã thêm nhà cung cấp {supplier_name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('supplier_list')
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
             return render(request, 'supplier/supplier_create.html', {'form_data': request.POST})
 
     return render(request, 'supplier/supplier_create.html', {"title": "Tạo mới nhà cung cấp", 'form_data': {}})
+
 @login_required
 def supplier_update_view(request, id):
     supplier = get_object_or_404(Supplier, id=id)
@@ -90,17 +96,29 @@ def supplier_update_view(request, id):
             supplier.update_at = timezone.now()
             supplier.save()
             messages.success(request, 'Cập nhật nhà cung cấp thành công!')
+            Notification.objects.create(
+                message=f"{request.user.username} đã cập nhật nhà cung cấp {supplier.supplier_name} thành công!",
+                created_at=timezone.now(),
+                is_read=False
+            )
             return redirect('supplier_list')
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
             return render(request, 'supplier/supplier_update.html', {'supplier': supplier})
 
     return render(request, 'supplier/supplier_update.html', {'supplier': supplier, 'title': "Chỉnh sửa nhà cung cấp"})
+
 @login_required
 def supplier_delete_view(request, id):
     supplier = get_object_or_404(Supplier, id=id)
     if request.method == 'POST':
+        supplier_name = supplier.supplier_name
         supplier.delete()
         messages.success(request, 'Xóa nhà cung cấp thành công!')
+        Notification.objects.create(
+            message=f"{request.user.username} đã xóa nhà cung cấp {supplier_name} thành công!",
+            created_at=timezone.now(),
+            is_read=False
+        )
         return redirect('supplier_list')
     return render(request, 'supplier/supplier_confirm_delete.html', {'supplier': supplier, 'title': "Xóa nhà cung cấp"})

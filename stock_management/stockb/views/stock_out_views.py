@@ -5,10 +5,8 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render, get_object_or_404, redirect
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
-
 from ..forms import StockOutForm, StockOutDetailFormSet
-from ..models import StockOut, Customer, StockOutDetail, ProductCategory, Product, ProductDetail
-
+from ..models import StockOut, Customer, StockOutDetail, ProductCategory, Product, ProductDetail, Notification
 
 @login_required
 def stock_out(request):
@@ -45,11 +43,8 @@ def stock_out(request):
                 customers_full.add(customer)
 
         customers = customers_fn | customers_ln | customers_full
-
         stock_outs_by_customer = stock_outs.filter(customer__in=customers)
-
         stock_outs = stock_outs_by_id | stock_outs_by_customer
-
 
     for stock_out in stock_outs:
         total_amount = StockOutDetail.objects.filter(export_record=stock_out).aggregate(
@@ -65,27 +60,26 @@ def stock_out(request):
     context = {
         "title": "Trang xuất kho",
         'filter_type': filter_type,
-        "stock_out_list" : stock_out_list,
+        "stock_out_list": stock_out_list,
     }
     return render(request, "stock_out/stock_out_list.html", context)
 
 @login_required
 def stock_out_update(request, pk=None):
     stock_out = get_object_or_404(StockOut, pk=pk) if pk else None
+    action = "cập nhật" if pk else "thêm"
     form = StockOutForm(request.POST or None, instance=stock_out)
     formset = StockOutDetailFormSet(request.POST or None, instance=stock_out or StockOut(), prefix='stockoutdetail_set')
 
     if request.method == "POST":
         print("Formset data:", request.POST)
         if form.is_valid() and formset.is_valid():
-            # Lưu StockOut
             stock_out = form.save(commit=False)
             if not stock_out.export_date:
                 stock_out.export_date = timezone.now()
             stock_out.updated_at = timezone.now()
             stock_out.save()
 
-            # Xử lý formset
             for detail_form in formset:
                 if detail_form.cleaned_data.get('DELETE', False) and detail_form.instance.pk:
                     try:
@@ -111,7 +105,12 @@ def stock_out_update(request, pk=None):
                         continue
 
             if not any(formset.errors):
-                messages.success(request, f"{'Cập nhật' if pk else 'Tạo mới'} đơn xuất kho thành công!")
+                messages.success(request, f"{action.capitalize()} đơn xuất kho thành công!")
+                Notification.objects.create(
+                    message=f"{request.user.username} đã {action} đơn xuất kho ID {stock_out.id} thành công!",
+                    created_at=timezone.now(),
+                    is_read=False
+                )
                 return redirect('stock_out')
             else:
                 messages.error(request, "Có lỗi trong form, vui lòng kiểm tra lại.")
@@ -122,11 +121,10 @@ def stock_out_update(request, pk=None):
             print("Form errors:", form.errors)
             print("Formset errors:", formset.errors)
 
-    group = Group.objects.get(name="Quan ly")
     categories = ProductCategory.objects.all()
     products = Product.objects.all()
     customers = Customer.objects.all()
-    employees = User.objects.filter(is_superuser=False, groups=group)
+    employees = User.objects.filter(is_superuser=False)
     product_details = ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE")
 
     context = {
@@ -145,7 +143,13 @@ def stock_out_update(request, pk=None):
 def stock_out_delete(request, pk):
     stock_out = get_object_or_404(StockOut, pk=pk)
     if request.method == 'POST':
+        stock_out_id = stock_out.id
         stock_out.delete()
         messages.success(request, 'Đơn xuất đã được xóa thành công!')
+        Notification.objects.create(
+            message=f"{request.user.username} đã xóa đơn xuất kho ID {stock_out_id} thành công!",
+            created_at=timezone.now(),
+            is_read=False
+        )
         return redirect('stock_out')
     return render(request, 'stock_out/stock_out_list.html', {'stock_out': stock_out})
