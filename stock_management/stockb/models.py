@@ -125,14 +125,16 @@ class StockOut(models.Model):
 
 
 class StockInDetail(models.Model):
-    import_record = models.ForeignKey(StockIn, on_delete=models.CASCADE)
+    import_record = models.ForeignKey(StockIn, on_delete=models.CASCADE, related_name='details')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    product_detail = models.OneToOneField('ProductDetail', on_delete=models.CASCADE,related_name='stock_in_details')
     discount = models.DecimalField(max_digits=5,
                                    decimal_places=2,
                                    default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
 class ProductDetail(models.Model):
     STATUS_CHOICES = [
@@ -140,7 +142,6 @@ class ProductDetail(models.Model):
         ('UNACTIVE', 'Tắt kích hoạt'),
     ]
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_details')
-    stock_in_detail = models.ForeignKey(StockInDetail, on_delete=models.CASCADE, related_name='product_details')
     product_batch = models.CharField(max_length=100)
     initial_quantity = models.IntegerField()
     remaining_quantity = models.IntegerField()
@@ -161,9 +162,8 @@ class ProductDetail(models.Model):
         return f"{self.product.product_name} - Lô {self.product_batch}"
 
     def save(self, *args, **kwargs):
-        if not self.initial_quantity:
-            self.initial_quantity = self.stock_in_detail.quantity
-        self.remaining_quantity = self.calculate_remaining_quantity()
+        if self.initial_quantity is None:
+            self.initial_quantity = 0
         super().save(*args, **kwargs)
 
     def calculate_remaining_quantity(self):

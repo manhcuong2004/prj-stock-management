@@ -18,18 +18,15 @@ def product_view(request):
     filter_supplier = request.GET.get('supplier', '')
     filter_stock_status = request.GET.get('stock_status', '')
 
-    # Tìm kiếm
     if search_text:
         products = products.filter(
             Q(product_name__icontains=search_text) |
             Q(category__category_name__icontains=search_text) |
             Q(supplier__company_name__icontains=search_text)
         )
-    # Lọc theo danh mục
     if filter_category:
         products = products.filter(category__id=filter_category)
 
-    # Lọc theo nhà cung cấp
     if filter_supplier:
         products = products.filter(supplier__id=filter_supplier)
 

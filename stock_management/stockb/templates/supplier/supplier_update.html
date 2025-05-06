@@ -6,14 +6,6 @@
     <div class="container bg-white p-4 rounded shadow">
         <h5 class="mb-4">Chỉnh sửa nhà cung cấp</h5>
 
-        <!-- Hiển thị thông báo -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
 
         <form method="POST">
             {% csrf_token %}

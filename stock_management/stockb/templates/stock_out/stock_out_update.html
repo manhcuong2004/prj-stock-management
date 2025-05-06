@@ -62,14 +62,6 @@
 
         <div class="mb-3 d-flex gap-2">
             <span class="badge {% if form.instance.pk %}
-                                    {% if form.export_status.value == 'IN_PROGRESS' %}bg-warning
-                                    {% elif form.export_status.value == 'COMPLETED' %}bg-success
-                                    {% else %}bg-danger
-                                    {% endif %}
-                                {% else %}bg-warning{% endif %} badge-status">
-                Trạng thái đơn hàng: {{ form.instance.get_export_status_display|default:'Đang xử lý' }}
-            </span>
-            <span class="badge {% if form.instance.pk %}
                                     {% if form.payment_status.value == 'PAID' %}bg-success
                                     {% elif form.payment_status.value == 'PARTIALLY_PAID' %}bg-warning
                                     {% else %}bg-danger

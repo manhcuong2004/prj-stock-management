@@ -11,15 +11,6 @@
         </a>
     </div>
 
-    <!-- Hiển thị thông báo -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
     <div class="container bg-white p-4 rounded shadow">
         <div class="input-group mb-4">
             <input type="text" class="form-control" placeholder="Tìm kiếm">

@@ -50,6 +50,7 @@ def stock_in(request):
     }
     return render(request, "stock_in/stock_in_list.html", context)
 
+
 @login_required
 def stock_in_update(request, pk=None):
     stock_in = get_object_or_404(StockIn, pk=pk) if pk else None
@@ -58,24 +59,11 @@ def stock_in_update(request, pk=None):
 
     if request.method == "POST":
         if form.is_valid() and formset.is_valid():
-            # Lưu StockIn trước
+            # Lưu StockIn
             stock_in = form.save(commit=False)
             if not stock_in.import_date:
                 stock_in.import_date = timezone.now()
             stock_in.employee = request.user
-
-            # Tính tổng tiền từ chi tiết nhập kho
-            total_amount = 0
-            valid_details = []
-            for detail_form in formset:
-                if detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
-                    quantity = detail_form.cleaned_data.get('quantity', 0)
-                    product = detail_form.cleaned_data.get('product')
-                    discount = detail_form.cleaned_data.get('discount', 0)
-                    total_amount += quantity * product.purchase_price * (1 - discount / 100)
-                    valid_details.append(detail_form)
-            stock_in.total_amount = total_amount
-
             stock_in.save()
 
             # Xử lý formset
@@ -83,33 +71,49 @@ def stock_in_update(request, pk=None):
                 if detail_form.cleaned_data:
                     if detail_form.cleaned_data.get('DELETE', False):
                         if detail_form.instance.pk:
+                            # Xóa ProductDetail liên quan nếu có
+                            if detail_form.instance.product_detail:
+                                detail_form.instance.product_detail.delete()
                             detail_form.instance.delete()
                         continue
 
                     detail = detail_form.save(commit=False)
                     detail.import_record = stock_in
-                    detail.save()
-
-                    # Lấy mã lô từ formset
+                    product = detail_form.cleaned_data.get('product')
                     product_batch = detail_form.cleaned_data.get('product_batch')
+                    quantity = detail_form.cleaned_data.get('quantity')
 
-                    # Tạo hoặc cập nhật ProductDetail với mã lô riêng
-                    product_detail, created = ProductDetail.objects.get_or_create(
-                        product=detail.product,
-                        product_batch=product_batch,
-                        defaults={
-                            'stock_in_detail': detail,
-                            'initial_quantity': detail.quantity,
-                            'remaining_quantity': detail.quantity,
-                            'import_date': stock_in.import_date,
-                        }
-                    )
-                    if not created:
-                        product_detail.initial_quantity += detail.quantity
-                        product_detail.remaining_quantity += detail.quantity
+                    if not (product and product_batch and quantity):
+                        detail_form.add_error(None, "Thông tin sản phẩm, mã lô hoặc số lượng không hợp lệ.")
+                        continue
+
+                    # Kiểm tra nếu đang cập nhật
+                    if detail.pk and detail.product_detail:
+                        product_detail = detail.product_detail
+                        product_detail.product_batch = product_batch
+                        product_detail.initial_quantity = quantity
+                        product_detail.remaining_quantity = quantity  # Cập nhật lại
+                        product_detail.import_date = stock_in.import_date
+                        product_detail.save()
+                    else:
+                        # Tạo ProductDetail mới
+                        product_detail = ProductDetail(
+                            product=product,
+                            product_batch=product_batch,
+                            initial_quantity=quantity,
+                            remaining_quantity=quantity,
+                            import_date=stock_in.import_date or timezone.now(),
+                            status='ACTIVE'
+                        )
                         product_detail.save()
 
-            return redirect('stock_in')
+                    # Gán ProductDetail vào StockInDetail
+                    detail.product_detail = product_detail
+                    detail.save()
+
+            # Kiểm tra lỗi sau khi xử lý
+            if not any(formset.errors):
+                return redirect('stock_in')
         else:
             print("Form errors:", form.errors)
             print("Formset errors:", formset.errors)

@@ -19,9 +19,9 @@
     .alert {
         margin-bottom: 1rem;
     }
-    .delete-checkbox {
-        display: none;
-    }
+<!--    .delete-checkbox {-->
+<!--        display: none;-->
+<!--    }-->
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
@@ -34,9 +34,16 @@
                             <li>{{ field }}: {{ error }}</li>
                         {% endfor %}
                     {% endfor %}
-                    {% for form in formset %}
-                        {% for field, errors in form.errors.items %}
+                    {% if formset.non_form_errors %}
+                        {% for error in formset.non_form_errors %}
                             <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
+                    {% for subform in formset %}
+                        {% for field, errors in subform.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ subform.prefix }} - {{ field }}: {{ error }}</li>
+                            {% endfor %}
                         {% endfor %}
                     {% endfor %}
                 </ul>
@@ -101,21 +108,17 @@
                                                         <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ product_id }}">
                                                     {% endif %}
                                                 {% endfor %}
+                                                {% if not product_id %}
+                                                    <!-- Fallback nếu product_id không có giá trị -->
+                                                    <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ detail_form.instance.product.id|default:'' }}">
+                                                {% endif %}
                                             {% endwith %}
                                             {% if detail_form.instance.pk %}
                                                 <input type="hidden" name="{{ detail_form.prefix }}-id" value="{{ detail_form.instance.pk }}">
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% with product_detail=detail_form.instance.product_details.first %}
-                                                {% if detail_form.instance.pk and product_detail %}
-                                                    <input type="text" class="form-control" name="{{ detail_form.product_batch.name }}" value="{{ product_detail.product_batch|default:'' }}" required>
-                                                {% elif detail_form.product_batch.value %}
-                                                    <input type="text" class="form-control" name="{{ detail_form.product_batch.name }}" value="{{ detail_form.product_batch.value|default:'' }}" required>
-                                                {% else %}
-                                                    {{ detail_form.product_batch }}
-                                                {% endif %}
-                                            {% endwith %}
+                                            {{ detail_form.product_batch }}
                                         </td>
                                         <td>
                                             {{ detail_form.quantity }}
@@ -381,7 +384,7 @@
                     </td>
                     <td>
                         <div class="input-group" style="max-width: 120px;">
-                            <input type="number" class="form-control discount" name="stockindetail_set-${formIndex}-discount" value="0" min="0" max="100">
+                            <input type="number" class="form-control discount" name="stockindetail_set-${formIndex}-discount" value="0" min="0" max="100" required>
                             <span class="input-group-text">%</span>
                         </div>
                     </td>
@@ -413,15 +416,25 @@
                 if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
                     const row = event.target.closest('tr');
                     const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                    const idInput = row.querySelector('input[name$="-id"]');
 
-                    if (deleteInput) {
+                    if (!deleteInput) {
+                        console.error('Delete input not found for row:', row);
+                        return;
+                    }
+
+                    if (idInput && idInput.value) {
+                        // Hàng đã tồn tại trong DB, đánh dấu DELETE và ẩn
                         deleteInput.checked = true;
                         row.style.display = 'none';
+                        console.log('Marked DELETE for row with id:', idInput.value);
                     } else {
+                        // Hàng mới, xóa hoàn toàn khỏi DOM
                         row.remove();
                         const totalForms = document.querySelector('#id_stockindetail_set-TOTAL_FORMS');
                         totalForms.value = parseInt(totalForms.value) - 1;
                         formIndex--;
+                        console.log('Removed new row, TOTAL_FORMS:', totalForms.value);
                     }
 
                     updateSummary();
@@ -475,46 +488,46 @@
         });
 
         function updateSummary() {
-        let totalAmount = 0;
-        let totalDiscount = 0;
+            let totalAmount = 0;
+            let totalDiscount = 0;
 
-        document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
-            const quantityInput = row.querySelector('input[name$="-quantity"]');
-            const priceElement = row.querySelector('.price');
-            const discountInput = row.querySelector('input[name$="-discount"]');
+            document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
+                const quantityInput = row.querySelector('input[name$="-quantity"]');
+                const priceElement = row.querySelector('.price');
+                const discountInput = row.querySelector('input[name$="-discount"]');
 
-            if (!quantityInput || !priceElement || !discountInput) {
-                return;
-            }
+                if (!quantityInput || !priceElement || !discountInput) {
+                    return;
+                }
 
-            const quantity = parseFloat(quantityInput.value) || 0;
-            const price = parseFloat(priceElement.dataset.price) || 0;
-            const discount = parseFloat(discountInput.value) || 0;
-            const total = quantity * price * (1 - discount / 100);
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceElement.dataset.price) || 0;
+                const discount = parseFloat(discountInput.value) || 0;
+                const total = quantity * price * (1 - discount / 100);
 
-            totalAmount += quantity * price;
-            totalDiscount += quantity * price * (discount / 100);
-        });
+                totalAmount += quantity * price;
+                totalDiscount += quantity * price * (discount / 100);
+            });
 
-        const finalAmount = totalAmount - totalDiscount;
-        const amountPaidInput = document.querySelector('.amount-paid');
-        const amountPaid = amountPaidInput ? (parseFloat(amountPaidInput.value) || 0) : 0;
-        const remainingDebt = finalAmount - amountPaid;
+            const finalAmount = totalAmount - totalDiscount;
+            const amountPaidInput = document.querySelector('.amount-paid');
+            const amountPaid = amountPaidInput ? (parseFloat(amountPaidInput.value) || 0) : 0;
+            const remainingDebt = finalAmount - amountPaid;
 
-        const totalAmountElement = document.querySelector('.summary-box .total-amount');
-        const totalDiscountElement = document.querySelector('.summary-box .total-discount');
-        const finalAmountElement = document.querySelector('.summary-box .final-amount');
-        const amountPaidDisplayElement = document.querySelector('.summary-box .amount-paid-display');
-        const remainingDebtElement = document.querySelector('.summary-box .remaining-debt');
-        const actualReceivedElement = document.querySelector('.summary-box .actual-received');
+            const totalAmountElement = document.querySelector('.summary-box .total-amount');
+            const totalDiscountElement = document.querySelector('.summary-box .total-discount');
+            const finalAmountElement = document.querySelector('.summary-box .final-amount');
+            const amountPaidDisplayElement = document.querySelector('.summary-box .amount-paid-display');
+            const remainingDebtElement = document.querySelector('.summary-box .remaining-debt');
+            const actualReceivedElement = document.querySelector('.summary-box .actual-received');
 
-        if (totalAmountElement) totalAmountElement.textContent = totalAmount.toLocaleString('vi-VN') + ' đ';
-        if (totalDiscountElement) totalDiscountElement.textContent = totalDiscount.toLocaleString('vi-VN') + ' đ';
-        if (finalAmountElement) finalAmountElement.textContent = finalAmount.toLocaleString('vi-VN') + ' đ';
-        if (amountPaidDisplayElement) amountPaidDisplayElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
-        if (remainingDebtElement) remainingDebtElement.textContent = remainingDebt.toLocaleString('vi-VN') + ' đ';
-        if (actualReceivedElement) actualReceivedElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
-    }
+            if (totalAmountElement) totalAmountElement.textContent = totalAmount.toLocaleString('vi-VN') + ' đ';
+            if (totalDiscountElement) totalDiscountElement.textContent = totalDiscount.toLocaleString('vi-VN') + ' đ';
+            if (finalAmountElement) finalAmountElement.textContent = finalAmount.toLocaleString('vi-VN') + ' đ';
+            if (amountPaidDisplayElement) amountPaidDisplayElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
+            if (remainingDebtElement) remainingDebtElement.textContent = remainingDebt.toLocaleString('vi-VN') + ' đ';
+            if (actualReceivedElement) actualReceivedElement.textContent = amountPaid.toLocaleString('vi-VN') + ' đ';
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             resetProductInputs();
@@ -532,8 +545,11 @@
         });
 
         document.getElementById('order-form').addEventListener('submit', function(event) {
-            console.log('Form submitted');
-            console.log(new FormData(this));
+            const totalForms = document.querySelector('#id_stockindetail_set-TOTAL_FORMS');
+            const rows = document.querySelectorAll('.product-row');
+            totalForms.value = rows.length; // Bao gồm cả các hàng bị đánh dấu DELETE
+            console.log('Submitting form, TOTAL_FORMS:', totalForms.value);
+            console.log('Form data:', new FormData(this));
             if (!confirm('Bạn có chắc muốn lưu đơn nhập kho này?')) {
                 event.preventDefault();
             }

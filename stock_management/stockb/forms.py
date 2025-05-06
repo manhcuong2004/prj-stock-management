@@ -1,6 +1,6 @@
 from django import forms
 from .models import StockOut, StockOutDetail, Product, ProductDetail, InventoryCheck, InventoryCheckDetail, Unit, \
-    ProductCategory
+    ProductCategory, StockIn, StockInDetail, Supplier
 
 
 class StockOutForm(forms.ModelForm):
@@ -54,9 +54,6 @@ StockOutDetailFormSet = forms.inlineformset_factory(
     StockOut, StockOutDetail, form=StockOutDetailForm, extra=0, can_delete=True
 )
 
-from django import forms
-from .models import StockIn, StockInDetail, Product, Supplier, User
-
 class StockInForm(forms.ModelForm):
     class Meta:
         model = StockIn
@@ -72,7 +69,8 @@ class StockInForm(forms.ModelForm):
 class StockInDetailForm(forms.ModelForm):
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
     )
     product_batch = forms.CharField(
         max_length=100,
@@ -83,7 +81,7 @@ class StockInDetailForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            product_detail = ProductDetail.objects.filter(stock_in_detail=self.instance).first()
+            product_detail = ProductDetail.objects.filter(stock_in_details=self.instance).first()
             if product_detail and product_detail.product_batch:
                 self.fields['product_batch'].initial = product_detail.product_batch
 
@@ -95,21 +93,39 @@ class StockInDetailForm(forms.ModelForm):
             'discount': forms.NumberInput(attrs={'class': 'form-control discount', 'min': '0', 'max': '100'}),
         }
 
-    def clean_product_batch(self):
-        product_batch = self.cleaned_data.get('product_batch')
-        product = self.cleaned_data.get('product')
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('DELETE', False):
+            self.errors.clear()
+            return cleaned_data
+
+        # Validation bình thường nếu không có DELETE
+        product = cleaned_data.get('product')
+        product_batch = cleaned_data.get('product_batch')
+        quantity = cleaned_data.get('quantity')
+        discount = cleaned_data.get('discount')
+
+        if not product:
+            self.add_error('product', 'This field is required.')
         if not product_batch:
-            raise forms.ValidationError("Mã lô không được để trống.")
-        query = ProductDetail.objects.filter(product=product, product_batch=product_batch)
-        if self.instance.pk:
-            query = query.exclude(stock_in_detail=self.instance)
-        if query.exists():
-            raise forms.ValidationError(f"Mã lô {product_batch} đã được sử dụng cho sản phẩm này.")
-        return product_batch
+            self.add_error('product_batch', 'Mã lô không được để trống.')
+        if quantity is None or quantity <= 0:
+            self.add_error('quantity', 'Quantity must be greater than 0.')
+        if discount is None:
+            self.add_error('discount', 'This field is required.')
+        if product and product_batch:
+            query = ProductDetail.objects.filter(product=product, product_batch=product_batch)
+            if self.instance.pk:
+                query = query.exclude(stock_in_details=self.instance)
+            if query.exists():
+                self.add_error('product_batch', f"Mã lô {product_batch} đã được sử dụng cho sản phẩm này.")
+
+        return cleaned_data
 
 StockInDetailFormSet = forms.inlineformset_factory(
     StockIn, StockInDetail, form=StockInDetailForm, extra=0, can_delete=True
 )
+
 
 
 class UnitForm(forms.ModelForm):
