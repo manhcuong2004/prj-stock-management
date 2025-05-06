@@ -3,32 +3,18 @@
     {{ title }}
 {% endblock %}
 {% block style %}
-    .customer-code {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
     .summary-box {
       background: #f8f9fa;
       border-radius: 8px;
       padding: 1rem;
       margin-bottom: 1.5rem;
     }
-    .customer-info {
-      font-size: 1.1rem;
-    }
-    .customer-stats {
-      margin-top: 1rem;
-    }
-    .customer-stats li {
-      margin-bottom: 0.5rem;
-    }
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <div class="customer-code">MÃ KHÁCH HÀNG <span class="text-dark">#{{ customer.id }}</span></div>
-          <small class="text-muted">Ngày tạo: {{ customer.created_at|date:"d/m/Y H:i" }}</small>
+          <h4>Cập nhật khách hàng</h4>
         </div>
         <div>
           <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary me-2">Quay lại danh sách</a>
@@ -36,18 +22,10 @@
         </div>
       </div>
 
-      {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-      {% endif %}
-
       <form id="customer-form" method="post">
         {% csrf_token %}
         <div class="row">
-          <div class="col-md-8">
+          <div class="col-md-12">
             <div class="summary-box">
               <h5 class="mb-3">Thông tin khách hàng</h5>
               <div class="row mb-3">
@@ -88,108 +66,6 @@
                 <label for="address" class="form-label">Địa chỉ</label>
                 <input type="text" class="form-control" id="address" name="address"
                        placeholder="Địa chỉ" value="{{ customer.address }}" required>
-              </div>
-            </div>
-
-            <div class="summary-box">
-              <h5 class="mb-3">Lịch sử đơn hàng</h5>
-              <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Mã đơn</th>
-                      <th>Ngày tạo</th>
-                      <th>Trạng thái</th>
-                      <th>Thanh toán</th>
-                      <th>Tổng tiền</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for order in customer_orders %}
-                    <tr>
-                      <td>#{{ order.id }}</td>
-                      <td>{{ order.export_date|date:"d/m/Y H:i" }}</td>
-                      <td>
-                        {% if order.export_status == "IN_PROGRESS" %}
-                          <span class="badge bg-warning">Đang xử lí</span>
-                        {% elif order.export_status == "COMPLETED" %}
-                          <span class="badge bg-success">Hoàn thành</span>
-                        {% else %}
-                          <span class="badge bg-danger">Đã hủy</span>
-                        {% endif %}
-                      </td>
-                      <td>
-                        {% if order.payment_status == "PAID" %}
-                          <span class="badge bg-success">Đã thanh toán</span>
-                        {% elif order.payment_status == "PARTIALLY_PAID" %}
-                          <span class="badge bg-warning">Còn nợ</span>
-                        {% else %}
-                          <span class="badge bg-danger">Chưa thanh toán</span>
-                        {% endif %}
-                      </td>
-                      <td>{{ order.total_amount|floatformat:0 }} đ</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                      <td colspan="5" class="text-center">Khách hàng chưa có đơn hàng nào</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="summary-box">
-              <h5 class="mb-3">Thống kê</h5>
-              <div class="customer-stats">
-                <ul class="list-unstyled">
-                  <li><i class="bi bi-cart-check"></i> Tổng đơn hàng: <strong>{{ order_count }}</strong></li>
-                  <li><i class="bi bi-cash-stack"></i> Tổng chi tiêu: <strong>{{ total_spent|floatformat:0 }} đ</strong></li>
-                  <li><i class="bi bi-calendar-check"></i> Đơn hàng gần nhất: <strong>{{ last_order_date|default:"Chưa có" }}</strong></li>
-                  <li><i class="bi bi-exclamation-triangle"></i> Nợ phải thu: <strong class="text-danger">{{ debt_amount|floatformat:0 }} đ</strong></li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="summary-box">
-              <h5 class="mb-3">Ghi chú</h5>
-              <textarea class="form-control" name="notes" rows="4" placeholder="Thêm ghi chú về khách hàng"></textarea>
-            </div>
-
-            <div class="summary-box">
-              <h5 class="mb-3">Thao tác</h5>
-              <div class="d-grid gap-2">
-                <a href="{% url 'stock_out_create' %}?customer={{ customer.id }}" class="btn btn-success">
-                  <i class="bi bi-plus-circle"></i> Tạo đơn hàng mới
-                </a>
-                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                  <i class="bi bi-trash"></i> Xóa khách hàng
-                </button>
-
-                <!-- Modal xác nhận xóa -->
-                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p>Bạn có chắc chắn muốn xóa khách hàng <strong>{{ customer.last_name }} {{ customer.first_name }}</strong> không?</p>
-                        <p class="text-danger"><strong>Lưu ý:</strong> Thao tác này không thể hoàn tác.</p>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <form action="{% url 'customer_delete' customer.id %}" method="post" style="display: inline;">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

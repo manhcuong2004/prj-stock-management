@@ -107,7 +107,7 @@ class StockOut(models.Model):
     )
     notes = models.TextField(blank=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null="true")
     amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -13,13 +13,6 @@
             </a>
         </div>
         <div class="card-body">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
 
             <div class="mb-3">
                 <form method="get" class="d-flex">
@@ -53,13 +46,12 @@
                             <td class="text-center">
                                 <div class="btn-group">
                                     <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="bi bi-pencil"></i>
+                                        Xem
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ customer.id }}">
-                                        <i class="bi bi-trash"></i>
+                                        Xóa
                                     </button>
 
-                                    <!-- Modal xác nhận xóa -->
                                     <div class="modal fade" id="deleteModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ customer.id }}" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">

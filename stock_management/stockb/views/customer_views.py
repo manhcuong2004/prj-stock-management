@@ -2,13 +2,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, F, Max
 from django.shortcuts import render, redirect, get_object_or_404
-from stockb.models import Customer, StockOutDetail, StockOut
+from ..models import Customer, StockOut
 from django.contrib import messages
 from django.utils import timezone
 from django.db import connection
 @login_required
 def customer_list(request):
-    # Chỉ chọn các trường hiện có trong database
     customers = Customer.objects.only(
         'id', 'first_name', 'last_name', 'email', 'phone', 'address', 'created_at', 'updated_at'
     ).order_by('-created_at')
@@ -38,14 +37,12 @@ def customer_list(request):
 @login_required
 def customer_create(request):
     if request.method == 'POST':
-        # Lấy dữ liệu từ form
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         address = request.POST.get('address')
 
-        # Kiểm tra dữ liệu
         if not first_name or not last_name or not phone or not address:
             messages.error(request, 'Vui lòng điền đầy đủ thông tin bắt buộc!')
             return render(request, "customer/customer_form.html", {
@@ -53,7 +50,6 @@ def customer_create(request):
                 'form_data': request.POST
             })
 
-        # Tạo khách hàng mới
         try:
             customer = Customer(
                 first_name=first_name,
@@ -81,14 +77,12 @@ def customer_update(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
 
     if request.method == 'POST':
-        # Lấy dữ liệu từ form
         customer.first_name = request.POST.get('first_name')
         customer.last_name = request.POST.get('last_name')
         customer.email = request.POST.get('email')
         customer.phone = request.POST.get('phone')
         customer.address = request.POST.get('address')
 
-        # Kiểm tra dữ liệu
         if not customer.first_name or not customer.last_name or not customer.phone or not customer.address:
             messages.error(request, 'Vui lòng điền đầy đủ thông tin bắt buộc!')
             return render(request, "customer/customer_update.html", {
@@ -96,7 +90,6 @@ def customer_update(request, pk):
                 'customer': customer
             })
 
-        # Cập nhật khách hàng
         try:
             customer.updated_at = timezone.now()
             customer.save()
@@ -105,36 +98,9 @@ def customer_update(request, pk):
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
 
-    # Lấy thông tin đơn hàng của khách hàng
-    customer_orders = StockOut.objects.filter(customer=customer).order_by('-export_date')
-
-    # Tính tổng chi tiêu
-    total_spent = StockOutDetail.objects.filter(
-        export_record__customer=customer,
-        export_record__export_status='COMPLETED'
-    ).aggregate(
-        total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
-    )['total'] or 0
-
-    # Tính nợ phải thu
-    debt_amount = StockOutDetail.objects.filter(
-        export_record__customer=customer,
-        export_record__payment_status__in=['UNPAID', 'PARTIALLY_PAID']
-    ).aggregate(
-        total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
-    )['total'] or 0
-
-    last_order = StockOut.objects.filter(customer=customer).order_by('-export_date').first()
-    last_order_date = last_order.export_date.strftime('%d/%m/%Y') if last_order else None
-
     context = {
         "title": "Cập nhật thông tin khách hàng",
-        "customer": customer,
-        "customer_orders": customer_orders[:5],
-        "order_count": customer_orders.count(),
-        "total_spent": total_spent,
-        "debt_amount": debt_amount,
-        "last_order_date": last_order_date
+        "customer": customer
     }
     return render(request, "customer/customer_update.html", context)
 
