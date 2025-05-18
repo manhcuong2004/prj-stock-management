@@ -26,8 +26,9 @@ def create_unit(request):
             unit = form.save()
             messages.success(request, 'Đơn vị đã được tạo thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã thêm đơn vị {unit.name} thành công!",
+                message=f"Thêm đơn vị {unit.unit_name} thành công!",
                 created_at=timezone.now(),
+                employee=request.user,
                 is_read=False
             )
             return redirect('units_list')
@@ -48,8 +49,9 @@ def edit_unit(request, pk):
             unit = form.save()
             messages.success(request, 'Đơn vị đã được cập nhật thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã cập nhật đơn vị {unit.name} thành công!",
+                message=f"Cập nhật đơn vị {unit.unit_name} thành công!",
                 created_at=timezone.now(),
+                employee=request.user,
                 is_read=False
             )
             return redirect('units_list')
@@ -71,8 +73,9 @@ def delete_unit(request, pk):
         unit.delete()
         messages.success(request, 'Đơn vị đã được xóa thành công!')
         Notification.objects.create(
-            message=f"{request.user.username} đã xóa đơn vị {unit_name} thành công!",
+            message=f"Xóa đơn vị {unit_name} thành công!",
             created_at=timezone.now(),
+            employee=request.user,
             is_read=False
         )
         return redirect('units_list')

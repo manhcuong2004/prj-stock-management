@@ -9,14 +9,14 @@
         <h5 class="mb-4">Thông tin nhà cung cấp</h5>
         <p class="text-muted mb-4">Vui lòng cung cấp các thông tin về nhà cung cấp sẽ tạo</p>
 
-        <!-- Hiển thị thông báo -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+<!--        &lt;!&ndash; Hiển thị thông báo &ndash;&gt;-->
+<!--        {% if messages %}-->
+<!--            {% for message in messages %}-->
+<!--                <div class="{% if message.tags == 'error' %}alert-danger{% endif %}">-->
+<!--                    {{ message }}-->
+<!--                </div>-->
+<!--            {% endfor %}-->
+<!--        {% endif %}-->
 
         <form method="POST">
             {% csrf_token %}

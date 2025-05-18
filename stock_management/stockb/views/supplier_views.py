@@ -55,7 +55,8 @@ def supplier_create_view(request):
             )
             messages.success(request, 'Thêm nhà cung cấp thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã thêm nhà cung cấp {supplier_name} thành công!",
+                message=f"Thêm nhà cung cấp {supplier_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
@@ -97,8 +98,9 @@ def supplier_update_view(request, id):
             supplier.save()
             messages.success(request, 'Cập nhật nhà cung cấp thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã cập nhật nhà cung cấp {supplier.supplier_name} thành công!",
+                message=f"Cập nhật nhà cung cấp {supplier.supplier_name} thành công!",
                 created_at=timezone.now(),
+                employee=request.user,
                 is_read=False
             )
             return redirect('supplier_list')
@@ -116,8 +118,9 @@ def supplier_delete_view(request, id):
         supplier.delete()
         messages.success(request, 'Xóa nhà cung cấp thành công!')
         Notification.objects.create(
-            message=f"{request.user.username} đã xóa nhà cung cấp {supplier_name} thành công!",
+            message=f"Xóa nhà cung cấp {supplier_name} thành công!",
             created_at=timezone.now(),
+            employee=request.user,
             is_read=False
         )
         return redirect('supplier_list')

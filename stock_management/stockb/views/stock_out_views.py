@@ -67,7 +67,7 @@ def stock_out(request):
 @login_required
 def stock_out_update(request, pk=None):
     stock_out = get_object_or_404(StockOut, pk=pk) if pk else None
-    action = "cập nhật" if pk else "thêm"
+    action = "Cập nhật" if pk else "Thêm"
     form = StockOutForm(request.POST or None, instance=stock_out)
     formset = StockOutDetailFormSet(request.POST or None, instance=stock_out or StockOut(), prefix='stockoutdetail_set')
 
@@ -107,7 +107,8 @@ def stock_out_update(request, pk=None):
             if not any(formset.errors):
                 messages.success(request, f"{action.capitalize()} đơn xuất kho thành công!")
                 Notification.objects.create(
-                    message=f"{request.user.username} đã {action} đơn xuất kho ID {stock_out.id} thành công!",
+                    message=f"{action} đơn xuất kho ID {stock_out.id} thành công!",
+                    employee=request.user,
                     created_at=timezone.now(),
                     is_read=False
                 )
@@ -147,7 +148,8 @@ def stock_out_delete(request, pk):
         stock_out.delete()
         messages.success(request, 'Đơn xuất đã được xóa thành công!')
         Notification.objects.create(
-            message=f"{request.user.username} đã xóa đơn xuất kho ID {stock_out_id} thành công!",
+            message=f"Xóa đơn xuất kho ID {stock_out_id} thành công!",
+            employee=request.user,
             created_at=timezone.now(),
             is_read=False
         )

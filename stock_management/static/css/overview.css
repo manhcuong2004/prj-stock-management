@@ -1,0 +1,79 @@
+/*extra report head*/
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+.metric-card {
+    border-left: 4px solid #3b82f6;
+    height: 100%;
+}
+.metric-card .card-title {
+    font-size: 0.875rem;
+    color: #64748b;
+    text-transform: uppercase;
+}
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+}
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+.full-width-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.full-width-row > .col {
+    flex: 1;
+    min-width: 0;
+}
+@media (max-width: 768px) {
+    .metric-value {
+        font-size: 1.25rem;
+    }
+    .chart-container {
+        height: 200px;
+    }
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .filter-group input,
+    .filter-group button {
+        width: 100%;
+    }
+    .full-width-row {
+        flex-direction: column;
+    }
+    .full-width-row > .col {
+        width: 100%;
+    }
+}

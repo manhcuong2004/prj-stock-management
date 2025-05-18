@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5>Lịch sử hoạt động</h5>
+        <a href="{% url 'activity_log_list' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-clockwise"></i>
+            Làm mới
+        </a>
+    </div>
+    <div class="container bg-white p-4 rounded shadow">
+        <form method="GET" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <select name="action_filter" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {% if action_filter == 'all' %} selected {% endif %}>Tất cả hành động</option>
+                        <option value="create" {% if action_filter == 'create' %}selected{% endif %}>Tạo</option>
+                        <option value="update" {% if action_filter == 'update' %}selected{% endif %}>Cập nhật</option>
+                        <option value="delete" {% if action_filter == 'delete' %}selected{% endif %}>Xóa</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="employee_filter" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {% if employee_filter == "all" %}selected{% endif %}>Tất cả nhân viên</option>
+                        {% for employee in employees %}
+                            <option value="{{ employee.id }}" {% if employee_filter == employee.id %}selected{% endif %}>{{ employee.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm theo nội dung hoặc nhân viên" value="{{ search_text }}">
+                        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Mã</th>
+                        <th scope="col">Thời gian</th>
+                        <th scope="col">Nhân viên</th>
+                        <th scope="col">Nội dung</th>
+                        <th scope="col">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>#{{ log.id }}</td>
+                        <td>{{ log.created_at|date:"d/m/Y H:i A" }}</td>
+                        <td>{{ log.employee.username|default:"Hệ thống" }}</td>
+                        <td>{{ log.message }}</td>
+                        <td>
+                            {% if log.is_read %}
+                                <span class="badge bg-success">Đã đọc</span>
+                            {% else %}
+                                <span class="badge bg-warning">Chưa đọc</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">Không có thông báo nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

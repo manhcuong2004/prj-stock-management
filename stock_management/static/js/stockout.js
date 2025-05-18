@@ -1,4 +1,9 @@
-let formIndex = {{ formset.total_form_count }};
+// Đếm số hàng thực tế hiển thị
+let initialRows = document.querySelectorAll('.product-row').length;
+let formIndex = initialRows; // Bắt đầu từ số hàng thực tế
+
+// Cập nhật TOTAL_FORMS ban đầu dựa trên số hàng thực tế
+document.querySelector('#id_stockoutdetail_set-TOTAL_FORMS').value = initialRows;
 
 const productData = [
     {% for product in products %}
@@ -14,6 +19,7 @@ const productData = [
 const batchData = [
     {% for detail in product_details %}
         {
+            id: {{ detail.id }},
             product_id: {{ detail.product.id }},
             product_batch: "{{ detail.product_batch|escapejs }}",
             remaining_quantity: {{ detail.remaining_quantity }},
@@ -23,84 +29,107 @@ const batchData = [
     {% endfor %}
 ];
 
-// Handle category selection
-document.getElementById('category-select').addEventListener('change', function() {
-    const categoryId = this.value;
-    const productSelect = document.getElementById('product-select');
-    const batchSelect = document.getElementById('batch-select');
-    const addButton = document.getElementById('add-product-btn');
+// Lấy các phần tử select và nút
+const categorySelect = document.getElementById('category-select');
+const productSelect = document.getElementById('product-select');
+const batchSelect = document.getElementById('batch-select');
+const addButton = document.getElementById('add-product-btn');
 
-    // Reset product and batch selects
+// Hàm làm mới product-select và batch-select
+function resetProductAndBatchSelects() {
     productSelect.innerHTML = '<option value="">Chọn sản phẩm</option>';
     batchSelect.innerHTML = '<option value="">Chọn lô sản phẩm</option>';
     productSelect.disabled = true;
     batchSelect.disabled = true;
     addButton.disabled = true;
+}
+
+// Xử lý sự kiện khi thay đổi danh mục
+categorySelect.addEventListener('change', function() {
+    const categoryId = this.value;
+    resetProductAndBatchSelects();
 
     if (categoryId) {
-        // Lọc sản phẩm theo danh mục
         const filteredProducts = productData.filter(product => product.category_id == categoryId);
-        filteredProducts.forEach(product => {
-            const option = document.createElement('option');
-            option.value = product.id;
-            option.text = product.name;
-            option.dataset.price = product.selling_price;
-            productSelect.appendChild(option);
-        });
-        productSelect.disabled = filteredProducts.length === 0;
+        if (filteredProducts.length > 0) {
+            filteredProducts.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.text = product.name;
+                option.dataset.price = product.selling_price;
+                productSelect.appendChild(option);
+            });
+            productSelect.disabled = false;
+        } else {
+            productSelect.disabled = true;
+        }
     }
 });
 
-// Handle product selection
-document.getElementById('product-select').addEventListener('change', function() {
+// Xử lý sự kiện khi thay đổi sản phẩm
+productSelect.addEventListener('change', function() {
     const productId = this.value;
-    const batchSelect = document.getElementById('batch-select');
-    const addButton = document.getElementById('add-product-btn');
-
     batchSelect.innerHTML = '<option value="">Chọn lô sản phẩm</option>';
     batchSelect.disabled = true;
     addButton.disabled = true;
 
     if (productId) {
-        // Lọc lô theo sản phẩm
         const filteredBatches = batchData.filter(batch => batch.product_id == productId);
-        filteredBatches.forEach(batch => {
-            const option = document.createElement('option');
-            option.value = batch.product_batch;
-            option.text = `${batch.product_batch} (Còn: ${batch.remaining_quantity}${batch.expiry_date ? ', Hết hạn: ' + batch.expiry_date : ''})`;
-            option.dataset.price = batch.selling_price;
-            batchSelect.appendChild(option);
-        });
-        batchSelect.disabled = filteredBatches.length === 0;
+        if (filteredBatches.length > 0) {
+            filteredBatches.forEach(batch => {
+                const option = document.createElement('option');
+                option.value = batch.id; // Lưu id của ProductDetail
+                option.text = `${batch.product_batch} (Còn: ${batch.remaining_quantity}${batch.expiry_date ? ', Hết hạn: ' + batch.expiry_date : ''})`;
+                option.dataset.price = batch.selling_price;
+                batchSelect.appendChild(option);
+            });
+            batchSelect.disabled = false;
+        } else {
+            batchSelect.disabled = true;
+        }
     }
 });
 
-// Enable add button when batch is selected
-document.getElementById('batch-select').addEventListener('change', function() {
-    const addButton = document.getElementById('add-product-btn');
+// Xử lý sự kiện khi thay đổi lô
+batchSelect.addEventListener('change', function() {
     addButton.disabled = !this.value;
 });
 
-// Handle add product
+// Xử lý thêm sản phẩm
 document.getElementById('add-product-btn').addEventListener('click', function(event) {
     event.preventDefault();
-    const productSelect = document.getElementById('product-select');
-    const batchSelect = document.getElementById('batch-select');
     const productId = productSelect.value;
     const productName = productSelect.options[productSelect.selectedIndex].text;
+    const productDetailId = batchSelect.value;
     const productPrice = parseFloat(batchSelect.options[batchSelect.selectedIndex].dataset.price) || 0;
-    const productBatch = batchSelect.value;
+    const productBatch = batchSelect.options[batchSelect.selectedIndex].text.split(' (')[0];
 
-    if (productId && productBatch) {
+    const selectedBatch = batchData.find(batch => batch.id == productDetailId);
+    if (selectedBatch && 1 > selectedBatch.remaining_quantity) {
+        alert(`Số lượng vượt quá tồn kho của lô ${productBatch}!`);
+        return;
+    }
+
+    const existingRows = document.querySelectorAll('.product-row');
+    for (let row of existingRows) {
+        const rowProductId = row.querySelector('input[name$="-product"]').value;
+        const rowProductDetailId = row.querySelector('input[name$="-product_detail"]').value;
+        if (rowProductId === productId && rowProductDetailId === productDetailId) {
+            alert('Sản phẩm và lô đã tồn tại!');
+            return;
+        }
+    }
+
+    if (productId && productDetailId) {
         const noProductMessage = document.getElementById('no-product-message');
         if (noProductMessage) {
             noProductMessage.style.display = 'none';
         }
 
-        let table = document.querySelector('.table');
+        let table = document.querySelector('#product-table');
         if (!table) {
             const tableHTML = `
-                <table class="table">
+                <table class="table" id="product-table">
                     <thead>
                         <tr>
                             <th>Tên sản phẩm</th>
@@ -117,7 +146,7 @@ document.getElementById('add-product-btn').addEventListener('click', function(ev
             `;
             const summaryBox = document.querySelector('.summary-box');
             summaryBox.insertAdjacentHTML('afterbegin', tableHTML);
-            table = document.querySelector('.table');
+            table = document.querySelector('#product-table');
         }
 
         const tableBody = document.getElementById('product-list');
@@ -125,19 +154,20 @@ document.getElementById('add-product-btn').addEventListener('click', function(ev
         newRow.classList.add('product-row');
         newRow.innerHTML = `
             <td>
-                <select name="stockoutdetail_set-${formIndex}-product" class="form-control">
-                    <option value="${productId}" selected>${productName}</option>
-                </select>
-                <input type="hidden" name="stockoutdetail_set-${formIndex}-product_batch" value="${productBatch}">
+                ${productName}
+                <input type="hidden" name="stockoutdetail_set-${formIndex}-product" value="${productId}">
+                <input type="hidden" name="stockoutdetail_set-${formIndex}-product_detail" value="${productDetailId}">
             </td>
             <td>${productBatch}</td>
-            <td><input type="number" class="form-control quantity" style="width: 100px;" name="stockoutdetail_set-${formIndex}-quantity" value="1"></td>
+            <td>
+                <input type="number" class="form-control quantity" style="width: 100px;" name="stockoutdetail_set-${formIndex}-quantity" value="1" min="1" required>
+            </td>
             <td>
                 <span class="price" data-price="${productPrice}">${productPrice.toLocaleString('vi-VN')} đ</span>
             </td>
             <td>
                 <div class="input-group" style="max-width: 120px;">
-                    <input type="number" class="form-control discount" name="stockoutdetail_set-${formIndex}-discount" value="0">
+                    <input type="number" class="form-control discount" name="stockoutdetail_set-${formIndex}-discount" value="0" min="0" max="100">
                     <span class="input-group-text">%</span>
                 </div>
             </td>
@@ -145,7 +175,7 @@ document.getElementById('add-product-btn').addEventListener('click', function(ev
                 <span class="total">${productPrice.toLocaleString('vi-VN')} đ</span>
             </td>
             <td class="text-center">
-                <input type="checkbox" name="stockoutdetail_set-${formIndex}-DELETE" style="display: none;">
+                <input type="checkbox" name="stockoutdetail_set-${formIndex}-DELETE" class="delete-checkbox">
                 <i class="bi bi-x-lg delete-row"></i>
             </td>
         `;
@@ -155,13 +185,9 @@ document.getElementById('add-product-btn').addEventListener('click', function(ev
         totalForms.value = parseInt(totalForms.value) + 1;
         formIndex++;
 
-        // Reset selects
-        document.getElementById('category-select').value = '';
-        document.getElementById('product-select').innerHTML = '<option value="">Chọn sản phẩm</option>';
-        document.getElementById('product-select').disabled = true;
-        document.getElementById('batch-select').innerHTML = '<option value="">Chọn lô sản phẩm</option>';
-        document.getElementById('batch-select').disabled = true;
-        document.getElementById('add-product-btn').disabled = true;
+        // Làm mới các trường sau khi thêm
+        categorySelect.value = '';
+        resetProductAndBatchSelects();
 
         updateRowTotals();
         updateSummary();
@@ -172,17 +198,25 @@ document.addEventListener('click', function(event) {
     if (event.target.classList.contains('delete-row')) {
         const row = event.target.closest('tr');
         const deleteInput = row.querySelector('input[name$="-DELETE"]');
+
         if (deleteInput) {
+            // Hàng đã tồn tại trong cơ sở dữ liệu
             deleteInput.checked = true;
-            row.style.display = 'none';
+            row.style.display = 'none'; // Ẩn hàng
         } else {
-            row.remove();
+            // Hàng mới (chưa có trong cơ sở dữ liệu)
+            row.remove(); // Xóa hoàn toàn khỏi DOM
+            const totalForms = document.querySelector('#id_stockoutdetail_set-TOTAL_FORMS');
+            totalForms.value = parseInt(totalForms.value) - 1; // Giảm TOTAL_FORMS
+            formIndex--;
         }
+
         updateSummary();
 
+        // Kiểm tra nếu không còn hàng nào hiển thị
         const visibleRows = document.querySelectorAll('.product-row:not([style*="display: none"])');
         if (visibleRows.length === 0) {
-            const table = document.querySelector('.table');
+            const table = document.querySelector('#product-table');
             if (table) {
                 table.remove();
             }
@@ -197,17 +231,25 @@ document.addEventListener('click', function(event) {
 
 function updateRowTotals() {
     document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
-        const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+        const quantityInput = row.querySelector('input[name$="-quantity"]');
+        const discountInput = row.querySelector('input[name$="-discount"]');
         const priceElement = row.querySelector('.price');
+
+        if (!quantityInput || !discountInput || !priceElement) {
+            console.log('Missing quantity, discount, or price element in row:', row);
+            return;
+        }
+
+        const quantity = parseFloat(quantityInput.value) || 0;
         const price = parseFloat(priceElement.dataset.price) || 0;
-        const discount = parseFloat(row.querySelector('.discount').value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
         const total = quantity * price * (1 - discount / 100);
         row.querySelector('.total').textContent = total.toLocaleString('vi-VN') + ' đ';
     });
 }
 
 document.addEventListener('input', function(event) {
-    if (event.target.classList.contains('quantity') || event.target.classList.contains('discount')) {
+    if (event.target.matches('input[name$="-quantity"]') || event.target.matches('input[name$="-discount"]')) {
         updateRowTotals();
         updateSummary();
     }
@@ -225,10 +267,17 @@ function updateSummary() {
     let totalDiscount = 0;
 
     document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
-        const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+        const quantityInput = row.querySelector('input[name$="-quantity"]');
         const priceElement = row.querySelector('.price');
+        const discountInput = row.querySelector('input[name$="-discount"]');
+
+        if (!quantityInput || !priceElement || !discountInput) {
+            return;
+        }
+
+        const quantity = parseFloat(quantityInput.value) || 0;
         const price = parseFloat(priceElement.dataset.price) || 0;
-        const discount = parseFloat(row.querySelector('.discount').value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
         const total = quantity * price * (1 - discount / 100);
 
         totalItems += quantity;
@@ -259,6 +308,16 @@ function updateSummary() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Khởi tạo trạng thái ban đầu
+    resetProductAndBatchSelects();
     updateRowTotals();
     updateSummary();
+});
+
+document.getElementById('order-form').addEventListener('submit', function(event) {
+    console.log('Form submitted');
+    console.log(new FormData(this));
+    if (!confirm('Bạn có chắc muốn lưu đơn xuất kho này?')) {
+        event.preventDefault();
+    }
 });

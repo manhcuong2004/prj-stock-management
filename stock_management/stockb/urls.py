@@ -75,4 +75,7 @@ urlpatterns = [
     # Thông báo
     path('notifications/', notification_views.get_notifications, name='get_notifications'),
     path('notifications/mark-as-read/', notification_views.mark_notifications_as_read, name='mark_notifications_as_read'),
+
+    # Lịch sử
+    path('activity-log/', notification_views.activity_log_list, name='activity_log_list'),
 ]

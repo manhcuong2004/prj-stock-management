@@ -87,7 +87,7 @@ class StockIn(models.Model):
         default='UNPAID'
     )
     notes = models.TextField(blank=True)
-    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    employee = models.ForeignKey(User, on_delete=models.SET_NULL, null="true")
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -282,10 +282,11 @@ class InventoryCheckDetail(models.Model):
 
 class Notification(models.Model):
     message = models.TextField()
+    employee = models.ForeignKey(User, on_delete=models.SET_NULL, null="true")
     created_at = models.DateTimeField(default=timezone.now)
     is_read = models.BooleanField(default=False)
     def __str__(self):
         return self.message
 
     class Meta:
-        ordering = ['-created_at']  # Sắp xếp theo thời gian tạo, mới nhất trước
+        ordering = ['-created_at']

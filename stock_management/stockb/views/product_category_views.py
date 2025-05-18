@@ -41,7 +41,8 @@ def product_category_create(request):
             category = form.save()
             messages.success(request, "Đã tạo danh mục thành công!")
             Notification.objects.create(
-                message=f"{request.user.username} đã thêm danh mục {category.category_name} thành công!",
+                message=f"Thêm danh mục {category.category_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
@@ -77,7 +78,8 @@ def product_category_update(request, pk):
             category = form.save()
             messages.success(request, "Đã cập nhật danh mục thành công!")
             Notification.objects.create(
-                message=f"{request.user.username} đã cập nhật danh mục {category.category_name} thành công!",
+                message=f"Cập nhật danh mục {category.category_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
@@ -103,7 +105,8 @@ def product_category_delete(request, pk):
             category.delete()
             messages.success(request, "Đã xóa danh mục thành công!")
             Notification.objects.create(
-                message=f"{request.user.username} đã xóa danh mục {category_name} thành công!",
+                message=f"Xóa danh mục {category_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )

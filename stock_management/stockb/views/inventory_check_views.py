@@ -30,10 +30,10 @@ def inventory_check_list(request):
 def inventory_check_update(request, pk=None):
     if pk:
         inventory_check = get_object_or_404(InventoryCheck, pk=pk)
-        action = "cập nhật"
+        action = "Cập nhật"
     else:
         inventory_check = InventoryCheck()
-        action = "thêm"
+        action = "Thêm"
 
     form = InventoryCheckForm(request.POST or None, instance=inventory_check)
     formset = InventoryCheckDetailFormSet(request.POST or None, instance=inventory_check, prefix='inventorycheckdetail_set')
@@ -57,7 +57,8 @@ def inventory_check_update(request, pk=None):
 
             messages.success(request, f'{action.capitalize()} kiểm kê hàng hóa thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã {action} kiểm kê hàng hóa ID {inventory_check.id} thành công!",
+                message=f"{action} kiểm kê hàng hóa ID {inventory_check.id} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
@@ -96,7 +97,8 @@ def inventory_check_delete(request, pk):
         inventory_check.delete()
         messages.success(request, 'Xóa kiểm kê hàng hóa thành công!')
         Notification.objects.create(
-            message=f"{request.user.username} đã xóa kiểm kê hàng hóa ID {check_id} thành công!",
+            message=f"Xóa kiểm kê hàng hóa ID {check_id} thành công!",
+            employee=request.user,
             created_at=timezone.now(),
             is_read=False
         )

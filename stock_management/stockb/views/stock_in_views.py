@@ -51,7 +51,7 @@ def stock_in(request):
 @login_required
 def stock_in_update(request, pk=None):
     stock_in = get_object_or_404(StockIn, pk=pk) if pk else None
-    action = "cập nhật" if pk else "thêm"
+    action = "Cập nhật" if pk else "Thêm"
     form = StockInForm(request.POST or None, instance=stock_in)
     formset = StockInDetailFormSet(request.POST or None, instance=stock_in or StockIn(), prefix='stockindetail_set')
 
@@ -105,7 +105,8 @@ def stock_in_update(request, pk=None):
             if not any(formset.errors):
                 messages.success(request, f'{action.capitalize()} đơn nhập kho thành công!')
                 Notification.objects.create(
-                    message=f"{request.user.username} đã {action} đơn nhập kho ID {stock_in.id} thành công!",
+                    message=f"{action} đơn nhập kho ID {stock_in.id} thành công!",
+                    employee=request.user,
                     created_at=timezone.now(),
                     is_read=False
                 )
@@ -139,7 +140,8 @@ def stock_in_delete(request, pk):
         stock_in.delete()
         messages.success(request, 'Đơn nhập đã được xóa thành công!')
         Notification.objects.create(
-            message=f"{request.user.username} đã xóa đơn nhập kho ID {stock_in_id} thành công!",
+            message=f"Xóa đơn nhập kho ID {stock_in_id} thành công!",
+            employee=request.user,
             created_at=timezone.now(),
             is_read=False
         )

@@ -442,14 +442,19 @@
             document.querySelectorAll('.product-row:not([style*="display: none"])').forEach(row => {
                 const theoreticalInput = row.querySelector('input[name$="-theoretical_quantity"]');
                 const actualInput = row.querySelector('input[name$="-actual_quantity"]');
-                if (!theoreticalInput || !actualInput) return;
+                const discrepancyElement = row.querySelector('.discrepancy');
+
+                if (!theoreticalInput || !actualInput || !discrepancyElement) return;
 
                 const theoretical = parseInt(theoreticalInput.value) || 0;
                 const actual = parseInt(actualInput.value) || 0;
                 const discrepancy = actual - theoretical;
-                const discrepancyElement = row.querySelector('.discrepancy');
+
                 discrepancyElement.textContent = discrepancy;
+
                 discrepancyElement.classList.remove('text-success', 'text-danger');
+
+                // Thêm lớp CSS mới dựa trên giá trị chênh lệch
                 if (discrepancy > 0) {
                     discrepancyElement.classList.add('text-success');
                 } else if (discrepancy < 0) {
@@ -460,6 +465,7 @@
 
         document.addEventListener('input', function(event) {
             if (event.target.classList.contains('actual-quantity')) {
+                console.log('Actual quantity changed:', event.target.value);
                 updateRowDiscrepancies();
                 updateSummary();
             }

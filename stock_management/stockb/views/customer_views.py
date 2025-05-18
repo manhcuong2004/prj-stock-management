@@ -23,8 +23,7 @@ def customer_list(request):
             Q(address__icontains=search_query)
         )
 
-    # Phân trang
-    paginator = Paginator(customers, 10)  # Hiển thị 10 khách hàng trên mỗi trang
+    paginator = Paginator(customers, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -63,7 +62,8 @@ def customer_create(request):
             customer.save()
             messages.success(request, 'Thêm khách hàng thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã thêm khách hàng {last_name} {first_name} thành công!",
+                message=f"Thêm khách hàng {last_name} {first_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
@@ -100,7 +100,8 @@ def customer_update(request, pk):
             customer.save()
             messages.success(request, 'Cập nhật khách hàng thành công!')
             Notification.objects.create(
-                message=f"{request.user.username} đã cập nhật khách hàng {customer.last_name} {customer.first_name} thành công!",
+                message=f"Cập nhật khách hàng {customer.last_name} {customer.first_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
@@ -136,7 +137,8 @@ def customer_delete(request, pk):
 
             messages.success(request, f'Đã xóa khách hàng {customer_name} thành công và đặt lại ID!')
             Notification.objects.create(
-                message=f"{request.user.username} đã xóa khách hàng {customer_name} thành công!",
+                message=f"Xóa khách hàng {customer_name} thành công!",
+                employee=request.user,
                 created_at=timezone.now(),
                 is_read=False
             )
