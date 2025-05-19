@@ -186,7 +186,7 @@ class InventoryCheckDetailForm(forms.ModelForm):
         fields = ['product', 'product_batch', 'theoretical_quantity', 'actual_quantity', 'notes']
         widgets = {
             'theoretical_quantity': forms.HiddenInput(),
-            'actual_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'actual_quantity': forms.NumberInput(attrs={'class': 'form-control actual-quantity', 'min': '0'}),
             'notes': forms.TextInput(attrs={'class': 'form-control'}),
         }
 

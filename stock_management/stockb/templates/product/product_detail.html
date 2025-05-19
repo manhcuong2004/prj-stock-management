@@ -1,103 +1,136 @@
 {% extends 'base.html' %}
+
 {% block title %}
     {{ title }}
 {% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5>Chi tiết sản phẩm</h5>
-      <a class="btn btn-secondary" href="{% url 'product' %}">
-          <i class="bi bi-arrow-90deg-left"></i>
-          Quay lại
-      </a>
-    </div>
+    <h4 class="fw-bold"><i class="bi bi-box-seam"></i> Chi tiết sản phẩm</h4>
+    <a class="btn btn-outline-secondary" href="{% url 'product' %}">
+      <i class="bi bi-arrow-left-circle me-1"></i> Quay lại
+    </a>
+  </div>
 
-  <div class="row">
+  <div class="row g-4">
     <div class="col-md-4">
-      <div class="card shadow-sm p-4">
-        <h5 class="mb-4">{{ product.product_name }}</h5>
-        <p><strong>Ghi chú:</strong> {{ product.description|default:"Không có" }}</p>
-        <p><strong>Danh mục:</strong> {{ product.category.category_name }}</p>
-        <p><strong>Nhà cung cấp:</strong> {{ product.supplier.company_name }}</p>
-        <p><strong>Số lượng tồn kho:</strong> {{ total_remaining_quantity }} {{ product.unit.unit_name }}</p>
-        <p><strong>Giá nhập vào:</strong> {{ product.purchase_price }}đ</p>
-        <p><strong>Giá bán ra:</strong> {{ product.selling_price }}đ</p>
-        <p><strong>Lô hiện có:</strong> {{ product_details.count }}</p>
+      <div class="card border-0 shadow-sm p-4 h-100">
+        <h5 class="mb-3 text-primary"><i class="bi bi-info-circle-fill me-2"></i>{{ product.product_name }}</h5>
+          <table class="table table-bordered table-striped">
+            <tbody>
+              <tr>
+                <th style="width: 40%">Ghi chú</th>
+                <td>{{ product.description|default:"Không có" }}</td>
+              </tr>
+              <tr>
+                <th>Danh mục</th>
+                <td>{{ product.category.category_name }}</td>
+              </tr>
+              <tr>
+                <th>Nhà cung cấp</th>
+                <td>{{ product.supplier.supplier_name }}</td>
+              </tr>
+              <tr>
+                <th>Số lượng tồn kho</th>
+                <td>{{ total_remaining_quantity }} {{ product.unit.unit_name }}</td>
+              </tr>
+              <tr>
+                <th>Giá nhập vào</th>
+                <td>{{ product.purchase_price }}đ</td>
+              </tr>
+              <tr>
+                <th>Giá bán ra</th>
+                <td>{{ product.selling_price }}đ</td>
+              </tr>
+            </tbody>
+          </table>
       </div>
     </div>
 
+    <!-- Batches -->
     <div class="col-md-8">
-      <div class="card shadow-sm p-3 mb-4">
-        <h6>Tổng hợp lô hàng</h6>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Số lô</span><span>{{ product_details.count }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Tổng số lượng</span><span>{{ total_remaining_quantity }} {{ product.unit.unit_name }}</span>
-          </li>
-        </ul>
+      <div class="card border-0 shadow-sm mb-4 p-3">
+        <h6 class="text-secondary"><i class="bi bi-collection me-1"></i> Tổng hợp lô hàng</h6>
+        <div class="row mt-3">
+          <div class="col-6">
+            <div class="bg-light rounded p-2 text-center">
+              <div class="fw-bold text-dark">Số lô</div>
+              <div>{{ product_details.count }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="bg-light rounded p-2 text-center">
+              <div class="fw-bold text-dark">Tổng số lượng</div>
+              <div>{{ total_remaining_quantity }} {{ product.unit.unit_name }}</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card shadow-sm p-3">
-        <h6 class="mb-3">Danh sách lô hàng</h6>
-        <table class="table table-bordered">
-        <thead class="table-light">
-          <tr>
-            <th>Tên lô</th>
-            <th>Ngày nhập</th>
-            <th>Số lượng ban đầu</th>
-            <th>Số lượng hiện tại</th>
-            <th>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for detail in product_details %}
-          <tr>
-            <td>{{ detail.product_batch }}</td>
-            <td>{{ detail.import_date|date:"d/m/Y" }}</td>
-            <td>{{ detail.initial_quantity }}</td>
-            <td>{{ detail.remaining_quantity }}</td>
-            <td>
-              <form action="{% url 'toggle_product_detail_status' detail.pk %}" method="POST" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm {% if detail.status == 'ACTIVE' %}btn-outline-primary{% else %}btn-outline-success{% endif %}">
-                  {% if detail.status == 'ACTIVE' %}Tắt kích hoạt{% else %}Kích hoạt{% endif %}
-                </button>
-              </form>
-              <form action="{% url 'edit_product_detail' detail.pk %}" method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="remaining_quantity" value="{{ detail.remaining_quantity }}">
-                <button type="submit" class="btn btn-sm btn-outline-warning">Sửa</button>
-              </form>
-              <form action="{% url 'delete_product_detail' detail.pk %}" method="POST" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-              </form>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="5">Không có lô hàng nào.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+      <div class="card border-0 shadow-sm p-3">
+        <h6 class="mb-3 text-secondary"><i class="bi bi-list-check me-1"></i> Danh sách lô hàng</h6>
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light">
+              <tr class="text-center">
+                <th>Tên lô</th>
+                <th>Ngày nhập</th>
+                <th>SL ban đầu</th>
+                <th>SL hiện tại</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for detail in product_details %}
+              <tr class="text-center">
+                <td>{{ detail.product_batch }}</td>
+                <td>{{ detail.import_date|date:"d/m/Y" }}</td>
+                <td>{{ detail.initial_quantity }}</td>
+                <td>{{ detail.remaining_quantity }}</td>
+                <td>
+                  <form action="{% url 'toggle_product_detail_status' detail.pk %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if detail.status == 'ACTIVE' %}btn-outline-primary{% else %}btn-outline-success{% endif %}">
+                      {% if detail.status == 'ACTIVE' %}<i class="bi bi-x-circle"></i> Tắt{% else %}<i class="bi bi-check-circle"></i> Kích hoạt{% endif %}
+                    </button>
+                  </form>
+                  <form action="{% url 'edit_product_detail' detail.pk %}" method="POST" class="d-inline edit-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="remaining_quantity" value="{{ detail.remaining_quantity }}">
+                    <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil-square"></i></button>
+                  </form>
+                  <form action="{% url 'delete_product_detail' detail.pk %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">Không có lô hàng nào.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.btn-outline-warning').forEach(button => {
-    button.addEventListener('click', function(e) {
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.edit-form button').forEach(button => {
+    button.addEventListener('click', function (e) {
       e.preventDefault();
       const form = this.closest('form');
-      const currentQuantity = form.querySelector('input[name="remaining_quantity"]').value;
-      const newQuantity = prompt('Nhập số lượng hiện tại mới:', currentQuantity);
-      if (newQuantity !== null && !isNaN(newQuantity) && newQuantity >= 0) {
-        form.querySelector('input[name="remaining_quantity"]').value = newQuantity;
+      const currentQty = form.querySelector('input[name="remaining_quantity"]').value;
+      const newQty = prompt('Nhập số lượng hiện tại mới:', currentQty);
+      if (newQty !== null && !isNaN(newQty) && newQty >= 0) {
+        form.querySelector('input[name="remaining_quantity"]').value = newQty;
         form.submit();
-      } else if (newQuantity !== null) {
+      } else if (newQty !== null) {
         alert('Vui lòng nhập số lượng hợp lệ!');
       }
     });

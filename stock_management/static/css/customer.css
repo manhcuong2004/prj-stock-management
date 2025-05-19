@@ -1,0 +1,19 @@
+.customer-code {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+.summary-box {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+.customer-info {
+  font-size: 1.1rem;
+}
+.customer-stats {
+  margin-top: 1rem;
+}
+.customer-stats li {
+  margin-bottom: 0.5rem;
+}

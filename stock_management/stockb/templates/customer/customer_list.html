@@ -4,16 +4,16 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Danh sách khách hàng</h6>
-            <a href="{% url 'customer_create' %}" class="btn-create">
-                <i class="bi bi-plus-circle"></i>
-                Tạo mới khách hàng
-            </a>
-        </div>
-        <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="mb-4">Danh sách khách hàng</h5>
+      <a href="{% url 'customer_create' %}" class="btn-create">
+            <i class="bi bi-plus-circle"></i>
+            Tạo mới khách hàng
+        </a>
+    </div>
 
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
             <div class="mb-3">
                 <form method="get" class="d-flex">
                     <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm..." value="{{ request.GET.search|default:'' }}">
@@ -24,7 +24,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-hover">
+                <table class="table table-bordered align-middle text-center">
                     <thead class="table-light">
                         <tr>
                             <th>Mã</th>
@@ -32,7 +32,7 @@
                             <th>Số điện thoại</th>
                             <th>Email</th>
                             <th>Địa chỉ</th>
-                            <th class="text-center">Thao tác</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,7 +43,7 @@
                             <td>{{ customer.phone }}</td>
                             <td>{{ customer.email|default:"Không có" }}</td>
                             <td>{{ customer.address }}</td>
-                            <td class="text-center">
+                            <td>
                                 <div class="btn-group">
                                     <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-outline-primary me-1">
                                         Xem

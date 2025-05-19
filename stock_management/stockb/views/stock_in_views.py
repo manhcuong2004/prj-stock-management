@@ -37,7 +37,7 @@ def stock_in(request):
         stock_in_list.append({
             'id': stock_in.id,
             'import_date': stock_in.import_date,
-            'supplier': stock_in.supplier.company_name,
+            'supplier': stock_in.supplier.supplier_name,
             'payment_status': stock_in.payment_status,
             'total_amount': total_amount,
         })

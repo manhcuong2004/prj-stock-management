@@ -30,7 +30,6 @@ class Unit(models.Model):
 
 class Supplier(models.Model):
     supplier_name = models.CharField(max_length=100)
-    company_name = models.CharField(max_length=100)
     tax_code = models.CharField(max_length=50)
     address = models.TextField()
     phone = models.CharField(max_length=20)
@@ -40,7 +39,7 @@ class Supplier(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.company_name
+        return self.supplier_name
 
 
 class Product(models.Model):
@@ -66,6 +65,7 @@ class Customer(models.Model):
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=20)
     address = models.TextField()
+    notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -91,6 +91,19 @@ class StockIn(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def total_amount(self):
+        total = sum(
+            detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100)
+            for detail in self.details.all()
+        )
+        return total
+
+    def remaining_debt(self):
+        return self.total_amount() - self.amount_paid
+
+    def __str__(self):
+        return f"StockIn #{self.id} - {self.supplier.company_name}"
 
 
 class StockOut(models.Model):

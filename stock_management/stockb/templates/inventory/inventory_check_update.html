@@ -1,28 +1,13 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}
     {{ title }}
 {% endblock %}
 
-{% block style %}
-    .check-code {
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-    .summary-box {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 1rem;
-    }
-    .discrepancy.text-success { color: green; }
-    .discrepancy.text-danger { color: red; }
-    .alert {
-        margin-bottom: 1rem;
-    }
-    .delete-checkbox {
-        display: none;
-    }
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/inventory_check.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -65,7 +50,7 @@
         {{ formset.management_form }}
 
         <div class="row">
-            <div class="col-md-9">
+            <div class="col-md-12">
                 <div class="summary-box">
                     {% if formset.forms %}
                     <table class="table" id="product-table">
@@ -186,23 +171,22 @@
                                 <span>Tổng chênh lệch</span><span class="total-discrepancy">0</span>
                             </div>
                         </div>
+                        <div class="summary-box mt-3">
+                            <h6>Thông Tin Kiểm Kê</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Nhân Viên Thực Hiện</label>
+                                {{ form.employee }}
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Ngày Kiểm Kê</label>
+                                {{ form.check_date }}
+                            </div>
                     </div>
+                    </div>
+
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="summary-box mb-3">
-                    <h6>Thông Tin Kiểm Kê</h6>
-                    <div class="mb-2">
-                        <label class="form-label">Nhân Viên Thực Hiện</label>
-                        {{ form.employee }}
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Ngày Kiểm Kê</label>
-                        {{ form.check_date }}
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="mt-3">

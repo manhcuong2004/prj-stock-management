@@ -27,8 +27,7 @@
                         <th scope="col">Số điện thoại</th>
                         <th scope="col">Email</th>
                         <th scope="col">Địa chỉ</th>
-                        <th scope="col">Chỉnh sửa</th>
-                        <th scope="col">Xóa</th>
+                        <th scope="col">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,8 +51,6 @@
                             <td>{{ supplier.address }}</td>
                             <td>
                                 <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
-                            </td>
-                            <td>
                                 <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-sm btn-outline-danger">Xóa</a>
                             </td>
                         </tr>

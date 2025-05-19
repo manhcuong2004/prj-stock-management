@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, F, Max
 from django.shortcuts import render, redirect, get_object_or_404
-from ..models import Customer, StockOut, Notification
+from ..models import Customer, StockOut, Notification, StockOutDetail
 from django.contrib import messages
 from django.utils import timezone
 from django.db import connection
@@ -40,6 +40,7 @@ def customer_create(request):
         last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
+        notes = request.POST.get('notes')
         address = request.POST.get('address')
 
         if not first_name or not last_name or not phone or not address:
@@ -56,6 +57,7 @@ def customer_create(request):
                 email=email,
                 phone=phone,
                 address=address,
+                notes=notes,
                 created_at=timezone.now(),
                 updated_at=timezone.now()
             )
@@ -80,19 +82,39 @@ def customer_create(request):
 @login_required
 def customer_update(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
+    customer_orders = StockOut.objects.filter(customer=customer).order_by('-export_date')
+    all_orders = StockOut.objects.filter(customer=customer)
+    # Tổng tiền
+    total_spent = sum(order.total_amount() for order in all_orders)
+    # Tổng đã trả
+    total_paid = all_orders.aggregate(total=Sum('amount_paid'))['total'] or 0
+    # Tổng nợ
+    debt_amount = total_spent - total_paid
 
+    last_order = StockOut.objects.filter(customer=customer).order_by('-export_date').first()
+    last_order_date = last_order.export_date.strftime('%d/%m/%Y') if last_order else None
     if request.method == 'POST':
         customer.first_name = request.POST.get('first_name')
         customer.last_name = request.POST.get('last_name')
         customer.email = request.POST.get('email')
         customer.phone = request.POST.get('phone')
         customer.address = request.POST.get('address')
+        customer.notes = request.POST.get('notes')
+
+
 
         if not customer.first_name or not customer.last_name or not customer.phone or not customer.address:
             messages.error(request, 'Vui lòng điền đầy đủ thông tin bắt buộc!')
+            customer_orders = StockOut.objects.filter(customer=customer).order_by('-export_date')
+
             return render(request, "customer/customer_update.html", {
                 'title': 'Cập nhật khách hàng',
-                'customer': customer
+                'customer': customer,
+                'customer_orders': customer_orders,
+                'order_count': customer_orders.count(),
+                'total_spent': total_spent,
+                'debt_amount': debt_amount,
+                'last_order_date': last_order_date
             })
 
         try:
@@ -109,11 +131,21 @@ def customer_update(request, pk):
         except Exception as e:
             messages.error(request, f'Có lỗi xảy ra: {str(e)}')
 
+
+
+
+
     context = {
         "title": "Cập nhật thông tin khách hàng",
-        "customer": customer
+        "customer": customer,
+        "customer_orders": customer_orders,
+        "order_count": customer_orders.count(),
+        "total_spent": total_spent,
+        "debt_amount": debt_amount,
+        "last_order_date": last_order_date
     }
     return render(request, "customer/customer_update.html", context)
+
 @login_required
 def customer_delete(request, pk):
     customer = get_object_or_404(Customer, pk=pk)

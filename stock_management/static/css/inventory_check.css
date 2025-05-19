@@ -1,0 +1,17 @@
+.check-code {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.summary-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+.discrepancy.text-success { color: green; }
+.discrepancy.text-danger { color: red; }
+.alert {
+    margin-bottom: 1rem;
+}
+.delete-checkbox {
+    display: none;
+}

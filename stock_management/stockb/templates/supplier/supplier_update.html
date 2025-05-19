@@ -1,67 +1,174 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% block title %}
-    {{ title }}
+    Chỉnh sửa nhà cung cấp
+{% endblock %}
+{% load static %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/customer.css' %}">
 {% endblock %}
 {% block content %}
-    <div class="container bg-white p-4 rounded shadow">
-        <h5 class="mb-4">Chỉnh sửa nhà cung cấp</h5>
-
-
-        <form method="POST">
-            {% csrf_token %}
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="supplier_name" class="form-label">Tên nhà cung cấp</label>
-                    <input type="text" class="form-control" id="supplier_name" name="supplier_name" value="{{ supplier.supplier_name }}" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="company" class="form-label">Công ty</label>
-                    <select class="form-select" id="company" name="company">
-                        <option value="" {% if not supplier.notes or "Công ty: " not in supplier.notes %}selected{% endif %}>Chọn công ty</option>
-                        <option value="Visa" {% if "Công ty: Visa" in supplier.notes %}selected{% endif %}>Visa</option>
-                        <option value="Mastercard" {% if "Công ty: Mastercard" in supplier.notes %}selected{% endif %}>Mastercard</option>
-                        <option value="Paypal" {% if "Công ty: Paypal" in supplier.notes %}selected{% endif %}>Paypal</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="tax_code" class="form-label">Mã số thuế</label>
-                    <input type="text" class="form-control" id="tax_code" name="tax_code" value="{{ supplier.tax_code }}" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="address" class="form-label">Địa chỉ</label>
-                    <input type="text" class="form-control" id="address" name="address" value="{{ supplier.address }}">
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="phone" class="form-label">Số điện thoại</label>
-                    <input type="text" class="form-control" id="phone" name="phone" value="{{ supplier.phone }}" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ supplier.email }}" required>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="notes" class="form-label">Ghi chú</label>
-                <textarea class="form-control" id="notes" name="notes" rows="3">
-                    {% if "Công ty: " in supplier.notes %}
-                        {{ supplier.notes|slice:"10:" }}
-                    {% else %}
-                        {{ supplier.notes }}
-                    {% endif %}
-                </textarea>
-            </div>
-
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">Lưu</button>
-                <a href="{% url 'supplier_list' %}" class="btn btn-secondary ms-2">Hủy</a>
-            </div>
-        </form>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <div class="customer-code">MÃ NHÀ CUNG CẤP <span class="text-dark">#{{ supplier.id }}</span></div>
+      <small class="text-muted">Ngày tạo: {{ supplier.created_at|date:"d/m/Y H:i" }}</small>
     </div>
+    <div>
+      <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary me-2">Quay lại danh sách</a>
+      <button type="submit" form="supplier-form" class="btn btn-primary">Lưu thông tin</button>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form id="supplier-form" method="POST">
+    {% csrf_token %}
+    <div class="row">
+      <!-- Left Column -->
+      <div class="col-md-8">
+        <div class="summary-box">
+          <h5 class="mb-3">Thông tin nhà cung cấp</h5>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="supplier_name" class="form-label">Tên nhà cung cấp</label>
+                <input type="text" class="form-control" id="supplier_name" name="supplier_name"
+                       placeholder="Tên nhà cung cấp" value="{{ supplier.supplier_name }}" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="tax_code" class="form-label">Mã số thuế</label>
+                <input type="text" class="form-control" id="tax_code" name="tax_code"
+                       placeholder="Mã số thuế" value="{{ supplier.tax_code }}" required>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email"
+                       placeholder="Email" value="{{ supplier.email }}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="phone" class="form-label">Số điện thoại</label>
+                <input type="text" class="form-control" id="phone" name="phone"
+                       placeholder="Số điện thoại" value="{{ supplier.phone }}" required>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="address" class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control" id="address" name="address"
+                   placeholder="Địa chỉ" value="{{ supplier.address }}" required>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <h5 class="mb-3">Lịch sử đơn nhập hàng</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Ngày tạo</th>
+                  <th>Trạng thái</th>
+                  <th>Thanh toán</th>
+                  <th>Tổng tiền đơn</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for purchase in purchase_order %}
+                <tr>
+                  <td>#{{ purchase.id }}</td>
+                  <td>{{ purchase.import_date|date:"d/m/Y H:i" }}</td>
+                  <td>
+                    {% if purchase.payment_status == "PAID" %}
+                      <span class="badge bg-success">Đã thanh toán</span>
+                    {% elif purchase.payment_status == "PARTIALLY_PAID" %}
+                      <span class="badge bg-warning">Còn nợ</span>
+                    {% else %}
+                      <span class="badge bg-danger">Chưa thanh toán</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ purchase.amount_paid|intcomma }} đ</td>
+                  <td>{{ purchase.total_amount|floatformat:0|intcomma }} đ</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center">Nhà cung cấp chưa có đơn nhập hàng nào</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-md-4">
+        <div class="summary-box">
+          <h5 class="mb-3">Thống kê</h5>
+          <div class="customer-stats">
+            <ul class="list-unstyled">
+              <li><i class="bi bi-cart-check"></i> Tổng đơn hàng: <strong>{{ import_count }}</strong></li>
+              <li><i class="bi bi-cash-stack"></i> Tổng chi trả: <strong>{{ total_spend|floatformat:0|intcomma }} đ</strong></li>
+              <li><i class="bi bi-calendar-check"></i> Đơn hàng gần nhất: <strong>{{ last_purchase_date|default:"Chưa có" }}</strong></li>
+              <li><i class="bi bi-exclamation-triangle"></i> Nợ phải trả: <strong class="text-danger">{{ debt_amount|floatformat:0|intcomma }} đ</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <h5 class="mb-3">Ghi chú</h5>
+          <textarea class="form-control" name="notes" rows="4" placeholder="Thêm ghi chú về nhà cung cấp">{{ supplier.notes }}</textarea>
+        </div>
+
+        <div class="summary-box">
+          <h5 class="mb-3">Thao tác</h5>
+          <div class="d-grid gap-2">
+            <a href="{% url 'stock_in_create' %}?supplier={{ supplier.id }}" class="btn btn-success">
+              <i class="bi bi-plus-circle"></i> Tạo đơn nhập hàng
+            </a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+              <i class="bi bi-trash"></i> Xóa nhà cung cấp
+            </button>
+
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa nhà cung cấp <strong>{{ supplier.supplier_name }}</strong> không?</p>
+                    <p class="text-danger"><strong>Lưu ý:</strong> Thao tác này không thể hoàn tác.</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form action="{% url 'supplier_delete' supplier.id %}" method="post" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
 {% endblock %}
