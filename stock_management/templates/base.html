@@ -93,21 +93,21 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="{% static 'main.js' %}"></script>
     {% if messages %}
         {% for message in messages %}
-            <script>
-                toastr.options = {
-                    "positionClass": "toast-top-right",
-                    "timeOut": "3000",
-                    "closeButton": true,
-                    "progressBar": true
-                };
-                toastr["{{ message.tags }}"]("{{ message }}");
-            </script>
-        {% endfor %}
+        <script>
+            toastr.options = {
+                "positionClass": "toast-top-right",
+                "timeOut": "3000",
+                "closeButton": true,
+                "progressBar": true
+            };
+            toastr["{{ message.tags }}"]("{{ message }}");
+        </script>
+    {% endfor %}
     {% endif %}
     {% block extra_js %}
     {% endblock %}

@@ -16,6 +16,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
+            messages.success(request, 'Đăng nhập thành công!')
             return redirect('/')
         else:
             messages.error(request, "Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.")

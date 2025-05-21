@@ -258,3 +258,6 @@ class ProductCategoryForm(forms.ModelForm):
 
 class StockInImportForm(forms.Form):
     excel_file = forms.FileField(label="Tệp Excel")
+
+class StockOutImportForm(forms.Form):
+    excel_file = forms.FileField(label="Tệp Excel")

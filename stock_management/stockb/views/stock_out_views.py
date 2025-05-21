@@ -1,5 +1,6 @@
 import pandas as pd
 from django.contrib import messages
+from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -7,7 +8,7 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render, get_object_or_404, redirect
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
-from ..forms import StockOutForm, StockOutDetailFormSet
+from ..forms import StockOutForm, StockOutDetailFormSet, StockOutImportForm
 from ..models import StockOut, Customer, StockOutDetail, ProductCategory, Product, ProductDetail, Notification
 
 @login_required
@@ -289,3 +290,143 @@ def export_single_stockout_excel(request, stockout_id):
     df.to_excel(response, index=False, engine='openpyxl')
 
     return response
+
+
+
+@login_required
+def import_stockout(request):
+    if request.method == 'POST':
+        form = StockOutImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                excel_file = request.FILES['excel_file']
+                df = pd.read_excel(excel_file, engine='openpyxl')
+
+                # Kiểm tra các cột bắt buộc
+                required_columns = [
+                    'Mã đơn xuất', 'Ngày xuất', 'ID Khách hàng', 'Trạng thái thanh toán',
+                    'Số tiền đã trả', 'Ghi chú', 'ID Nhân viên', 'ID Sản phẩm',
+                    'Lô sản phẩm', 'Số lượng', 'Chiết khấu (%)'
+                ]
+                if not all(col in df.columns for col in required_columns):
+                    messages.error(request, "File Excel không đúng định dạng. Vui lòng kiểm tra các cột.")
+                    return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                # Chuyển đổi các cột số thành kiểu số
+                numeric_columns = ['Số tiền đã trả', 'Số lượng', 'Chiết khấu (%)']
+                for col in numeric_columns:
+                    try:
+                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                    except Exception as e:
+                        messages.error(request, f"Lỗi định dạng cột '{col}': {str(e)}")
+                        return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                # Nhóm dữ liệu theo Mã đơn xuất
+                grouped = df.groupby('Mã đơn xuất')
+
+                with transaction.atomic():  # Đảm bảo giao dịch nguyên tử
+                    for stockout_id, group in grouped:
+                        # Lấy thông tin đơn xuất kho từ dòng đầu tiên trong nhóm
+                        stockout_data = group.iloc[0]
+
+                        # Tìm khách hàng theo ID
+                        customer_id = stockout_data['ID Khách hàng']
+                        customer = None
+                        if pd.notna(customer_id):
+                            customer = Customer.objects.filter(id=customer_id).first()
+                            if not customer:
+                                messages.error(request, f"Khách hàng với ID '{customer_id}' không tồn tại.")
+                                return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                        # Tìm nhân viên theo ID
+                        employee_id = stockout_data['ID Nhân viên']
+                        employee = User.objects.filter(id=employee_id).first()
+                        if not employee:
+                            messages.error(request, f"Nhân viên với ID '{employee_id}' không tồn tại.")
+                            return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                        # Tạo hoặc cập nhật StockOut
+                        stockout, created = StockOut.objects.get_or_create(
+                            id=stockout_id,
+                            defaults={
+                                'export_date': pd.to_datetime(stockout_data['Ngày xuất']),
+                                'amount_paid': stockout_data['Số tiền đã trả'],
+                                'payment_status': stockout_data['Trạng thái thanh toán'].upper(),
+                                'notes': stockout_data['Ghi chú'] if pd.notna(stockout_data['Ghi chú']) else '',
+                                'customer': customer,
+                                'employee': employee,
+                            }
+                        )
+
+                        # Nếu StockOut đã tồn tại, cập nhật thông tin
+                        if not created:
+                            stockout.export_date = pd.to_datetime(stockout_data['Ngày xuất'])
+                            stockout.amount_paid = stockout_data['Số tiền đã trả']
+                            stockout.payment_status = stockout_data['Trạng thái thanh toán'].upper()
+                            stockout.notes = stockout_data['Ghi chú'] if pd.notna(stockout_data['Ghi chú']) else ''
+                            stockout.customer = customer
+                            stockout.employee = employee
+                            stockout.save()
+
+                        # Xử lý chi tiết (StockOutDetail)
+                        for _, row in group.iterrows():
+                            product_id = row['ID Sản phẩm']
+                            product = Product.objects.filter(id=product_id).first()
+                            if not product:
+                                messages.error(request, f"Sản phẩm với ID '{product_id}' không tồn tại.")
+                                return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                            product_batch = row['Lô sản phẩm']
+                            quantity = row['Số lượng']
+                            discount = row['Chiết khấu (%)']
+
+                            # Tìm ProductDetail dựa trên product và product_batch
+                            product_detail = ProductDetail.objects.filter(
+                                product=product,
+                                product_batch=product_batch
+                            ).first()
+                            if not product_detail:
+                                messages.error(request, f"Lô sản phẩm '{product_batch}' cho sản phẩm ID '{product_id}' không tồn tại.")
+                                return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                            # Kiểm tra số lượng tồn kho
+                            if quantity > product_detail.remaining_quantity:
+                                messages.error(
+                                    request,
+                                    f"Số lượng xuất ({quantity}) vượt quá số lượng tồn kho "
+                                    f"({product_detail.remaining_quantity}) cho lô '{product_batch}'."
+                                )
+                                return render(request, 'stock_out/import_stockout.html', {'form': form})
+
+                            # Tạo StockOutDetail
+                            StockOutDetail.objects.create(
+                                export_record=stockout,
+                                product=product,
+                                quantity=quantity,
+                                product_detail=product_detail,
+                                discount=discount,
+                                amount_paid=0,  # Có thể điều chỉnh nếu bạn muốn nhập số tiền đã trả cho từng chi tiết
+                            )
+
+                        # Tạo thông báo
+                        Notification.objects.create(
+                            message=f"Nhập đơn xuất kho ID {stockout.id} từ Excel thành công!",
+                            employee=request.user,
+                            created_at=timezone.now(),
+                            is_read=False
+                        )
+
+                messages.success(request, "Nhập dữ liệu từ Excel thành công!")
+                return redirect('stock_out')  # Chuyển hướng đến trang danh sách đơn xuất kho
+
+            except Exception as e:
+                messages.error(request, f"Có lỗi xảy ra khi nhập Excel: {str(e)}")
+                return render(request, 'stock_out/import_stockout.html', {'form': form})
+    else:
+        form = StockOutImportForm()
+
+    context = {
+        'title': 'Nhập đơn xuất kho từ Excel',
+        'form': form,
+    }
+    return render(request, 'stock_out/import_stockout.html', context)

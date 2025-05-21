@@ -26,6 +26,7 @@ urlpatterns = [
     path('stock-out/<int:pk>/delete/', stock_out_views.stock_out_delete, name='stock_out_delete'),
     path('stock-out/export-all/', stock_out_views.export_all_stockout_excel, name='export_all_stockout'),
     path('stock-out/export/<int:stockout_id>/', stock_out_views.export_single_stockout_excel, name='export_single_stockout'),
+    path('stock-out/import/', stock_out_views.import_stockout, name='import_stockout'),
 
     #Nhập kho
     path('stock-in/', stock_in_views.stock_in, name='stock_in'),

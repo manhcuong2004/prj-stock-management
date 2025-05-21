@@ -213,3 +213,7 @@
 .hamburger i {
     line-height: 1;
 }
+
+.toast-top-right {
+            top: 50px !important;
+        }
