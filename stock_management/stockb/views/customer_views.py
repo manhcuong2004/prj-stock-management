@@ -12,7 +12,6 @@ def customer_list(request):
         'id', 'first_name', 'last_name', 'email', 'phone', 'address', 'created_at', 'updated_at'
     ).order_by('-created_at')
 
-    # Xử lý tìm kiếm
     search_query = request.GET.get('search', '')
     if search_query:
         customers = customers.filter(

@@ -286,7 +286,6 @@ class InventoryCheckDetail(models.Model):
             else:
                 self.theoretical_quantity = self.product.quantity
 
-        # Tính chênh lệch
         self.discrepancy = self.actual_quantity - self.theoretical_quantity
         super().save(*args, **kwargs)
 

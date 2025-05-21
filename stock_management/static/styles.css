@@ -43,6 +43,7 @@
     align-items: center;
 }
 
+
 .btn-create {
     background-color: #0D6EFD;
     color: white;
@@ -215,5 +216,5 @@
 }
 
 .toast-top-right {
-            top: 50px !important;
-        }
+    top: 50px !important;
+}

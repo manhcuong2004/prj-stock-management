@@ -150,11 +150,9 @@ def stock_in_delete(request, pk):
 
 @login_required
 def export_all_stockin_excel(request):
-    # Lấy các tham số từ query string
     filter_type = request.GET.get('filter', 'all')
     search_text = request.GET.get('search', '')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+
 
     stock_ins = StockIn.objects.all().select_related('supplier', 'employee').prefetch_related('details__product', 'details__product_detail')
 
@@ -166,24 +164,15 @@ def export_all_stockin_excel(request):
         elif filter_type == 'unpaid':
             stock_ins = stock_ins.filter(payment_status='UNPAID')
 
-    # Lọc theo từ khóa tìm kiếm
     if search_text:
         stock_ins = stock_ins.filter(
             Q(id__icontains=search_text) |
             Q(supplier__supplier_name__icontains=search_text)
         )
 
-    # Lọc theo ngày (nếu có)
-    if start_date:
-        stock_ins = stock_ins.filter(import_date__gte=start_date)
-    if end_date:
-        stock_ins = stock_ins.filter(import_date__lte=end_date)
-
-    # Nếu không có bản ghi, trả về thông báo
     if not stock_ins.exists():
         return HttpResponse("Không tìm thấy đơn nhập kho nào phù hợp.", status=404)
 
-    # Tạo danh sách dữ liệu
     data = []
     for stock_in in stock_ins:
         details = stock_in.details.all().select_related('product', 'product_detail')
@@ -256,7 +245,6 @@ def export_all_stockin_excel(request):
     if not stock_ins.exists():
         return HttpResponse("Không tìm thấy đơn nhập kho nào phù hợp.", status=404)
 
-    # Tạo danh sách dữ liệu
     data = []
     for stock_in in stock_ins:
         details = stock_in.details.all()
@@ -298,7 +286,6 @@ def export_all_stockin_excel(request):
             })
     df = pd.DataFrame(data)
 
-    # Tạo response Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=stockin_all_report.xlsx'
     df.to_excel(response, index=False, engine='openpyxl')

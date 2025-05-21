@@ -2,6 +2,10 @@
 {% block title %}
     {{title}}
 {% endblock %}
+{% load static %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/share.css' %}">
+{% endblock %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5>Danh sách sản phẩm trong danh mục - {{ category.category_name }}</h5>
@@ -23,7 +27,7 @@
 
         {% for product in products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9" href="{% url 'product_detail' product.pk %}">
+            <a class="col-9 text-success" href="{% url 'product_detail' product.pk %}">
                 {{ product.product_name }}
             </a>
             <div class="col-2 text-end">

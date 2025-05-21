@@ -14,25 +14,25 @@ def report_overview(request):
     start_date = today.replace(day=1)
     end_date = today
 
-    so_don_hang = StockOut.objects.filter(export_date__range=(start_date, end_date)).count()
-    so_don_hang_last_month = StockOut.objects.filter(
+    so_don_hang_xuat = StockOut.objects.filter(export_date__range=(start_date, end_date)).count()
+    so_don_hang_xuat_last_month = StockOut.objects.filter(
         export_date__range=(
             (start_date - datetime.timedelta(days=30)).replace(day=1),
             start_date - datetime.timedelta(days=1)
         )
     ).count()
-    so_don_hang_change = so_don_hang - so_don_hang_last_month
+    so_don_hang_xuat_change = so_don_hang_xuat - so_don_hang_xuat_last_month
 
-    doanh_thu = StockOutDetail.objects.filter(
-        export_record__export_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
+    so_don_hang_nhap = StockIn.objects.filter(import_date__range=(start_date, end_date)).count()
+    so_don_hang_nhap_last_month = StockIn.objects.filter(
+        import_date__range=(
+            (start_date - datetime.timedelta(days=30)).replace(day=1),
+            start_date - datetime.timedelta(days=1)
         )
-    )['total'] or 0
+    ).count()
+    so_don_hang_nhap_change = so_don_hang_nhap - so_don_hang_nhap_last_month
+
+
 
     gia_tri_nhap_kho = StockInDetail.objects.filter(
         import_record__import_date__range=(start_date, end_date)
@@ -70,29 +70,23 @@ def report_overview(request):
         )
     )['total'] or 0
 
-    no_phai_tra = StockInDetail.objects.filter(
-        import_record__payment_status='UNPAID',
-        import_record__import_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    no_phai_tra = 0
+    stock_ins = StockIn.objects.filter(
+        payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
+        import_date__range=(start_date, end_date)
+    )
+    for stock_in in stock_ins:
+        total = stock_in.total_amount()
+        no_phai_tra += total - stock_in.amount_paid
 
-    no_phai_thu = StockOutDetail.objects.filter(
-        export_record__payment_status='UNPAID',
-        export_record__export_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    no_phai_thu = 0
+    stock_outs = StockOut.objects.filter(
+        payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
+        export_date__range=(start_date, end_date)
+    )
+    for stock_out in stock_outs:
+        total = stock_out.total_amount()
+        no_phai_thu += total - stock_out.amount_paid
 
     no_phai_tra_progress = (no_phai_tra / gia_tri_nhap_kho * 100) if gia_tri_nhap_kho > 0 else 0
     no_phai_thu_progress = (no_phai_thu / gia_tri_xuat_kho * 100) if gia_tri_xuat_kho > 0 else 0
@@ -139,9 +133,10 @@ def report_overview(request):
 
     context = {
         'today': today,
-        'so_don_hang': so_don_hang,
-        'so_don_hang_change': so_don_hang_change,
-        'doanh_thu': doanh_thu,
+        'so_don_hang_xuat': so_don_hang_xuat,
+        'so_don_hang_xuat_change': so_don_hang_xuat_change,
+        'so_don_hang_nhap': so_don_hang_nhap,
+        'so_don_hang_nhap_change': so_don_hang_nhap_change,
         'gia_tri_nhap_kho': gia_tri_nhap_kho,
         'gia_tri_nhap_kho_change': gia_tri_nhap_kho_change,
         'gia_tri_xuat_kho': gia_tri_xuat_kho,
@@ -163,18 +158,11 @@ def ajax_dashboard_stats(request):
     except:
         return JsonResponse({'error': 'Invalid date format'}, status=400)
 
-    so_don_hang = StockOut.objects.filter(export_date__range=(start_date, end_date)).count()
+    so_don_hang_xuat = StockOut.objects.filter(export_date__range=(start_date, end_date)).count()
 
-    doanh_thu = StockOutDetail.objects.filter(
-        export_record__export_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    so_don_hang_nhap = StockIn.objects.filter(import_date__range=(start_date, end_date)).count()
+
+
 
     gia_tri_nhap_kho = StockInDetail.objects.filter(
         import_record__import_date__range=(start_date, end_date)
@@ -198,34 +186,27 @@ def ajax_dashboard_stats(request):
         )
     )['total'] or 0
 
-    no_phai_tra = StockInDetail.objects.filter(
-        import_record__payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
-        import_record__import_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    no_phai_tra = 0
+    stock_ins = StockIn.objects.filter(
+        payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
+        import_date__range=(start_date, end_date)
+    )
+    for stock_in in stock_ins:
+        total = stock_in.total_amount()
+        no_phai_tra += total - stock_in.amount_paid
 
-    no_phai_thu = StockOutDetail.objects.filter(
-        export_record__payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
-        export_record__export_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    no_phai_thu = 0
+    stock_outs = StockOut.objects.filter(
+        payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
+        export_date__range=(start_date, end_date)
+    )
+    for stock_out in stock_outs:
+        total = stock_out.total_amount()
+        no_phai_thu += total - stock_out.amount_paid
 
     no_phai_tra_progress = (no_phai_tra / gia_tri_nhap_kho * 100) if gia_tri_nhap_kho > 0 else 0
     no_phai_thu_progress = (no_phai_thu / gia_tri_xuat_kho * 100) if gia_tri_xuat_kho > 0 else 0
 
-    # Dữ liệu cho biểu đồ phân bổ hàng hóa
     total_quantity = ProductDetail.objects.aggregate(total=Sum('remaining_quantity'))['total'] or 1
     categories = ProductCategory.objects.prefetch_related('product__product_details').annotate(
         total_quantity=Sum('product__product_details__remaining_quantity')
@@ -267,8 +248,8 @@ def ajax_dashboard_stats(request):
         })
 
     return JsonResponse({
-        'so_don_hang': so_don_hang,
-        'doanh_thu': float(doanh_thu) if doanh_thu else 0,
+        'so_don_hang_xuat': so_don_hang_xuat,
+        'so_don_hang_nhap':so_don_hang_nhap,
         'gia_tri_nhap_kho': float(gia_tri_nhap_kho) if gia_tri_nhap_kho else 0,
         'gia_tri_xuat_kho': float(gia_tri_xuat_kho) if gia_tri_xuat_kho else 0,
         'no_phai_tra': float(no_phai_tra) if no_phai_tra else 0,
