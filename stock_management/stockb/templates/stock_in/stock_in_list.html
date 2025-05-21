@@ -7,10 +7,22 @@
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4 ">
       <h5>Danh sách đơn hàng nhập</h5>
-      <a href="create" class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i>
-          Tạo phiếu nhập kho
-      </a>
+        <div>
+            <a href="{% url 'export_all_stockin' %}?filter={{ filter_type }}&search={{ search_text|urlencode }}" class="btn btn-danger">
+                <i class="bi bi-box-arrow-right"></i>
+                Xuất Excel
+            </a>
+
+            <a href="{% url 'import_stockin' %}" class="btn btn-success">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Nhập Excel
+            </a>
+            <a href="create" class="btn btn-primary">
+              <i class="bi bi-plus-circle"></i>
+              Tạo phiếu nhập kho
+            </a>
+        </div>
+
     </div>
     <div class="container bg-white p-4 rounded shadow">
         <ul class="nav nav-tabs mb-3">
@@ -67,10 +79,11 @@
                 </td>
                 <td>{{ item.total_amount|intcomma }}đ</td>
                 <td>
+                  <a href="{% url 'export_single_stockin' stockin_id=item.id %}" class="btn btn-sm btn-outline-secondary">Xuất</a>
                   <a href="{% url 'stock_in_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>
                   <form method="POST" action="{% url 'stock_in_delete' pk=item.id %}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đơn nhập này không?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                   </form>
                 </td>
               </tr>

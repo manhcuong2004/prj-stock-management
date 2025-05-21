@@ -21,8 +21,8 @@
             <table class="table table-bordered align-middle text-center">
                 <thead class="table-light">
                     <tr>
+                        <th scope="col">Mã</th>
                         <th scope="col">Tên nhà cung cấp</th>
-                        <th scope="col">Tên công ty</th>
                         <th scope="col">Mã thuế</th>
                         <th scope="col">Số điện thoại</th>
                         <th scope="col">Email</th>
@@ -33,18 +33,8 @@
                 <tbody>
                     {% for supplier in suppliers %}
                         <tr>
+                            <td>#{{ supplier.id }}</td>
                             <td>{{ supplier.supplier_name }}</td>
-                            <td>
-                                {% if supplier.supplier_notes %}
-                                    {% if "Công ty: " in supplier.supplier_notes %}
-                                        {{ supplier.supplier_notes|slice:":10"|cut:"Công ty: " }}
-                                    {% else %}
-                                        {{ supplier.supplier_notes }}
-                                    {% endif %}
-                                {% else %}
-                                    Không có
-                                {% endif %}
-                            </td>
                             <td>{{ supplier.tax_code }}</td>
                             <td>{{ supplier.phone }}</td>
                             <td>{{ supplier.email }}</td>

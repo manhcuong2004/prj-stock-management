@@ -1,4 +1,6 @@
+import pandas as pd
 from django.contrib import messages
+from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
@@ -155,3 +157,135 @@ def stock_out_delete(request, pk):
         )
         return redirect('stock_out')
     return render(request, 'stock_out/stock_out_list.html', {'stock_out': stock_out})
+
+@login_required
+def export_all_stockout_excel(request):
+    filter_type = request.GET.get('filter', 'all')
+    search_text = request.GET.get('search', '')
+
+    # Lấy tất cả các đơn xuất kho, tối ưu hóa truy vấn với select_related và prefetch_related
+    stock_outs = StockOut.objects.all().select_related('customer', 'employee').prefetch_related(
+        'stockoutdetail_set__product', 'stockoutdetail_set__product_detail'
+    )
+
+    # Lọc theo trạng thái thanh toán
+    if filter_type == 'partially_paid':
+        stock_outs = stock_outs.filter(payment_status='PARTIALLY_PAID')
+    elif filter_type == 'paid':
+        stock_outs = stock_outs.filter(payment_status='PAID')
+    elif filter_type == 'unpaid':
+        stock_outs = stock_outs.filter(payment_status='UNPAID')
+
+    # Tìm kiếm theo mã đơn xuất hoặc tên khách hàng
+    if search_text:
+        search_text_ch = unidecode(search_text).lower()
+        stock_outs = stock_outs.filter(
+            Q(id__icontains=search_text_ch) |
+            Q(customer__first_name__icontains=search_text_ch) |
+            Q(customer__last_name__icontains=search_text_ch)
+        ).distinct()
+
+    # Nếu không tìm thấy đơn xuất kho nào, trả về thông báo lỗi
+    if not stock_outs.exists():
+        return HttpResponse("Không tìm thấy đơn xuất kho nào phù hợp.", status=404)
+
+    # Tạo danh sách dữ liệu
+    data = []
+    for stock_out in stock_outs:
+        details = stock_out.stockoutdetail_set.all()  # Truy cập StockOutDetail
+        for detail in details:
+            data.append({
+                'Mã đơn xuất': stock_out.id,
+                'Ngày xuất': stock_out.export_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Khách hàng': f"{stock_out.customer.first_name} {stock_out.customer.last_name}" if stock_out.customer else 'N/A',
+                'Trạng thái thanh toán': stock_out.get_payment_status_display(),
+                'Tổng tiền': stock_out.total_amount(),
+                'Số tiền đã trả': stock_out.amount_paid,
+                'Nợ còn lại': stock_out.remaining_debt(),
+                'Ghi chú': stock_out.notes or '',
+                'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+                'Sản phẩm': detail.product.product_name,
+                'Lô sản phẩm': detail.product_detail.product_batch,
+                'Số lượng': detail.quantity,
+                'Giá bán': detail.product.selling_price,
+                'Chiết khấu (%)': detail.discount,
+                'Tổng tiền chi tiết': detail.quantity * detail.product.selling_price * (1 - detail.discount / 100),
+            })
+        if not details:
+            data.append({
+                'Mã đơn xuất': stock_out.id,
+                'Ngày xuất': stock_out.export_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Khách hàng': f"{stock_out.customer.first_name} {stock_out.customer.last_name}" if stock_out.customer else 'N/A',
+                'Trạng thái thanh toán': stock_out.get_payment_status_display(),
+                'Tổng tiền': stock_out.total_amount(),
+                'Số tiền đã trả': stock_out.amount_paid,
+                'Nợ còn lại': stock_out.remaining_debt(),
+                'Ghi chú': stock_out.notes or '',
+                'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+                'Sản phẩm': '',
+                'Lô sản phẩm': '',
+                'Số lượng': 0,
+                'Giá bán': 0,
+                'Chiết khấu (%)': 0,
+                'Tổng tiền chi tiết': 0,
+            })
+    df = pd.DataFrame(data)
+
+    # Tạo response Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=stockout_all_report.xlsx'
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+
+@login_required
+def export_single_stockout_excel(request, stockout_id):
+    stock_out = get_object_or_404(StockOut, id=stockout_id)
+
+    data = []
+    details = stock_out.stockoutdetail_set.all().select_related('product', 'product_detail')
+    for detail in details:
+        data.append({
+            'Mã đơn xuất': stock_out.id,
+            'Ngày xuất': stock_out.export_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Khách hàng': f"{stock_out.customer.first_name} {stock_out.customer.last_name}" if stock_out.customer else 'N/A',
+            'Trạng thái thanh toán': stock_out.get_payment_status_display(),
+            'Tổng tiền': stock_out.total_amount(),
+            'Số tiền đã trả': stock_out.amount_paid,
+            'Nợ còn lại': stock_out.remaining_debt(),
+            'Ghi chú': stock_out.notes or '',
+            'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+            'Sản phẩm': detail.product.product_name,
+            'Lô sản phẩm': detail.product_detail.product_batch,
+            'Số lượng': detail.quantity,
+            'Giá bán': detail.product.selling_price,
+            'Chiết khấu (%)': detail.discount,
+            'Tổng tiền chi tiết': detail.quantity * detail.product.selling_price * (1 - detail.discount / 100),
+        })
+    if not details:
+        data.append({
+            'Mã đơn xuất': stock_out.id,
+            'Ngày xuất': stock_out.export_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Khách hàng': f"{stock_out.customer.first_name} {stock_out.customer.last_name}" if stock_out.customer else 'N/A',
+            'Trạng thái thanh toán': stock_out.get_payment_status_display(),
+            'Tổng tiền': stock_out.total_amount(),
+            'Số tiền đã trả': stock_out.amount_paid,
+            'Nợ còn lại': stock_out.remaining_debt(),
+            'Ghi chú': stock_out.notes or '',
+            'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+            'Sản phẩm': '',
+            'Lô sản phẩm': '',
+            'Số lượng': 0,
+            'Giá bán': 0,
+            'Chiết khấu (%)': 0,
+            'Tổng tiền chi tiết': 0,
+        })
+    df = pd.DataFrame(data)
+
+    # Tạo response Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=stockout_{stockout_id}_report.xlsx'
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response

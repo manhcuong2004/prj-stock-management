@@ -255,3 +255,6 @@ class ProductCategoryForm(forms.ModelForm):
             'category_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập tên danh mục'}),
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập mô tả danh mục'}),
         }
+
+class StockInImportForm(forms.Form):
+    excel_file = forms.FileField(label="Tệp Excel")

@@ -34,6 +34,7 @@
           <table class="table table-bordered align-middle text-center">
             <thead class="table-light">
               <tr>
+                <th scope="col">Mã</th>
                 <th scope="col">Tên danh mục</th>
                 <th scope="col">Mô tả</th>
                 <th scope="col">Số lượng sản phẩm</th>
@@ -43,6 +44,7 @@
             <tbody>
               {% for category in categories %}
               <tr>
+                <td>#{{ category.id }}</td>
                 <td>
                   <a class="text-primary" href="{% url 'product_category_detail' category.pk %}">{{ category.category_name }}</a>
                 </td>

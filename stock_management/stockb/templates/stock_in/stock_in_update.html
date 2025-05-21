@@ -1,38 +1,14 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load static humanize %}
 {% block title %}
     {{ title }}
 {% endblock %}
-{% load static %}
+
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/stock.css' %}">
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
-        {% if form.errors or formset.errors %}
-            <div class="alert alert-danger">
-                <strong>Lỗi:</strong>
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ field }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                    {% if formset.non_form_errors %}
-                        {% for error in formset.non_form_errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    {% endif %}
-                    {% for subform in formset %}
-                        {% for field, errors in subform.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ subform.prefix }} - {{ field }}: {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>

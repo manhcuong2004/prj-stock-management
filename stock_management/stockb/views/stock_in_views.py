@@ -1,11 +1,14 @@
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from unidecode import unidecode
 from django.db.models import Sum, F, Q
-from ..forms import StockInForm, StockInDetailFormSet
+from ..forms import StockInForm, StockInDetailFormSet, StockInImportForm
 from ..models import ProductCategory, Product, ProductDetail, StockIn, Supplier, StockInDetail, Notification
 
 @login_required
@@ -27,19 +30,16 @@ def stock_in(request):
         search_text_ch = unidecode(search_text).lower()
         stock_ins = stock_ins.filter(
             Q(id__icontains=search_text_ch) |
-            Q(supplier__company_name__icontains=search_text_ch)
+            Q(supplier__supplier_name__icontains=search_text_ch)
         ).distinct()
 
     for stock_in in stock_ins:
-        total_amount = StockInDetail.objects.filter(import_record=stock_in).aggregate(
-            total=Sum(F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100))
-        )['total'] or 0
         stock_in_list.append({
             'id': stock_in.id,
             'import_date': stock_in.import_date,
             'supplier': stock_in.supplier.supplier_name,
             'payment_status': stock_in.payment_status,
-            'total_amount': total_amount,
+            'total_amount': stock_in.total_amount(),
         })
     context = {
         "title": "Trang nhập kho",
@@ -147,3 +147,379 @@ def stock_in_delete(request, pk):
         )
         return redirect('stock_in')
     return render(request, 'stock_in/stock_in_list.html', {'stock_in': stock_in})
+
+@login_required
+def export_all_stockin_excel(request):
+    # Lấy các tham số từ query string
+    filter_type = request.GET.get('filter', 'all')
+    search_text = request.GET.get('search', '')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    stock_ins = StockIn.objects.all().select_related('supplier', 'employee').prefetch_related('details__product', 'details__product_detail')
+
+    if filter_type != 'all':
+        if filter_type == 'paid':
+            stock_ins = stock_ins.filter(payment_status='PAID')
+        elif filter_type == 'partially_paid':
+            stock_ins = stock_ins.filter(payment_status='PARTIALLY_PAID')
+        elif filter_type == 'unpaid':
+            stock_ins = stock_ins.filter(payment_status='UNPAID')
+
+    # Lọc theo từ khóa tìm kiếm
+    if search_text:
+        stock_ins = stock_ins.filter(
+            Q(id__icontains=search_text) |
+            Q(supplier__supplier_name__icontains=search_text)
+        )
+
+    # Lọc theo ngày (nếu có)
+    if start_date:
+        stock_ins = stock_ins.filter(import_date__gte=start_date)
+    if end_date:
+        stock_ins = stock_ins.filter(import_date__lte=end_date)
+
+    # Nếu không có bản ghi, trả về thông báo
+    if not stock_ins.exists():
+        return HttpResponse("Không tìm thấy đơn nhập kho nào phù hợp.", status=404)
+
+    # Tạo danh sách dữ liệu
+    data = []
+    for stock_in in stock_ins:
+        details = stock_in.details.all().select_related('product', 'product_detail')
+        for detail in details:
+            data.append({
+                'Mã đơn nhập': stock_in.id,
+                'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Nhà cung cấp': stock_in.supplier.supplier_name,
+                'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+                'Tổng tiền': stock_in.total_amount(),
+                'Số tiền đã trả': stock_in.amount_paid,
+                'Nợ còn lại': stock_in.remaining_debt(),
+                'Ghi chú': stock_in.notes or '',
+                'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+                'Sản phẩm': detail.product.product_name,
+                'Lô sản phẩm': detail.product_detail.product_batch,
+                'Số lượng': detail.quantity,
+                'Giá nhập': detail.product.purchase_price,
+                'Chiết khấu (%)': detail.discount,
+                'Tổng tiền chi tiết': detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100),
+            })
+        if not details:
+            data.append({
+                'Mã đơn nhập': stock_in.id,
+                'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Nhà cung cấp': stock_in.supplier.supplier_name,
+                'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+                'Tổng tiền': stock_in.total_amount(),
+                'Số tiền đã trả': stock_in.amount_paid,
+                'Nợ còn lại': stock_in.remaining_debt(),
+                'Ghi chú': stock_in.notes or '',
+                'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+                'Sản phẩm': '',
+                'Lô sản phẩm': '',
+                'Số lượng': 0,
+                'Giá nhập': 0,
+                'Chiết khấu (%)': 0,
+                'Tổng tiền chi tiết': 0,
+            })
+
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=stockin_all_report.xlsx'
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+@login_required
+def export_all_stockin_excel(request):
+    filter_type = request.GET.get('filter', 'all')
+    search_text = request.GET.get('search', '')
+
+    stock_ins = StockIn.objects.all().select_related('supplier', 'employee').prefetch_related('details__product', 'details__product_detail')
+
+    if filter_type == 'partially_paid':
+        stock_ins = stock_ins.filter(payment_status='PARTIALLY_PAID')
+    elif filter_type == 'paid':
+        stock_ins = stock_ins.filter(payment_status='PAID')
+    elif filter_type == 'unpaid':
+        stock_ins = stock_ins.filter(payment_status='UNPAID')
+
+    if search_text:
+        search_text_ch = unidecode(search_text).lower()
+        stock_ins = stock_ins.filter(
+            Q(id__icontains=search_text_ch) |
+            Q(supplier__supplier_name__icontains=search_text_ch)
+        ).distinct()
+
+    if not stock_ins.exists():
+        return HttpResponse("Không tìm thấy đơn nhập kho nào phù hợp.", status=404)
+
+    # Tạo danh sách dữ liệu
+    data = []
+    for stock_in in stock_ins:
+        details = stock_in.details.all()
+        for detail in details:
+            data.append({
+                'Mã đơn nhập': stock_in.id,
+                'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Nhà cung cấp': stock_in.supplier.supplier_name,
+                'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+                'Tổng tiền': stock_in.total_amount(),
+                'Số tiền đã trả': stock_in.amount_paid,
+                'Nợ còn lại': stock_in.remaining_debt(),
+                'Ghi chú': stock_in.notes or '',
+                'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+                'Sản phẩm': detail.product.product_name,
+                'Lô sản phẩm': detail.product_detail.product_batch,
+                'Số lượng': detail.quantity,
+                'Giá nhập': detail.product.purchase_price,
+                'Chiết khấu (%)': detail.discount,
+                'Tổng tiền chi tiết': detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100),
+            })
+        if not details:
+            data.append({
+                'Mã đơn nhập': stock_in.id,
+                'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Nhà cung cấp': stock_in.supplier.supplier_name,
+                'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+                'Tổng tiền': stock_in.total_amount(),
+                'Số tiền đã trả': stock_in.amount_paid,
+                'Nợ còn lại': stock_in.remaining_debt(),
+                'Ghi chú': stock_in.notes or '',
+                'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+                'Sản phẩm': '',
+                'Lô sản phẩm': '',
+                'Số lượng': 0,
+                'Giá nhập': 0,
+                'Chiết khấu (%)': 0,
+                'Tổng tiền chi tiết': 0,
+            })
+    df = pd.DataFrame(data)
+
+    # Tạo response Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=stockin_all_report.xlsx'
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+@login_required
+def export_single_stockin_excel(request, stockin_id):
+    stock_in = get_object_or_404(StockIn, id=stockin_id)
+
+    data = []
+    details = stock_in.details.all().select_related('product', 'product_detail')
+    for detail in details:
+        data.append({
+            'Mã đơn nhập': stock_in.id,
+            'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Nhà cung cấp': stock_in.supplier.supplier_name,
+            'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+            'Tổng tiền': stock_in.total_amount(),
+            'Số tiền đã trả': stock_in.amount_paid,
+            'Nợ còn lại': stock_in.remaining_debt(),
+            'Ghi chú': stock_in.notes or '',
+            'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+            'Sản phẩm': detail.product.product_name,
+            'Lô sản phẩm': detail.product_detail.product_batch,
+            'Số lượng': detail.quantity,
+            'Giá nhập': detail.product.purchase_price,
+            'Chiết khấu (%)': detail.discount,
+            'Tổng tiền chi tiết': detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100),
+        })
+    if not details:
+        data.append({
+            'Mã đơn nhập': stock_in.id,
+            'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Nhà cung cấp': stock_in.supplier.supplier_name,
+            'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+            'Tổng tiền': stock_in.total_amount(),
+            'Số tiền đã trả': stock_in.amount_paid,
+            'Nợ còn lại': stock_in.remaining_debt(),
+            'Ghi chú': stock_in.notes or '',
+            'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+            'Sản phẩm': '',
+            'Lô sản phẩm': '',
+            'Số lượng': 0,
+            'Giá nhập': 0,
+            'Chiết khấu (%)': 0,
+            'Tổng tiền chi tiết': 0,
+        })
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=stockin_{stockin_id}_report.xlsx'
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+@login_required
+def export_single_stockin_excel(request, stockin_id):
+    stock_in = get_object_or_404(StockIn, id=stockin_id)
+
+    data = []
+    details = stock_in.details.all().select_related('product', 'product_detail')
+    for detail in details:
+        data.append({
+            'Mã đơn nhập': stock_in.id,
+            'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Nhà cung cấp': stock_in.supplier.supplier_name,
+            'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+            'Tổng tiền': stock_in.total_amount(),
+            'Số tiền đã trả': stock_in.amount_paid,
+            'Nợ còn lại': stock_in.remaining_debt(),
+            'Ghi chú': stock_in.notes or '',
+            'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+            'Sản phẩm': detail.product.product_name,
+            'Lô sản phẩm': detail.product_detail.product_batch,
+            'Số lượng': detail.quantity,
+            'Giá nhập': detail.product.purchase_price,
+            'Chiết khấu (%)': detail.discount,
+            'Tổng tiền chi tiết': detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100),
+        })
+    if not details:
+        data.append({
+            'Mã đơn nhập': stock_in.id,
+            'Ngày nhập': stock_in.import_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Nhà cung cấp': stock_in.supplier.supplier_name,
+            'Trạng thái thanh toán': stock_in.get_payment_status_display(),
+            'Tổng tiền': stock_in.total_amount(),
+            'Số tiền đã trả': stock_in.amount_paid,
+            'Nợ còn lại': stock_in.remaining_debt(),
+            'Ghi chú': stock_in.notes or '',
+            'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+            'Sản phẩm': '',
+            'Lô sản phẩm': '',
+            'Số lượng': 0,
+            'Giá nhập': 0,
+            'Chiết khấu (%)': 0,
+            'Tổng tiền chi tiết': 0,
+        })
+
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=stockin_{stockin_id}_report.xlsx'
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+
+@login_required
+def import_stockin(request):
+    if request.method == 'POST':
+        form = StockInImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                excel_file = request.FILES['excel_file']
+                df = pd.read_excel(excel_file, engine='openpyxl')
+
+                required_columns = [
+                    'Mã đơn nhập', 'Ngày nhập', 'ID Nhà cung cấp', 'Trạng thái thanh toán',
+                    'Số tiền đã trả', 'Ghi chú', 'ID Nhân viên', 'ID Sản phẩm',
+                    'Lô sản phẩm', 'Số lượng', 'Chiết khấu (%)'
+                ]
+                if not all(col in df.columns for col in required_columns):
+                    messages.error(request, "File Excel không đúng định dạng. Vui lòng kiểm tra các cột.")
+                    return render(request, 'stock_in/import_stockin.html', {'form': form})
+
+                numeric_columns = ['Số tiền đã trả', 'Số lượng', 'Chiết khấu (%)']
+                for col in numeric_columns:
+                    try:
+                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                    except Exception as e:
+                        messages.error(request, f"Lỗi định dạng cột '{col}': {str(e)}")
+                        return render(request, 'stock_in/import_stockin.html', {'form': form})
+
+                grouped = df.groupby('Mã đơn nhập')
+
+                with transaction.atomic():
+                    for stockin_id, group in grouped:
+                        stockin_data = group.iloc[0]
+
+                        supplier_id = stockin_data['ID Nhà cung cấp']
+                        supplier = Supplier.objects.filter(id=supplier_id).first()
+                        if not supplier:
+                            messages.error(request, f"Nhà cung cấp với ID '{supplier_id}' không tồn tại.")
+                            return render(request, 'stock_in/import_stockin.html', {'form': form})
+
+                        employee_id = stockin_data['ID Nhân viên']
+                        employee = User.objects.filter(id=employee_id).first()
+                        if not employee:
+                            messages.error(request, f"Nhân viên với ID '{employee_id}' không tồn tại.")
+                            return render(request, 'stock_in/import_stockin.html', {'form': form})
+
+                        stockin, created = StockIn.objects.get_or_create(
+                            id=stockin_id,
+                            defaults={
+                                'import_date': pd.to_datetime(stockin_data['Ngày nhập']),
+                                'amount_paid': stockin_data['Số tiền đã trả'],
+                                'payment_status': stockin_data['Trạng thái thanh toán'].upper(),
+                                'notes': stockin_data['Ghi chú'] if pd.notna(stockin_data['Ghi chú']) else '',
+                                'supplier': supplier,
+                                'employee': employee,
+                            }
+                        )
+
+                        if not created:
+                            stockin.import_date = pd.to_datetime(stockin_data['Ngày nhập'])
+                            stockin.amount_paid = stockin_data['Số tiền đã trả']
+                            stockin.payment_status = stockin_data['Trạng thái thanh toán'].upper()
+                            stockin.notes = stockin_data['Ghi chú'] if pd.notna(stockin_data['Ghi chú']) else ''
+                            stockin.supplier = supplier
+                            stockin.employee = employee
+                            stockin.save()
+
+                        for _, row in group.iterrows():
+                            product_id = row['ID Sản phẩm']
+                            product = Product.objects.filter(id=product_id).first()
+                            if not product:
+                                messages.error(request, f"Sản phẩm với ID '{product_id}' không tồn tại.")
+                                return render(request, 'stock_in/import_stockin.html', {'form': form})
+
+                            product_batch = row['Lô sản phẩm']
+                            quantity = row['Số lượng']
+                            discount = row['Chiết khấu (%)']
+
+                            product_detail, _ = ProductDetail.objects.get_or_create(
+                                product=product,
+                                product_batch=product_batch,
+                                defaults={
+                                    'initial_quantity': quantity,
+                                    'remaining_quantity': quantity,
+                                    'import_date': stockin.import_date,
+                                    'status': 'ACTIVE',
+                                }
+                            )
+
+                            StockInDetail.objects.create(
+                                import_record=stockin,
+                                product=product,
+                                quantity=quantity,
+                                product_detail=product_detail,
+                                discount=discount,
+                            )
+
+                        Notification.objects.create(
+                            message=f"Nhập đơn nhập kho ID {stockin.id} từ Excel thành công!",
+                            employee=request.user,
+                            created_at=timezone.now(),
+                            is_read=False
+                        )
+
+                messages.success(request, "Nhập dữ liệu từ Excel thành công!")
+                return redirect('stock_in')
+
+            except Exception as e:
+                messages.error(request, f"Có lỗi xảy ra khi nhập Excel: {str(e)}")
+                return render(request, 'stock_in/import_stockin.html', {'form': form})
+    else:
+        form = StockInImportForm()
+
+    context = {
+        'title': 'Nhập đơn nhập kho từ Excel',
+        'form': form,
+    }
+    return render(request, 'stock_in/import_stockin.html', context)

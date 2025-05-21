@@ -24,11 +24,17 @@ urlpatterns = [
     path('stock-out/create/', stock_out_views.stock_out_update, name='stock_out_create'),
     path('stock-out/update/<int:pk>/', stock_out_views.stock_out_update, name='stock_out_update'),
     path('stock-out/<int:pk>/delete/', stock_out_views.stock_out_delete, name='stock_out_delete'),
+    path('stock-out/export-all/', stock_out_views.export_all_stockout_excel, name='export_all_stockout'),
+    path('stock-out/export/<int:stockout_id>/', stock_out_views.export_single_stockout_excel, name='export_single_stockout'),
+
     #Nhập kho
     path('stock-in/', stock_in_views.stock_in, name='stock_in'),
     path('stock-in/create', stock_in_views.stock_in_update, name='stock_in_create'),
     path('stock-in/update/<int:pk>/', stock_in_views.stock_in_update, name='stock_in_update'),
     path('stock-in/<int:pk>/delete/', stock_in_views.stock_in_delete, name='stock_in_delete'),
+    path('stock-in/export-all/', stock_in_views.export_all_stockin_excel, name='export_all_stockin'),
+    path('stock-in/export/<int:stockin_id>/', stock_in_views.export_single_stockin_excel, name='export_single_stockin'),
+    path('stock-in/import/', stock_in_views.import_stockin, name='import_stockin'),
 
     #Đơn vị
     path('units/', unit_views.unit_list, name='units_list'),
