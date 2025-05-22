@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum, F, Q, Count
 from django.utils import timezone
@@ -28,9 +29,13 @@ def product_view(request):
 
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
+
+    paginator = Paginator(products, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         "title": "Danh sách sản phẩm",
-        "products": products,
+        "products": page_obj,
         "search_text": search_text,
         "categories": categories,
         "suppliers": suppliers,

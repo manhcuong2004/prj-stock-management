@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -47,9 +48,10 @@ def activity_log_list(request):
         elif action_filter == 'delete':
             logs = logs.filter(message__icontains='xóa')
 
-    # Lọc theo nhân viên
     if employee_filter != 'all':
         logs = logs.filter(employee_id=employee_filter)
+
+
 
     if search_text:
         logs = logs.filter(
@@ -59,9 +61,12 @@ def activity_log_list(request):
 
     employees = User.objects.filter(is_active=True).order_by('username')
 
+    paginator = Paginator(logs, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'title': 'Lịch sử hoạt động',
-        'logs': logs,
+        'logs': page_obj,
         'action_filter': action_filter,
         'employee_filter': employee_filter,
         'search_text': search_text,

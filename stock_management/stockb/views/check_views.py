@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.utils import timezone
 from django.db.models import Sum
@@ -26,18 +27,25 @@ def near_expiry_list_view(request):
             'detail': detail,
             'days_left': max(0, days_left),
         })
+    paginator = Paginator(products_with_days_left, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
         "title": "Hàng gần đến ngày hết hạn",
-        "near_expiry_products": products_with_days_left,
+        "near_expiry_products": page_obj,
         "search_query": search_query,
     }
     return render(request, 'check/near_expiry_list.html', context)
 
 
 def low_stock_list_view(request):
+    search_query = request.GET.get('q', '')
     low_stock_products = []
     products = Product.objects.all().prefetch_related('product_details').select_related('category', 'unit')
+
+    if search_query:
+        low_stock_products = low_stock_products.filter(product__product_name__icontains=search_query)
 
     for product in products:
         total_quantity = product.product_details.aggregate(total=Sum('remaining_quantity'))['total'] or 0
@@ -48,8 +56,13 @@ def low_stock_list_view(request):
                 'minimum_stock': product.minimum_stock,
             })
 
+    paginator = Paginator(low_stock_products, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         "title": "Hàng gần hết trong kho",
-        "low_stock_products": low_stock_products,
+        "low_stock_products": page_obj,
+        "search_query": search_query,
     }
     return render(request, 'check/low_stock_list.html', context)

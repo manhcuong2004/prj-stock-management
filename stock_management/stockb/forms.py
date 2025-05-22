@@ -7,18 +7,14 @@ from django.contrib.auth.models import User, Group
 class StockOutForm(forms.ModelForm):
     class Meta:
         model = StockOut
-        fields = ['notes', 'employee', 'customer', 'payment_status', 'amount_paid']
+        fields = ['export_date', 'notes', 'customer', 'payment_status', 'amount_paid']
         widgets = {
+            'export_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn hàng'}),
-            'employee': forms.Select(attrs={'class': 'form-select'}),
             'customer': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control amount-paid', 'min': '0', 'value': '0'}),
         }
-
-
-
-
 class StockOutDetailForm(forms.ModelForm):
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
@@ -46,7 +42,6 @@ class StockOutDetailForm(forms.ModelForm):
             self.errors.clear()
             return cleaned_data
 
-        # Validation bình thường nếu không có DELETE
         product = cleaned_data.get('product')
         quantity = cleaned_data.get('quantity')
         product_detail = cleaned_data.get('product_detail')
@@ -72,10 +67,10 @@ StockOutDetailFormSet = forms.inlineformset_factory(
 class StockInForm(forms.ModelForm):
     class Meta:
         model = StockIn
-        fields = ['notes', 'employee', 'supplier', 'payment_status', 'amount_paid']
+        fields = ['import_date','notes', 'supplier', 'payment_status', 'amount_paid']
         widgets = {
+            'import_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn nhập kho'}),
-            'employee': forms.Select(attrs={'class': 'form-select'}),
             'supplier': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control amount-paid', 'min': '0', 'value': '0'}),
@@ -162,10 +157,9 @@ class UnitForm(forms.ModelForm):
 class InventoryCheckForm(forms.ModelForm):
     class Meta:
         model = InventoryCheck
-        fields = ['check_date', 'employee', 'notes']
+        fields = ['check_date',  'notes']
         widgets = {
             'check_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'employee': forms.Select(attrs={'class': 'form-select'}),
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho kiểm kê'}),
         }
 

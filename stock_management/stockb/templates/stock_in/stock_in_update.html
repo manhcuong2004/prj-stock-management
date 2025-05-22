@@ -69,7 +69,6 @@
                                                     {% endif %}
                                                 {% endfor %}
                                                 {% if not product_id %}
-                                                    <!-- Fallback nếu product_id không có giá trị -->
                                                     <input type="hidden" name="{{ detail_form.prefix }}-product" value="{{ detail_form.instance.product.id|default:'' }}">
                                                 {% endif %}
                                             {% endwith %}
@@ -192,8 +191,8 @@
                         {{ form.supplier }}
                     </div>
                     <div class="summary-box mb-3">
-                        <h6>Nhân Viên Tạo</h6>
-                        {{ form.employee }}
+                        <h6>Thời gian xuất kho</h6>
+                        {{ form.import_date }}
                     </div>
                     <div class="summary-box">
                         <div class="mb-2">

@@ -1,5 +1,8 @@
+import datetime
+
 import pandas as pd
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
@@ -18,6 +21,8 @@ def stock_out(request):
 
     filter_type = request.GET.get('filter', 'all')
     search_text = request.GET.get('search', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
 
     if filter_type == 'partially_paid':
         stock_outs = stock_outs.filter(payment_status='PARTIALLY_PAID')
@@ -28,26 +33,25 @@ def stock_out(request):
 
     if search_text:
         search_text_ch = unidecode(search_text).lower()
-        stock_outs_by_id = stock_outs.filter(id__icontains=search_text_ch)
-        customers_fn = set()
-        customers_ln = set()
-        customers_full = set()
-        all_customers = Customer.objects.all()
-        for customer in all_customers:
-            first_name_ch = unidecode(customer.first_name).lower()
-            last_name_ch = unidecode(customer.last_name).lower()
-            full_name_ch = f"{first_name_ch} {last_name_ch}"
+        stock_outs = stock_outs.filter(
+            Q(id__icontains=search_text_ch) |
+            Q(customer__first_name__icontains=search_text_ch) |
+            Q(customer__last_name__icontains=search_text_ch)
+        ).distinct()
 
-            if search_text_ch in first_name_ch:
-                customers_fn.add(customer)
-            if search_text_ch in last_name_ch:
-                customers_ln.add(customer)
-            if search_text_ch in full_name_ch:
-                customers_full.add(customer)
-
-        customers = customers_fn | customers_ln | customers_full
-        stock_outs_by_customer = stock_outs.filter(customer__in=customers)
-        stock_outs = stock_outs_by_id | stock_outs_by_customer
+    if start_date and end_date:
+        try:
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            if end_date_obj < start_date_obj:
+                messages.warning(request, "Ngày kết thúc không được nhỏ hơn ngày bắt đầu.")
+            else:
+                end_date_obj = end_date_obj + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+                stock_outs = stock_outs.filter(export_date__range=(start_date_obj, end_date_obj))
+        except ValueError:
+            stock_outs = StockOut.objects.none()
+    elif start_date or end_date:
+        messages.warning(request, "Vui lòng nhập cả ngày bắt đầu và ngày kết thúc.")
 
     for stock_out in stock_outs:
         total_amount = StockOutDetail.objects.filter(export_record=stock_out).aggregate(
@@ -60,10 +64,17 @@ def stock_out(request):
             'payment_status': stock_out.payment_status,
             'total_amount': total_amount,
         })
+
+    paginator = Paginator(stock_out_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         "title": "Trang xuất kho",
         'filter_type': filter_type,
-        "stock_out_list": stock_out_list,
+        "stock_out_list": page_obj,
+        "search_text": search_text,
+        "start_date": start_date,
+        "end_date": end_date,
     }
     return render(request, "stock_out/stock_out_list.html", context)
 
@@ -73,9 +84,7 @@ def stock_out_update(request, pk=None):
     action = "Cập nhật" if pk else "Thêm"
     form = StockOutForm(request.POST or None, instance=stock_out)
     formset = StockOutDetailFormSet(request.POST or None, instance=stock_out or StockOut(), prefix='stockoutdetail_set')
-
     if request.method == "POST":
-        print("Formset data:", request.POST)
         if form.is_valid() and formset.is_valid():
             stock_out = form.save(commit=False)
             if not stock_out.export_date:
@@ -87,11 +96,9 @@ def stock_out_update(request, pk=None):
                 if detail_form.cleaned_data.get('DELETE', False) and detail_form.instance.pk:
                     try:
                         detail_form.instance.delete()
-                        print("Deleted StockOutDetail with id:", detail_form.instance.pk)
                     except Exception as e:
-                        print("Error deleting StockOutDetail:", e)
-                        detail_form.add_error(None, f"Lỗi khi xóa chi tiết: {str(e)}")
-                        continue
+                        messages.error(request, f"Lỗi khi xóa chi tiết: {str(e)}")
+                        return render(request, 'stock_out/stock_out_update.html')
                 elif detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
                     detail = detail_form.save(commit=False)
                     detail.export_record = stock_out
@@ -101,27 +108,27 @@ def stock_out_update(request, pk=None):
                         try:
                             detail.save()
                         except ValueError as e:
-                            detail_form.add_error(None, str(e))
-                            continue
+                            messages.error(request, f"Lỗi khi lưu chi tiết: {str(e)}")
+                            return render(request, 'stock_out/stock_out_update.html')
                     else:
-                        detail_form.add_error(None, "Thông tin sản phẩm hoặc lô không hợp lệ.")
-                        continue
+                        messages.error(request, "Thông tin sản phẩm hoặc lô không hợp lệ.")
+                        return render(request, 'stock_out/stock_out_update.html')
 
-            if not any(formset.errors):
-                messages.success(request, f"{action.capitalize()} đơn xuất kho thành công!")
-                Notification.objects.create(
-                    message=f"{action} đơn xuất kho ID {stock_out.id} thành công!",
-                    employee=request.user,
-                    created_at=timezone.now(),
-                    is_read=False
-                )
-                return redirect('stock_out')
-            else:
-                messages.error(request, "Có lỗi trong form, vui lòng kiểm tra lại.")
-                print("Form errors:", form.errors)
-                print("Formset errors:", formset.errors)
+            messages.success(request, f"{action.capitalize()} đơn xuất kho ID {stock_out.id} thành công!")
+            Notification.objects.create(
+                message=f"{action} đơn xuất kho ID {stock_out.id} thành công!",
+                employee=request.user,
+                created_at=timezone.now(),
+                is_read=False
+            )
+            return redirect('stock_out')
         else:
-            messages.error(request, "Có lỗi trong form, vui lòng kiểm tra lại.")
+            error_messages = []
+            if form.errors:
+                error_messages.append("Lỗi trong form chính: " + str(form.errors))
+            if formset.errors:
+                error_messages.append("Lỗi trong chi tiết xuất kho: " + str(formset.errors))
+            messages.error(request, "Có lỗi xảy ra, vui lòng kiểm tra lại: " + "; ".join(error_messages))
             print("Form errors:", form.errors)
             print("Formset errors:", formset.errors)
 
@@ -163,6 +170,8 @@ def stock_out_delete(request, pk):
 def export_all_stockout_excel(request):
     filter_type = request.GET.get('filter', 'all')
     search_text = request.GET.get('search', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
 
     stock_outs = StockOut.objects.all().select_related('customer', 'employee').prefetch_related(
         'stockoutdetail_set__product', 'stockoutdetail_set__product_detail'
@@ -182,6 +191,20 @@ def export_all_stockout_excel(request):
             Q(customer__first_name__icontains=search_text_ch) |
             Q(customer__last_name__icontains=search_text_ch)
         ).distinct()
+
+    if start_date and end_date:
+        try:
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            if end_date_obj < start_date_obj:
+                messages.warning(request, "Ngày kết thúc không được nhỏ hơn ngày bắt đầu.")
+            else:
+                end_date_obj = end_date_obj + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+                stock_outs = stock_outs.filter(export_date__range=(start_date_obj, end_date_obj))
+        except ValueError:
+            stock_outs = StockOut.objects.none()
+    elif start_date or end_date:
+        messages.warning(request, "Vui lòng nhập cả ngày bắt đầu và ngày kết thúc.")
 
     if not stock_outs.exists():
         return HttpResponse("Không tìm thấy đơn xuất kho nào phù hợp.", status=404)

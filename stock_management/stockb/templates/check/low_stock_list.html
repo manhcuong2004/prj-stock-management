@@ -22,15 +22,13 @@
             <div class="col-3 text-end">Còn lại trong kho</div>
             <div class="col-2 text-end">Tồn kho tối thiểu</div>
         </div>
-
-        <!-- Dữ liệu sản phẩm -->
         {% for item in low_stock_products %}
         <div class="row py-2 border-bottom align-items-center">
             <a href="/product/{{ item.product.id }}" class="col-5">
                 {{ item.product.product_name }}
             </a>
             <div class="col-2 text-end">
-                <span class="badge bg-secondary">{{ item.product.category.category_name }}</span>
+                <span class="badge bg-success">{{ item.product.category.category_name }}</span>
             </div>
             <div class="col-3 text-end">
                 <span>{{ item.total_quantity }} {{ item.product.unit.unit_symbol }}</span>
@@ -46,7 +44,12 @@
             </div>
         </div>
         {% endfor %}
+        <div class="mt-5">
+            {% include 'Pagination/pagination.html' with page_obj=low_stock_products %}
+        </div>
+
     </div>
+
 
     <script>
         document.getElementById('searchInput').addEventListener('input', function(e) {

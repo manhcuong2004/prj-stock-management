@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from ..forms import UnitForm
@@ -12,9 +13,13 @@ def unit_list(request):
     if query:
         units = units.filter(name__icontains=query) | units.filter(symbol__icontains=query)
 
+    paginator = Paginator(units, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'title': 'Danh sách đơn vị',
-        'units': units
+        'units': page_obj
     }
     return render(request, 'units/units_list.html', context)
 

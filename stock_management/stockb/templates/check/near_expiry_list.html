@@ -34,7 +34,7 @@
                 {{ item.detail.product_batch }}
             </div>
             <div class="col-2 text-end">
-                <span class="badge bg-secondary">{{ item.detail.product.category.category_name }}</span>
+                <span class="badge bg-success">{{ item.detail.product.category.category_name }}</span>
             </div>
             <div class="col-2 text-end">
                 <span>{{ item.detail.created_at|date:"d/m/Y" }}</span>
@@ -53,5 +53,8 @@
             </div>
         </div>
         {% endfor %}
+        <div class="mt-5">
+            {% include 'Pagination/pagination.html' with page_obj=near_expiry_products %}
+        </div>
     </div>
 {% endblock %}

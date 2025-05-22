@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.db.models import Q
@@ -19,9 +20,13 @@ def inventory_check_list(request):
             Q(employee__username__icontains=search_query)
         )
 
+    paginator = Paginator(inventory_checks, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'title': "Kiểm kê hàng hóa",
-        'inventory_checks': inventory_checks,
+        'inventory_checks': page_obj,
         'search_query': search_query
     }
     return render(request, 'inventory/inventory_check_list.html', context)

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from ..forms import ProductCategoryForm
@@ -23,9 +24,12 @@ def product_category_view(request):
     elif filter_product_status == 'no_products':
         categories = categories.annotate(product_count=Count('product')).filter(product_count=0)
 
+    paginator = Paginator(categories, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         "title": "Danh sách danh mục sản phẩm",
-        "categories": categories,
+        "categories": page_obj,
         "search_text": search_text,
         "filter_product_status": filter_product_status,
     }

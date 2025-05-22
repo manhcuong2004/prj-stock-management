@@ -12,7 +12,7 @@
         </a>
     </div>
 
-    <div class="card shadow-sm mb-4">
+    <div class="container bg-white p-4 rounded shadow">
         <div class="card-body">
             <div class="mb-3">
                 <form method="get" class="d-flex">
@@ -83,9 +83,11 @@
                     </tbody>
                 </table>
             </div>
-            {% include 'Pagination/pagination.html' with page_obj=customers %}
         </div>
+
+        {% include 'Pagination/pagination.html' with page_obj=customers %}
     </div>
+
 </div>
 {% endblock %}
 

@@ -4,7 +4,6 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
-
 class ProductCategory(models.Model):
     category_name = models.CharField(max_length=100)
     description = models.TextField(
@@ -79,7 +78,7 @@ class StockIn(models.Model):
         ('PAID', 'Đã thanh toán'),
         ('PARTIALLY_PAID', 'Còn nợ'),
     ]
-    import_date = models.DateTimeField()
+    import_date = models.DateField()
     amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
     payment_status = models.CharField(
         max_length=20,
@@ -87,8 +86,21 @@ class StockIn(models.Model):
         default='UNPAID'
     )
     notes = models.TextField(blank=True)
-    employee = models.ForeignKey(User, on_delete=models.SET_NULL, null="true")
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='stock_in_created'
+    )
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='stock_in_updated'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,16 +124,29 @@ class StockOut(models.Model):
         ('PARTIALLY_PAID', 'Còn nợ'),
         ('PAID', 'Đã thanh toán'),
     ]
-    export_date = models.DateTimeField()
+    export_date = models.DateField()
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
         default='UNPAID'
     )
     notes = models.TextField(blank=True)
-    employee = models.ForeignKey(User, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null="true")
     amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='stock_out_created'
+    )
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='stock_out_updated'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -255,7 +280,21 @@ class StockOutDetail(models.Model):
 
 class InventoryCheck(models.Model):
     check_date = models.DateTimeField(default=timezone.now)
-    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='inventory_check_created'
+    )
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='inventory_check_updated'
+    )
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

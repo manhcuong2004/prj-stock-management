@@ -11,7 +11,6 @@ def customer_list(request):
     customers = Customer.objects.only(
         'id', 'first_name', 'last_name', 'email', 'phone', 'address', 'created_at', 'updated_at'
     ).order_by('-created_at')
-
     search_query = request.GET.get('search', '')
     if search_query:
         customers = customers.filter(
@@ -21,6 +20,7 @@ def customer_list(request):
             Q(phone__icontains=search_query) |
             Q(address__icontains=search_query)
         )
+
 
     paginator = Paginator(customers, 10)
     page_number = request.GET.get('page')
