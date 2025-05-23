@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -249,8 +250,10 @@ class StockOutDetail(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
     def save(self, *args, **kwargs):
+        if not self.product_detail:
+            raise ValidationError("Lô sản phẩm (product_detail) không được để trống.")
+
         old_quantity = 0
         old_product_detail = None
 
@@ -262,16 +265,16 @@ class StockOutDetail(models.Model):
             except StockOutDetail.DoesNotExist:
                 old_quantity = 0
                 old_product_detail = None
+
         if not self.selling_price:
             self.selling_price = self.product.selling_price
-        quantity_diff = self.quantity - old_quantity
 
+        quantity_diff = self.quantity - old_quantity
         if quantity_diff > self.product_detail.remaining_quantity:
-            raise ValueError(
+            raise ValidationError(
                 f"Số lượng xuất ({self.quantity}) vượt quá số lượng tồn kho "
                 f"({self.product_detail.remaining_quantity}) cho lô {self.product_detail.product_batch}"
             )
-
         if quantity_diff != 0:
             self.product_detail.remaining_quantity -= quantity_diff
             self.product_detail.save()
@@ -286,6 +289,7 @@ class StockOutDetail(models.Model):
         if self.product_detail:
             self.product_detail.remaining_quantity += self.quantity
             self.product_detail.save()
+
         super().delete(*args, **kwargs)
 
 

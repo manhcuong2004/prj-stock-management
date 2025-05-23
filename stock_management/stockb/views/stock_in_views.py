@@ -158,25 +158,24 @@ def stock_in_update(request, pk=None):
                             'suppliers': Supplier.objects.all(),
                         })
 
-            if not any(formset.errors):
-                messages.success(request, f'{action.capitalize()} đơn nhập kho ID {stock_in.id} thành công!')
-                Notification.objects.create(
-                    message=f"{action} đơn nhập kho ID {stock_in.id} thành công!",
-                    employee=request.user,
-                    created_at=timezone.now(),
-                    is_read=False
-                )
-                return redirect('stock_in')
-            else:
-                error_messages = []
-                if form.errors:
-                    error_text = form.errors.as_text().replace('\n', ' ')
-                    error_messages.append(f"Lỗi trong form chính: {error_text}")
-                for i, detail_form in enumerate(formset.forms):
-                    if detail_form.errors:
-                        error_text = detail_form.errors.as_text().replace('\n', ' ')
-                        error_messages.append(f"Lỗi trong chi tiết {error_text}")
-                messages.error(request, "Có lỗi xảy ra, vui lòng kiểm tra lại: " + " ".join(error_messages))
+            messages.success(request, f'{action.capitalize()} đơn nhập kho ID {stock_in.id} thành công!')
+            Notification.objects.create(
+                message=f"{action} đơn nhập kho ID {stock_in.id} thành công!",
+                employee=request.user,
+                created_at=timezone.now(),
+                is_read=False
+            )
+            return redirect('stock_in')
+        else:
+            error_messages = []
+            if form.errors:
+                error_text = form.errors.as_text().replace('\n', ' ')
+                error_messages.append(f"Lỗi trong form chính: {error_text}")
+            for i, detail_form in enumerate(formset.forms):
+                if detail_form.errors:
+                    error_text = detail_form.errors.as_text().replace('\n', ' ')
+                    error_messages.append(f"Lỗi trong chi tiết {error_text}")
+            messages.error(request, "Có lỗi xảy ra, vui lòng kiểm tra lại: " + " ".join(error_messages))
 
 
     categories = ProductCategory.objects.all()

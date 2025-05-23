@@ -49,12 +49,6 @@ class StockOutDetailForm(forms.ModelForm):
         quantity = cleaned_data.get('quantity')
         product_detail = cleaned_data.get('product_detail')
 
-        if not product:
-            self.add_error('product', 'This field is required.')
-        if not quantity or quantity <= 0:
-            self.add_error('quantity', 'Quantity must be greater than 0.')
-        if not product_detail:
-            self.add_error('product_detail', 'Vui lòng chọn lô sản phẩm.')
         if product and quantity and product_detail:
             if product_detail.product != product:
                 self.add_error('product_detail', 'Lô sản phẩm không thuộc sản phẩm đã chọn.')
@@ -115,20 +109,9 @@ class StockInDetailForm(forms.ModelForm):
             self.errors.clear()
             return cleaned_data
 
-        # Validation bình thường nếu không có DELETE
         product = cleaned_data.get('product')
         product_batch = cleaned_data.get('product_batch')
-        quantity = cleaned_data.get('quantity')
-        discount = cleaned_data.get('discount')
 
-        if not product:
-            self.add_error('product', 'This field is required.')
-        if not product_batch:
-            self.add_error('product_batch', 'Mã lô không được để trống.')
-        if quantity is None or quantity <= 0:
-            self.add_error('quantity', 'Quantity must be greater than 0.')
-        if discount is None:
-            self.add_error('discount', 'This field is required.')
         if product and product_batch:
             query = ProductDetail.objects.filter(product=product, product_batch=product_batch)
             if self.instance.pk:
