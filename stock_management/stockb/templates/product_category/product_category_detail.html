@@ -21,17 +21,21 @@
         </div>
 
         <div class="row mb-2 text-muted">
-            <div class="col-9">Sản phẩm</div>
-            <div class="col-2 text-end">Giá</div>
+            <div class="col-8">Sản phẩm</div>
+            <div class="col-2 text-end">Giá bán ra</div>
+            <div class="col-2 text-end">Giá nhập vào</div>
         </div>
 
         {% for product in products %}
         <div class="row py-2 border-bottom align-items-center">
-            <a class="col-9 text-success" href="{% url 'product_detail' product.pk %}">
+            <a class="col-8 text-success" href="{% url 'product_detail' product.pk %}">
                 {{ product.product_name }}
             </a>
             <div class="col-2 text-end">
                 <span>{{ product.selling_price }}</span>đ
+            </div>
+            <div class="col-2 text-end">
+                <span>{{ product.purchase_price }}</span>đ
             </div>
         </div>
         {% empty %}

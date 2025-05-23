@@ -54,15 +54,12 @@ def stock_out(request):
         messages.warning(request, "Vui lòng nhập cả ngày bắt đầu và ngày kết thúc.")
 
     for stock_out in stock_outs:
-        total_amount = StockOutDetail.objects.filter(export_record=stock_out).aggregate(
-            total=Sum(F('quantity') * F('product__selling_price') * (1 - F('discount') / 100))
-        )['total'] or 0
         stock_out_list.append({
             'id': stock_out.id,
             'export_date': stock_out.export_date,
             'customer': f"{stock_out.customer.first_name} {stock_out.customer.last_name}",
             'payment_status': stock_out.payment_status,
-            'total_amount': total_amount,
+            'total_amount': stock_out.total_amount(),
         })
 
     paginator = Paginator(stock_out_list, 10)
@@ -84,11 +81,14 @@ def stock_out_update(request, pk=None):
     action = "Cập nhật" if pk else "Thêm"
     form = StockOutForm(request.POST or None, instance=stock_out)
     formset = StockOutDetailFormSet(request.POST or None, instance=stock_out or StockOut(), prefix='stockoutdetail_set')
+
     if request.method == "POST":
         if form.is_valid() and formset.is_valid():
             stock_out = form.save(commit=False)
             if not stock_out.export_date:
-                stock_out.export_date = timezone.now()
+                stock_out.export_date = timezone.now().date()
+            stock_out.created_by = request.user if not stock_out else stock_out.created_by
+            stock_out.updated_by = request.user
             stock_out.updated_at = timezone.now()
             stock_out.save()
 
@@ -98,21 +98,49 @@ def stock_out_update(request, pk=None):
                         detail_form.instance.delete()
                     except Exception as e:
                         messages.error(request, f"Lỗi khi xóa chi tiết: {str(e)}")
-                        return render(request, 'stock_out/stock_out_update.html')
+                        return render(request, 'stock_out/stock_out_update.html', {
+                            'title': 'Chỉnh sửa đơn xuất kho' if pk else 'Tạo mới đơn xuất kho',
+                            'form': form,
+                            'formset': formset,
+                            'categories': ProductCategory.objects.all(),
+                            'products': Product.objects.all(),
+                            'product_details': ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE"),
+                            'customers': Customer.objects.all(),
+                        })
                 elif detail_form.cleaned_data and not detail_form.cleaned_data.get('DELETE', False):
                     detail = detail_form.save(commit=False)
                     detail.export_record = stock_out
                     detail.product_detail = detail_form.cleaned_data.get('product_detail')
+                    detail.product = detail_form.cleaned_data.get('product')
+
+                    if not detail.pk and not detail.selling_price:
+                        detail.selling_price = detail.product.selling_price
 
                     if detail.quantity and detail.product and detail.product_detail:
                         try:
                             detail.save()
                         except ValueError as e:
                             messages.error(request, f"Lỗi khi lưu chi tiết: {str(e)}")
-                            return render(request, 'stock_out/stock_out_update.html')
+                            return render(request, 'stock_out/stock_out_update.html', {
+                                'title': 'Chỉnh sửa đơn xuất kho' if pk else 'Tạo mới đơn xuất kho',
+                                'form': form,
+                                'formset': formset,
+                                'categories': ProductCategory.objects.all(),
+                                'products': Product.objects.all(),
+                                'product_details': ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE"),
+                                'customers': Customer.objects.all(),
+                            })
                     else:
-                        messages.error(request, "Thông tin sản phẩm hoặc lô không hợp lệ.")
-                        return render(request, 'stock_out/stock_out_update.html')
+                        messages.error(request, "Thông tin sản phẩm, lô hoặc số lượng không hợp lệ.")
+                        return render(request, 'stock_out/stock_out_update.html', {
+                            'title': 'Chỉnh sửa đơn xuất kho' if pk else 'Tạo mới đơn xuất kho',
+                            'form': form,
+                            'formset': formset,
+                            'categories': ProductCategory.objects.all(),
+                            'products': Product.objects.all(),
+                            'product_details': ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE"),
+                            'customers': Customer.objects.all(),
+                        })
 
             messages.success(request, f"{action.capitalize()} đơn xuất kho ID {stock_out.id} thành công!")
             Notification.objects.create(
@@ -125,17 +153,17 @@ def stock_out_update(request, pk=None):
         else:
             error_messages = []
             if form.errors:
-                error_messages.append("Lỗi trong form chính: " + str(form.errors))
-            if formset.errors:
-                error_messages.append("Lỗi trong chi tiết xuất kho: " + str(formset.errors))
-            messages.error(request, "Có lỗi xảy ra, vui lòng kiểm tra lại: " + "; ".join(error_messages))
-            print("Form errors:", form.errors)
-            print("Formset errors:", formset.errors)
+                error_text = form.errors.as_text().replace('\n', ' ')
+                error_messages.append(f"Lỗi trong form chính: {error_text}")
+            for i, detail_form in enumerate(formset.forms):
+                if detail_form.errors:
+                    error_text = detail_form.errors.as_text().replace('\n', ' ')
+                    error_messages.append(f"Lỗi trong chi tiết {error_text}")
+            messages.error(request, "Có lỗi xảy ra, vui lòng kiểm tra lại: " + " ".join(error_messages))
 
     categories = ProductCategory.objects.all()
     products = Product.objects.all()
     customers = Customer.objects.all()
-    employees = User.objects.filter(is_superuser=False)
     product_details = ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE")
 
     context = {
@@ -146,7 +174,6 @@ def stock_out_update(request, pk=None):
         'products': products,
         'product_details': product_details,
         'customers': customers,
-        'employees': employees,
     }
     return render(request, 'stock_out/stock_out_update.html', context)
 
@@ -173,7 +200,7 @@ def export_all_stockout_excel(request):
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
 
-    stock_outs = StockOut.objects.all().select_related('customer', 'employee').prefetch_related(
+    stock_outs = StockOut.objects.all().select_related('customer', 'created_by').prefetch_related(
         'stockoutdetail_set__product', 'stockoutdetail_set__product_detail'
     )
 
@@ -222,11 +249,11 @@ def export_all_stockout_excel(request):
                 'Số tiền đã trả': stock_out.amount_paid,
                 'Nợ còn lại': stock_out.remaining_debt(),
                 'Ghi chú': stock_out.notes or '',
-                'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+                'Nhân viên': stock_out.created_by.username if stock_out.created_by else 'N/A',
                 'Sản phẩm': detail.product.product_name,
                 'Lô sản phẩm': detail.product_detail.product_batch,
                 'Số lượng': detail.quantity,
-                'Giá bán': detail.product.selling_price,
+                'Giá bán': detail.selling_price,
                 'Chiết khấu (%)': detail.discount,
                 'Tổng tiền chi tiết': detail.quantity * detail.product.selling_price * (1 - detail.discount / 100),
             })
@@ -273,11 +300,11 @@ def export_single_stockout_excel(request, stockout_id):
             'Số tiền đã trả': stock_out.amount_paid,
             'Nợ còn lại': stock_out.remaining_debt(),
             'Ghi chú': stock_out.notes or '',
-            'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+            'Nhân viên': stock_out.created_by.username if stock_out.created_by else 'N/A',
             'Sản phẩm': detail.product.product_name,
             'Lô sản phẩm': detail.product_detail.product_batch,
             'Số lượng': detail.quantity,
-            'Giá bán': detail.product.selling_price,
+            'Giá bán': detail.selling_price,
             'Chiết khấu (%)': detail.discount,
             'Tổng tiền chi tiết': detail.quantity * detail.product.selling_price * (1 - detail.discount / 100),
         })
@@ -291,7 +318,7 @@ def export_single_stockout_excel(request, stockout_id):
             'Số tiền đã trả': stock_out.amount_paid,
             'Nợ còn lại': stock_out.remaining_debt(),
             'Ghi chú': stock_out.notes or '',
-            'Nhân viên': stock_out.employee.username if stock_out.employee else 'N/A',
+            'Nhân viên': stock_out.created_by.username if stock_out.created_by else 'N/A',
             'Sản phẩm': '',
             'Lô sản phẩm': '',
             'Số lượng': 0,
@@ -363,7 +390,7 @@ def import_stockout(request):
                                 'payment_status': stockout_data['Trạng thái thanh toán'].upper(),
                                 'notes': stockout_data['Ghi chú'] if pd.notna(stockout_data['Ghi chú']) else '',
                                 'customer': customer,
-                                'employee': employee,
+                                'created_by': employee,
                             }
                         )
 
@@ -373,7 +400,8 @@ def import_stockout(request):
                             stockout.payment_status = stockout_data['Trạng thái thanh toán'].upper()
                             stockout.notes = stockout_data['Ghi chú'] if pd.notna(stockout_data['Ghi chú']) else ''
                             stockout.customer = customer
-                            stockout.employee = employee
+                            stockout.created_by = employee
+                            stockout.updated_by = employee
                             stockout.save()
 
                         for _, row in group.iterrows():

@@ -21,6 +21,7 @@
             <table class="table table-bordered align-middle text-center">
                 <thead class="table-light">
                     <tr>
+                        <th>Mã</th>
                         <th scope="col">Tên đơn vị</th>
                         <th scope="col">Kí hiệu</th>
                         <th scope="col">Thao tác</th>
@@ -29,6 +30,7 @@
                 <tbody>
                     {% for unit in units %}
                     <tr>
+                        <td>#{{ unit.id }}</td>
                         <td>{{ unit.unit_name }}</td>
                         <td>{{ unit.unit_symbol }}</td>
                         <td>

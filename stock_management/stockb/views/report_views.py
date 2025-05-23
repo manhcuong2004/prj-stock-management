@@ -8,6 +8,8 @@ from django.db.models import Sum, F, ExpressionWrapper
 from django.utils import timezone
 
 from ..models import StockOut, StockOutDetail, Customer, Product, StockIn, StockInDetail, ProductCategory, ProductDetail
+
+
 @login_required
 def report_overview(request):
     today = timezone.now()
@@ -32,59 +34,40 @@ def report_overview(request):
     ).count()
     so_don_hang_nhap_change = so_don_hang_nhap - so_don_hang_nhap_last_month
 
+    stock_ins = StockIn.objects.filter(
+        import_date__range=(start_date, end_date)
+    ).prefetch_related('details')
+    gia_tri_nhap_kho = sum(stock_in.total_amount() for stock_in in stock_ins) or 0
 
-
-    gia_tri_nhap_kho = StockInDetail.objects.filter(
-        import_record__import_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
-    gia_tri_nhap_kho_last_month = StockInDetail.objects.filter(
-        import_record__import_date__range=(
+    stock_ins_last_month = StockIn.objects.filter(
+        import_date__range=(
             (start_date - datetime.timedelta(days=30)).replace(day=1),
             start_date - datetime.timedelta(days=1)
         )
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    ).prefetch_related('details')
+    gia_tri_nhap_kho_last_month = sum(stock_in.total_amount() for stock_in in stock_ins_last_month) or 0
     gia_tri_nhap_kho_change = gia_tri_nhap_kho - gia_tri_nhap_kho_last_month
 
-    gia_tri_xuat_kho = StockOutDetail.objects.filter(
-        export_record__export_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    stock_outs = StockOut.objects.filter(
+        export_date__range=(start_date, end_date)
+    ).prefetch_related('stockoutdetail_set')
+    gia_tri_xuat_kho = sum(stock_out.total_amount() for stock_out in stock_outs) or 0
 
     no_phai_tra = 0
-    stock_ins = StockIn.objects.filter(
+    stock_ins_unpaid = StockIn.objects.filter(
         payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
         import_date__range=(start_date, end_date)
-    )
-    for stock_in in stock_ins:
+    ).prefetch_related('details')
+    for stock_in in stock_ins_unpaid:
         total = stock_in.total_amount()
         no_phai_tra += total - stock_in.amount_paid
 
     no_phai_thu = 0
-    stock_outs = StockOut.objects.filter(
+    stock_outs_unpaid = StockOut.objects.filter(
         payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
         export_date__range=(start_date, end_date)
-    )
-    for stock_out in stock_outs:
+    ).prefetch_related('stockoutdetail_set')
+    for stock_out in stock_outs_unpaid:
         total = stock_out.total_amount()
         no_phai_thu += total - stock_out.amount_paid
 
@@ -107,28 +90,16 @@ def report_overview(request):
     for i in range(3, -1, -1):
         month_start = (today - datetime.timedelta(days=30 * i)).replace(day=1)
         month_end = (month_start + datetime.timedelta(days=31)).replace(day=1) - datetime.timedelta(days=1)
+        stock_ins_month = StockIn.objects.filter(
+            import_date__range=(month_start, month_end)
+        ).prefetch_related('details')
+        stock_outs_month = StockOut.objects.filter(
+            export_date__range=(month_start, month_end)
+        ).prefetch_related('stockoutdetail_set')
         months.append({
             'name': f"T{i+1}",
-            'nhapKho': StockInDetail.objects.filter(
-                import_record__import_date__range=(month_start, month_end)
-            ).aggregate(
-                total=Sum(
-                    ExpressionWrapper(
-                        F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                        output_field=DecimalField()
-                    )
-                )
-            )['total'] or 0,
-            'xuatKho': StockOutDetail.objects.filter(
-                export_record__export_date__range=(month_start, month_end)
-            ).aggregate(
-                total=Sum(
-                    ExpressionWrapper(
-                        F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                        output_field=DecimalField()
-                    )
-                )
-            )['total'] or 0
+            'nhapKho': sum(stock_in.total_amount() for stock_in in stock_ins_month) or 0,
+            'xuatKho': sum(stock_out.total_amount() for stock_out in stock_outs_month) or 0
         })
 
     context = {
@@ -148,6 +119,7 @@ def report_overview(request):
         'inventory_trend_data': months,
     }
     return render(request, 'report/overview.html', context)
+
 @login_required
 def ajax_dashboard_stats(request):
     date_range = request.GET.get('dateRange')
@@ -162,45 +134,31 @@ def ajax_dashboard_stats(request):
 
     so_don_hang_nhap = StockIn.objects.filter(import_date__range=(start_date, end_date)).count()
 
+    stock_ins = StockIn.objects.filter(
+        import_date__range=(start_date, end_date)
+    ).prefetch_related('details')
+    gia_tri_nhap_kho = sum(stock_in.total_amount() for stock_in in stock_ins) or 0
 
-
-    gia_tri_nhap_kho = StockInDetail.objects.filter(
-        import_record__import_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
-
-    gia_tri_xuat_kho = StockOutDetail.objects.filter(
-        export_record__export_date__range=(start_date, end_date)
-    ).aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                output_field=DecimalField()
-            )
-        )
-    )['total'] or 0
+    stock_outs = StockOut.objects.filter(
+        export_date__range=(start_date, end_date)
+    ).prefetch_related('stockoutdetail_set')
+    gia_tri_xuat_kho = sum(stock_out.total_amount() for stock_out in stock_outs) or 0
 
     no_phai_tra = 0
-    stock_ins = StockIn.objects.filter(
+    stock_ins_unpaid = StockIn.objects.filter(
         payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
         import_date__range=(start_date, end_date)
-    )
-    for stock_in in stock_ins:
+    ).prefetch_related('details')
+    for stock_in in stock_ins_unpaid:
         total = stock_in.total_amount()
         no_phai_tra += total - stock_in.amount_paid
 
     no_phai_thu = 0
-    stock_outs = StockOut.objects.filter(
+    stock_outs_unpaid = StockOut.objects.filter(
         payment_status__in=['UNPAID', 'PARTIALLY_PAID'],
         export_date__range=(start_date, end_date)
-    )
-    for stock_out in stock_outs:
+    ).prefetch_related('stockoutdetail_set')
+    for stock_out in stock_outs_unpaid:
         total = stock_out.total_amount()
         no_phai_thu += total - stock_out.amount_paid
 
@@ -223,33 +181,21 @@ def ajax_dashboard_stats(request):
     for i in range(3, -1, -1):
         month_start = (start_date - datetime.timedelta(days=30 * i)).replace(day=1)
         month_end = (month_start + datetime.timedelta(days=31)).replace(day=1) - datetime.timedelta(days=1)
+        stock_ins_month = StockIn.objects.filter(
+            import_date__range=(month_start, month_end)
+        ).prefetch_related('details')
+        stock_outs_month = StockOut.objects.filter(
+            export_date__range=(month_start, month_end)
+        ).prefetch_related('stockoutdetail_set')
         months.append({
             'name': f"T{i+1}",
-            'nhapKho': StockInDetail.objects.filter(
-                import_record__import_date__range=(month_start, month_end)
-            ).aggregate(
-                total=Sum(
-                    ExpressionWrapper(
-                        F('quantity') * F('product__purchase_price') * (1 - F('discount') / 100),
-                        output_field=DecimalField()
-                    )
-                )
-            )['total'] or 0,
-            'xuatKho': StockOutDetail.objects.filter(
-                export_record__export_date__range=(month_start, month_end)
-            ).aggregate(
-                total=Sum(
-                    ExpressionWrapper(
-                        F('quantity') * F('product__selling_price') * (1 - F('discount') / 100),
-                        output_field=DecimalField()
-                    )
-                )
-            )['total'] or 0
+            'nhapKho': sum(stock_in.total_amount() for stock_in in stock_ins_month) or 0,
+            'xuatKho': sum(stock_out.total_amount() for stock_out in stock_outs_month) or 0
         })
 
     return JsonResponse({
         'so_don_hang_xuat': so_don_hang_xuat,
-        'so_don_hang_nhap':so_don_hang_nhap,
+        'so_don_hang_nhap': so_don_hang_nhap,
         'gia_tri_nhap_kho': float(gia_tri_nhap_kho) if gia_tri_nhap_kho else 0,
         'gia_tri_xuat_kho': float(gia_tri_xuat_kho) if gia_tri_xuat_kho else 0,
         'no_phai_tra': float(no_phai_tra) if no_phai_tra else 0,

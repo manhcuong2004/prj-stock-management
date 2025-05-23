@@ -85,7 +85,7 @@
             <tbody>
               <tr>
                 <td>#{{item.id}}</td>
-                <td>{{item.import_date|date:"d/m/Y H:i A"}}</td>
+                <td>{{item.import_date|date:"d/m/Y"}}</td>
                 <td>{{item.supplier}}</td>
                 <td>
                   {% if item.payment_status == "PAID" %}
@@ -96,7 +96,7 @@
                     <span class="badge bg-danger">Chưa thanh toán</span>
                   {% endif %}
                 </td>
-                <td>{{ item.total_amount|intcomma }}đ</td>
+                <td>{{ item.total_amount|floatformat:0|intcomma }}đ</td>
                 <td>
                   <a href="{% url 'export_single_stockin' stockin_id=item.id %}" class="btn btn-sm btn-outline-secondary">Xuất</a>
                   <a href="{% url 'stock_in_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>

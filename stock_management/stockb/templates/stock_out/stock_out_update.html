@@ -13,9 +13,9 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <div class="order-code">MÃ <span class="text-dark">#{% if form.instance.pk %}{{ form.instance.pk }}{% else %}Mới{% endif %}</span></div>
-                <small class="text-muted">
-                    {% if form.instance.export_date %}
-                        {{ form.instance.export_date|date:"d/m/Y H:i A" }}
+                <small class="text-muted">NGÀY TẠO PHIẾU:
+                    {% if form.instance.created_at %}
+                        {{ form.instance.created_at|date:"d/m/Y H:i A" }}
                     {% else %}
                         {% now "d/m/Y H:i A" %}
                     {% endif %}
@@ -91,12 +91,16 @@
                                             {{ detail_form.quantity }}
                                         </td>
                                         <td>
-                                            <span class="price" data-price="{% for detail in product_details %}{% if detail.id == detail_form.product_detail.value|add:0 %}{{ detail.product.selling_price }}{% endif %}{% endfor %}">
-                                                {% for detail in product_details %}
-                                                    {% if detail.id == detail_form.product_detail.value|add:0 %}
-                                                        {{ detail.product.selling_price|floatformat:0|intcomma }} đ
-                                                    {% endif %}
-                                                {% endfor %}
+                                            <span class="price" data-price="{% if detail_form.instance.pk %}{{ detail_form.instance.selling_price|default:detail_form.instance.product.selling_price }}{% else %}{% for detail in product_details %}{% if detail.id == detail_form.product_detail.value|add:0 %}{{ detail.product.selling_price }}{% endif %}{% endfor %}{% endif %}">
+                                                {% if detail_form.instance.pk %}
+                                                    {{ detail_form.instance.selling_price|default:detail_form.instance.product.selling_price|floatformat:0|intcomma }} đ
+                                                {% else %}
+                                                    {% for detail in product_details %}
+                                                        {% if detail.id == detail_form.product_detail.value|add:0 %}
+                                                            {{ detail.product.selling_price|floatformat:0|intcomma }} đ
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
                                             </span>
                                         </td>
                                         <td>
@@ -208,10 +212,6 @@
                         {{ form.export_date }}
                     </div>
                     <div class="summary-box">
-                        <div class="mb-2">
-                            <label class="form-label">Trạng thái đơn hàng</label>
-                            {{ form.export_status }}
-                        </div>
                         <div>
                             <label class="form-label">Trạng thái thanh toán</label>
                             {{ form.payment_status }}
@@ -537,7 +537,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Khởi tạo trạng thái ban đầu
             resetProductAndBatchSelects();
             updateRowTotals();
             updateSummary();

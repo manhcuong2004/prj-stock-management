@@ -98,7 +98,7 @@
                     <span class="badge bg-danger">Chưa thanh toán</span>
                   {% endif %}
                 </td>
-                <td>{{ item.total_amount|intcomma }}đ</td>
+                <td>{{ item.total_amount|floatformat:0|intcomma }}đ</td>
                 <td>
                   <a href="{% url 'export_single_stockout' stockout_id=item.id %}" class="btn btn-sm btn-outline-secondary">Xuất</a>
                   <a href="{% url 'stock_out_update' item.id %}" class="btn btn-sm btn-outline-primary">Xem</a>

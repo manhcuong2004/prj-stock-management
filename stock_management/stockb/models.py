@@ -106,7 +106,7 @@ class StockIn(models.Model):
 
     def total_amount(self):
         total = sum(
-            detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100)
+            detail.quantity * detail.purchase_price * (1 - detail.discount / 100)
             for detail in self.details.all()
         )
         return total
@@ -152,7 +152,7 @@ class StockOut(models.Model):
 
     def total_amount(self):
         total = sum(
-            detail.quantity * detail.product.selling_price * (1 - detail.discount / 100)
+            detail.quantity * detail.selling_price * (1 - detail.discount / 100)
             for detail in self.stockoutdetail_set.all()
         )
         return total
@@ -168,12 +168,18 @@ class StockInDetail(models.Model):
     import_record = models.ForeignKey(StockIn, on_delete=models.CASCADE, related_name='details')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=0)
     product_detail = models.OneToOneField('ProductDetail', on_delete=models.CASCADE,related_name='stock_in_details')
     discount = models.DecimalField(max_digits=5,
                                    decimal_places=2,
                                    default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.purchase_price:
+            self.purchase_price = self.product.purchase_price
+        super().save(*args, **kwargs)
 
 
 
@@ -233,11 +239,13 @@ class StockOutDetail(models.Model):
                                       on_delete=models.CASCADE,
                                       related_name='product_details')
     amount_paid = models.DecimalField(max_digits=20, decimal_places=0, default=0)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=0)
     discount = models.DecimalField(max_digits=5,
                                    decimal_places=2,
                                    default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     def save(self, *args, **kwargs):
         old_quantity = 0
@@ -251,7 +259,8 @@ class StockOutDetail(models.Model):
             except StockOutDetail.DoesNotExist:
                 old_quantity = 0
                 old_product_detail = None
-
+        if not self.selling_price:
+            self.selling_price = self.product.selling_price
         quantity_diff = self.quantity - old_quantity
 
         if quantity_diff > self.product_detail.remaining_quantity:
@@ -280,7 +289,6 @@ class StockOutDetail(models.Model):
 
 class InventoryCheck(models.Model):
     check_date = models.DateTimeField(default=timezone.now)
-
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,

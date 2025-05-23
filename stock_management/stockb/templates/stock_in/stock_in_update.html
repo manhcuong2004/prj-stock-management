@@ -13,9 +13,9 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <div class="order-code">MÃ <span class="text-dark">#{% if form.instance.pk %}{{ form.instance.pk }}{% else %}Mới{% endif %}</span></div>
-                <small class="text-muted">
-                    {% if form.instance.import_date %}
-                        {{ form.instance.import_date|date:"d/m/Y H:i A" }}
+                <small class="text-muted">NGÀY TẠO PHIẾU:
+                    {% if form.instance.created_at %}
+                        {{ form.instance.created_at|date:"d/m/Y H:i A" }}
                     {% else %}
                         {% now "d/m/Y H:i A" %}
                     {% endif %}
@@ -83,12 +83,16 @@
                                             {{ detail_form.quantity }}
                                         </td>
                                         <td>
-                                            <span class="price" data-price="{% for product in products %}{% if product.id == detail_form.product.value|add:0 %}{{ product.purchase_price }}{% endif %}{% endfor %}">
-                                                {% for product in products %}
-                                                    {% if product.id == detail_form.product.value|add:0 %}
-                                                        {{ product.purchase_price|floatformat:0|intcomma }} đ
-                                                    {% endif %}
-                                                {% endfor %}
+                                            <span class="price" data-price="{% if detail_form.instance.pk %}{{ detail_form.instance.purchase_price|default:detail_form.instance.product.purchase_price }}{% else %}{% for product in products %}{% if product.id == detail_form.product.value|add:0 %}{{ product.purchase_price }}{% endif %}{% endfor %}{% endif %}">
+                                                {% if detail_form.instance.pk %}
+                                                    {{ detail_form.instance.purchase_price|default:detail_form.instance.product.purchase_price|floatformat:0|intcomma }} đ
+                                                {% else %}
+                                                    {% for product in products %}
+                                                        {% if product.id == detail_form.product.value|add:0 %}
+                                                            {{ product.purchase_price|floatformat:0|intcomma }} đ
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
                                             </span>
                                         </td>
                                         <td>
@@ -210,11 +214,9 @@
     </div>
 
     <script>
-        // Đếm số hàng thực tế hiển thị
         let initialRows = document.querySelectorAll('.product-row').length;
         let formIndex = initialRows;
 
-        // Cập nhật TOTAL_FORMS ban đầu
         document.querySelector('#id_stockindetail_set-TOTAL_FORMS').value = initialRows;
 
         const productData = [
@@ -223,7 +225,7 @@
                     id: {{ product.id }},
                     name: "{{ product.product_name|escapejs }}",
                     category_id: {{ product.category.id }},
-                    purchase_price: {{ product.purchase_price|floatformat:2 }}
+                    purchase_price:{{ product.purchase_price|floatformat:2 }},
                 },
             {% endfor %}
         ];
@@ -234,7 +236,6 @@
         const productBatchInput = document.getElementById('product-batch');
         const addButton = document.getElementById('add-product-btn');
 
-        // Hàm làm mới product-select và product-batch
         function resetProductInputs() {
             productSelect.innerHTML = '<option value="">Chọn sản phẩm</option>';
             productSelect.disabled = true;
@@ -242,7 +243,6 @@
             addButton.disabled = true;
         }
 
-        // Xử lý sự kiện khi thay đổi danh mục
         categorySelect.addEventListener('change', function() {
             const categoryId = this.value;
             resetProductInputs();
@@ -264,7 +264,6 @@
             }
         });
 
-        // Xử lý sự kiện khi thay đổi sản phẩm hoặc mã lô
         function updateAddButtonState() {
             addButton.disabled = !(productSelect.value && productBatchInput.value.trim());
         }
@@ -272,7 +271,6 @@
         productSelect.addEventListener('change', updateAddButtonState);
         productBatchInput.addEventListener('input', updateAddButtonState);
 
-        // Xử lý thêm sản phẩm
         document.getElementById('add-product-btn').addEventListener('click', function(event) {
             event.preventDefault();
             const productId = productSelect.value;
@@ -360,8 +358,6 @@
                 const totalForms = document.querySelector('#id_stockindetail_set-TOTAL_FORMS');
                 totalForms.value = parseInt(totalForms.value) + 1;
                 formIndex++;
-
-                // Làm mới các trường sau khi thêm
                 categorySelect.value = '';
                 resetProductInputs();
 
@@ -426,7 +422,7 @@
                 }
 
                 const quantity = parseFloat(quantityInput.value) || 0;
-                const price = parseFloat(priceElement.dataset.price) || 0;
+                const price = parseFloat(priceElement.dataset.price) || 0; // Đảm bảo giá trị mặc định
                 const discount = parseFloat(discountInput.value) || 0;
                 const total = quantity * price * (1 - discount / 100);
                 row.querySelector('.total').textContent = total.toLocaleString('vi-VN') + ' đ';
@@ -460,7 +456,7 @@
                 }
 
                 const quantity = parseFloat(quantityInput.value) || 0;
-                const price = parseFloat(priceElement.dataset.price) || 0;
+                const price = parseFloat(priceElement.dataset.price) || 0; // Đảm bảo giá trị mặc định
                 const discount = parseFloat(discountInput.value) || 0;
                 const total = quantity * price * (1 - discount / 100);
 
@@ -496,9 +492,9 @@
             document.querySelectorAll('.product-row').forEach(row => {
                 const batchInput = row.querySelector('input[name$="-product_batch"]');
                 if (batchInput && batchInput.value) {
-                    batchInput.setAttribute('value', batchInput.value); // Đảm bảo giá trị hiển thị
+                    batchInput.setAttribute('value', batchInput.value);
                 } else if (batchInput) {
-                    console.log('Batch input is empty:', batchInput.name); // Debug nếu input trống
+                    console.log('Batch input is empty:', batchInput.name);
                 }
             });
         });
@@ -506,7 +502,7 @@
         document.getElementById('order-form').addEventListener('submit', function(event) {
             const totalForms = document.querySelector('#id_stockindetail_set-TOTAL_FORMS');
             const rows = document.querySelectorAll('.product-row');
-            totalForms.value = rows.length; // Bao gồm cả các hàng bị đánh dấu DELETE
+            totalForms.value = rows.length;
             console.log('Submitting form, TOTAL_FORMS:', totalForms.value);
             console.log('Form data:', new FormData(this));
             if (!confirm('Bạn có chắc muốn lưu đơn nhập kho này?')) {

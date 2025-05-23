@@ -35,9 +35,11 @@ def inventory_check_list(request):
 def inventory_check_update(request, pk=None):
     if pk:
         inventory_check = get_object_or_404(InventoryCheck, pk=pk)
+
         action = "Cập nhật"
     else:
         inventory_check = InventoryCheck()
+        inventory_check.created_by = request.user
         action = "Thêm"
 
     form = InventoryCheckForm(request.POST or None, instance=inventory_check)
@@ -48,6 +50,9 @@ def inventory_check_update(request, pk=None):
             inventory_check = form.save(commit=False)
             if not inventory_check.check_date:
                 inventory_check.check_date = timezone.now()
+
+            inventory_check.updated_by = request.user
+            inventory_check.updated_at = timezone.now()
             inventory_check.save()
 
             instances = formset.save(commit=False)
@@ -80,7 +85,6 @@ def inventory_check_update(request, pk=None):
 
     categories = ProductCategory.objects.all()
     products = Product.objects.select_related('category').all()
-    employees = User.objects.filter(is_superuser=False)
     product_details = ProductDetail.objects.filter(remaining_quantity__gt=0, status="ACTIVE")
 
     context = {
@@ -90,7 +94,6 @@ def inventory_check_update(request, pk=None):
         'categories': categories,
         'products': products,
         'product_details': product_details,
-        'employees': employees,
     }
     return render(request, 'inventory/inventory_check_update.html', context)
 

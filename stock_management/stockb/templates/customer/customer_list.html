@@ -38,7 +38,7 @@
                     <tbody>
                         {% for customer in customers %}
                         <tr>
-                            <td>{{ customer.id }}</td>
+                            <td>#{{ customer.id }}</td>
                             <td>{{ customer.last_name }} {{ customer.first_name }}</td>
                             <td>{{ customer.phone }}</td>
                             <td>{{ customer.email|default:"Không có" }}</td>

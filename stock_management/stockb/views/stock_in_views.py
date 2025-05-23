@@ -82,17 +82,30 @@ def stock_in_update(request, pk=None):
     if request.method == "POST":
         if form.is_valid() and formset.is_valid():
             stock_in = form.save(commit=False)
-            if not stock_in.import_date:
-                stock_in.import_date = timezone.now()
+
+            stock_in.created_by = request.user if not stock_in else stock_in.created_by
+            stock_in.updated_by = request.user
+            stock_in.updated_at = timezone.now()
             stock_in.save()
 
             for detail_form in formset:
                 if detail_form.cleaned_data:
                     if detail_form.cleaned_data.get('DELETE', False):
                         if detail_form.instance.pk:
-                            if detail_form.instance.product_detail:
-                                detail_form.instance.product_detail.delete()
-                            detail_form.instance.delete()
+                            try:
+                                if detail_form.instance.product_detail:
+                                    detail_form.instance.product_detail.delete()
+                                detail_form.instance.delete()
+                            except Exception as e:
+                                messages.error(request, f"Lỗi khi xóa chi tiết: {str(e)}")
+                                return render(request, 'stock_in/stock_in_update.html', {
+                                    'title': 'Chỉnh sửa đơn nhập kho' if pk else 'Tạo mới đơn nhập kho',
+                                    'form': form,
+                                    'formset': formset,
+                                    'categories': ProductCategory.objects.all(),
+                                    'products': Product.objects.all(),
+                                    'suppliers': Supplier.objects.all(),
+                                })
                         continue
 
                     detail = detail_form.save(commit=False)
@@ -102,15 +115,23 @@ def stock_in_update(request, pk=None):
                     quantity = detail_form.cleaned_data.get('quantity')
 
                     if not (product and product_batch and quantity):
-                        detail_form.add_error(None, "Thông tin sản phẩm, mã lô hoặc số lượng không hợp lệ.")
-                        continue
+                        messages.error(request, "Thông tin sản phẩm, mã lô hoặc số lượng không hợp lệ.")
+                        return render(request, 'stock_in/stock_in_update.html', {
+                            'title': 'Chỉnh sửa đơn nhập kho' if pk else 'Tạo mới đơn nhập kho',
+                            'form': form,
+                            'formset': formset,
+                            'categories': ProductCategory.objects.all(),
+                            'products': Product.objects.all(),
+                            'suppliers': Supplier.objects.all(),
+                        })
+
 
                     if detail.pk and detail.product_detail:
                         product_detail = detail.product_detail
                         product_detail.product_batch = product_batch
                         product_detail.initial_quantity = quantity
                         product_detail.remaining_quantity = quantity
-                        product_detail.import_date = stock_in.import_date
+                        product_detail.import_date = stock_in.import_date or timezone.now().date()
                         product_detail.save()
                     else:
                         product_detail = ProductDetail(
@@ -118,16 +139,27 @@ def stock_in_update(request, pk=None):
                             product_batch=product_batch,
                             initial_quantity=quantity,
                             remaining_quantity=quantity,
-                            import_date=stock_in.import_date or timezone.now(),
+                            import_date=stock_in.import_date or timezone.now().date(),
                             status='ACTIVE'
                         )
                         product_detail.save()
 
                     detail.product_detail = product_detail
-                    detail.save()
+                    try:
+                        detail.save()
+                    except ValueError as e:
+                        messages.error(request, f"Lỗi khi lưu chi tiết: {str(e)}")
+                        return render(request, 'stock_in/stock_in_update.html', {
+                            'title': 'Chỉnh sửa đơn nhập kho' if pk else 'Tạo mới đơn nhập kho',
+                            'form': form,
+                            'formset': formset,
+                            'categories': ProductCategory.objects.all(),
+                            'products': Product.objects.all(),
+                            'suppliers': Supplier.objects.all(),
+                        })
 
             if not any(formset.errors):
-                messages.success(request, f'{action.capitalize()} đơn nhập kho thành công!')
+                messages.success(request, f'{action.capitalize()} đơn nhập kho ID {stock_in.id} thành công!')
                 Notification.objects.create(
                     message=f"{action} đơn nhập kho ID {stock_in.id} thành công!",
                     employee=request.user,
@@ -135,15 +167,21 @@ def stock_in_update(request, pk=None):
                     is_read=False
                 )
                 return redirect('stock_in')
-        else:
-            messages.error(request, "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin nhập vào.")
-            print("Form errors:", form.errors)
-            print("Formset errors:", formset.errors)
+            else:
+                error_messages = []
+                if form.errors:
+                    error_text = form.errors.as_text().replace('\n', ' ')
+                    error_messages.append(f"Lỗi trong form chính: {error_text}")
+                for i, detail_form in enumerate(formset.forms):
+                    if detail_form.errors:
+                        error_text = detail_form.errors.as_text().replace('\n', ' ')
+                        error_messages.append(f"Lỗi trong chi tiết {error_text}")
+                messages.error(request, "Có lỗi xảy ra, vui lòng kiểm tra lại: " + " ".join(error_messages))
+
 
     categories = ProductCategory.objects.all()
     products = Product.objects.all()
     suppliers = Supplier.objects.all()
-    employees = User.objects.filter(is_superuser=False)
 
     context = {
         'title': 'Chỉnh sửa đơn nhập kho' if pk else 'Tạo mới đơn nhập kho',
@@ -152,7 +190,6 @@ def stock_in_update(request, pk=None):
         'categories': categories,
         'products': products,
         'suppliers': suppliers,
-        'employees': employees,
     }
     return render(request, 'stock_in/stock_in_update.html', context)
 
@@ -179,7 +216,7 @@ def export_all_stockin_excel(request):
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
 
-    stock_ins = StockIn.objects.all().select_related('supplier', 'employee').prefetch_related('details__product', 'details__product_detail')
+    stock_ins = StockIn.objects.all().select_related('supplier', 'created_by').prefetch_related('details__product', 'details__product_detail')
 
     if filter_type == 'partially_paid':
         stock_ins = stock_ins.filter(payment_status='PARTIALLY_PAID')
@@ -226,11 +263,11 @@ def export_all_stockin_excel(request):
                 'Số tiền đã trả': stock_in.amount_paid,
                 'Nợ còn lại': stock_in.remaining_debt(),
                 'Ghi chú': stock_in.notes or '',
-                'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+                'Nhân viên': stock_in.created_by.username if stock_in.created_by else 'N/A',
                 'Sản phẩm': detail.product.product_name,
                 'Lô sản phẩm': detail.product_detail.product_batch,
                 'Số lượng': detail.quantity,
-                'Giá nhập': detail.product.purchase_price,
+                'Giá nhập': detail.purchase_price,
                 'Chiết khấu (%)': detail.discount,
                 'Tổng tiền chi tiết': detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100),
             })
@@ -244,7 +281,7 @@ def export_all_stockin_excel(request):
                 'Số tiền đã trả': stock_in.amount_paid,
                 'Nợ còn lại': stock_in.remaining_debt(),
                 'Ghi chú': stock_in.notes or '',
-                'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+                'Nhân viên': stock_in.created_by.username if stock_in.created_by else 'N/A',
                 'Sản phẩm': '',
                 'Lô sản phẩm': '',
                 'Số lượng': 0,
@@ -276,11 +313,11 @@ def export_single_stockin_excel(request, stockin_id):
             'Số tiền đã trả': stock_in.amount_paid,
             'Nợ còn lại': stock_in.remaining_debt(),
             'Ghi chú': stock_in.notes or '',
-            'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+            'Nhân viên': stock_in.created_by.username if stock_in.created_by else 'N/A',
             'Sản phẩm': detail.product.product_name,
             'Lô sản phẩm': detail.product_detail.product_batch,
             'Số lượng': detail.quantity,
-            'Giá nhập': detail.product.purchase_price,
+            'Giá nhập': detail.purchase_price,
             'Chiết khấu (%)': detail.discount,
             'Tổng tiền chi tiết': detail.quantity * detail.product.purchase_price * (1 - detail.discount / 100),
         })
@@ -294,7 +331,7 @@ def export_single_stockin_excel(request, stockin_id):
             'Số tiền đã trả': stock_in.amount_paid,
             'Nợ còn lại': stock_in.remaining_debt(),
             'Ghi chú': stock_in.notes or '',
-            'Nhân viên': stock_in.employee.username if stock_in.employee else 'N/A',
+            'Nhân viên': stock_in.created_by.username if stock_in.created_by else 'N/A',
             'Sản phẩm': '',
             'Lô sản phẩm': '',
             'Số lượng': 0,

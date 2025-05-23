@@ -5,11 +5,14 @@ from django.contrib.auth.models import User, Group
 
 
 class StockOutForm(forms.ModelForm):
+    export_date = forms.DateField(
+        input_formats=['%d/%m/%Y','%Y-%m-%d'],
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
     class Meta:
         model = StockOut
         fields = ['export_date', 'notes', 'customer', 'payment_status', 'amount_paid']
         widgets = {
-            'export_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn hàng'}),
             'customer': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
@@ -65,11 +68,14 @@ StockOutDetailFormSet = forms.inlineformset_factory(
 )
 
 class StockInForm(forms.ModelForm):
+    import_date = forms.DateField(
+        input_formats=['%d/%m/%Y','%Y-%m-%d'],
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
     class Meta:
         model = StockIn
         fields = ['import_date','notes', 'supplier', 'payment_status', 'amount_paid']
         widgets = {
-            'import_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': 'form-control mb-2', 'placeholder': 'Thêm ghi chú cho đơn nhập kho'}),
             'supplier': forms.Select(attrs={'class': 'form-select'}),
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
