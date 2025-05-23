@@ -128,12 +128,12 @@
     left: 0;
     padding-top: 20px;
     overflow-y: auto;
-    z-index: 1000;
     border-right: 1px solid #dee2e6;
 }
 
 .sidebar.sidebar-collapsed {
     width: 70px;
+
 }
 
 .sidebar.sidebar-collapsed .menu-text {
@@ -176,6 +176,9 @@
     background-color: #34495e;
     color: #ffffff;
 }
+
+
+
 /* Main Content */
 .main-content {
     margin-left: 250px;
@@ -184,10 +187,11 @@
     background: #F5F3F3;
     min-height: 100vh ;
     width: calc(100% - 250px);
+    transition: margin-left 0.0s;
 }
 
 .main-content.expanded {
-    margin-left: 0;
+    margin-left: 5vh;
     width: 100%;
 }
 
