@@ -115,7 +115,6 @@
 .name-user .dropdown-menu {
     margin-top: 40px;
     left: 50%;
-    transform: translateX(-50%);
 }
 
 /* Sidebar */
@@ -129,13 +128,16 @@
     left: 0;
     padding-top: 20px;
     overflow-y: auto;
-    transition: transform 0.3s ease;
     z-index: 1000;
     border-right: 1px solid #dee2e6;
 }
 
 .sidebar.sidebar-collapsed {
-    transform: translateX(-100%);
+    width: 70px;
+}
+
+.sidebar.sidebar-collapsed .menu-text {
+    display: none;
 }
 
 .sidebar a {
@@ -143,37 +145,37 @@
     text-decoration: none;
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 10px 20px;
     font-weight: 500;
-    transition: background-color 0.2s;
 }
 
-.sidebar a:hover,
-.sidebar a[aria-expanded="true"] {
-    background-color: #34495e;
-    border-radius: 5px;
-}
-
-.sidebar .active {
-    background-color: #34495e;
-    font-weight: 600;
+.sidebar.sidebar-collapsed a {
+    justify-content: center;
 }
 
 .sidebar i {
     margin-right: 10px;
     font-size: 1.2rem;
+    min-width: 20px;
+    text-align: center;
 }
 
 .sidebar .submenu {
     color: #bdc3c7;
     font-size: 14px;
-    padding-left: 40px;
+    padding-left: 25px;
 }
 
 .sidebar .submenu:hover {
     background-color: #34495e;
 }
-
+.sidebar.sidebar-collapsed .submenu {
+    padding-left: 5px;
+}
+.sidebar a:hover {
+    background-color: #34495e;
+    color: #ffffff;
+}
 /* Main Content */
 .main-content {
     margin-left: 250px;
@@ -181,7 +183,6 @@
     padding: 20px;
     background: #F5F3F3;
     min-height: 100vh ;
-    transition: margin-left 0.3s ease, width 0.3s ease;
     width: calc(100% - 250px);
 }
 
@@ -195,11 +196,10 @@
     font-size: 1.5rem;
     background: none;
     border: none;
-    color: var(--text-color);
+    color: #DC3545;
     cursor: pointer;
     padding: var(--spacing-sm);
     border-radius: var(--border-radius);
-    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .hamburger:hover,
@@ -209,7 +209,7 @@
     outline: none;
 }
 .hamburger.active {
-    color: #DC3545;
+    color: #000000;
 }
 .hamburger i {
     line-height: 1;

@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const unreadIndicator = document.getElementById('unreadIndicator');
     const notificationList = document.getElementById('notificationList');
 
-    // Hàm lấy CSRF token từ cookie
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -78,17 +77,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error marking notifications as read:', error));
     }
 
-    // Khi nhấn vào icon chuông, đánh dấu đã đọc và ẩn dấu chấm đỏ
     notificationDropdown.addEventListener('click', function() {
         if (unreadIndicator.style.display !== 'none') {
             markNotificationsAsRead();
         }
     });
 
-    // Cập nhật định kỳ (mỗi 30 giây)
     setInterval(fetchNotifications, 30000);
 
-    // Lấy thông báo lần đầu khi tải trang
     fetchNotifications();
 });
 
@@ -96,9 +92,14 @@ document.getElementById('toggleSidebar').addEventListener('click', function () {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.querySelector('.main-content');
     const isExpanded = this.getAttribute('aria-expanded') === 'true';
-    this.classList.toggle('active');
+
+    if (isExpanded) {
+        this.classList.remove('active');
+    } else {
+        this.classList.add('active');
+    }
+
     sidebar.classList.toggle('sidebar-collapsed');
-    sidebar.classList.toggle('active');
     mainContent.classList.toggle('expanded');
     this.setAttribute('aria-expanded', !isExpanded);
 });

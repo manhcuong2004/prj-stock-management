@@ -57,33 +57,33 @@
         </div>
     </div>
 
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar sidebar-collapsed active" id="sidebar">
         <a href="#" data-bs-toggle="collapse" data-bs-target="#sanphamSubmenu" aria-expanded="false">
-            <i class="bi bi-box-seam"></i>Sản phẩm
+            <i class="bi bi-box-seam"></i><span class="menu-text">Sản phẩm</span>
         </a>
         <div class="collapse ms-4" id="sanphamSubmenu">
-            <a href="/product-category" class="submenu"><i class="bi bi-card-checklist"></i>Danh mục sản phẩm</a>
-            <a href="/product" class="submenu"><i class="bi bi-house-door"></i>Sản phẩm trong kho</a>
+            <a href="/product-category" class="submenu"><i class="bi bi-card-checklist"></i><span class="menu-text">Danh mục sản phẩm</span></a>
+            <a href="/product" class="submenu"><i class="bi bi-house-door"></i><span class="menu-text">Sản phẩm trong kho</span></a>
         </div>
-        <a href="/customers"><i class="bi bi-people"></i> Khách hàng</a>
-        <a href="/supplier"><i class="bi bi-person-vcard"></i> Nhà cung cấp</a>
-        <a href="/units"><i class="bi bi-building"></i> Đơn vị</a>
-        <a href="/stock-out"><i class="bi bi-truck"></i> Xuất kho</a>
-        <a href="/stock-in"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
+        <a href="/customers"><i class="bi bi-people"></i><span class="menu-text">Khách hàng</span> </a>
+        <a href="/supplier"><i class="bi bi-person-vcard"></i><span class="menu-text">Nhà cung cấp</span> </a>
+        <a href="/units"><i class="bi bi-building"></i><span class="menu-text">Đơn vị</span></a>
+        <a href="/stock-out"><i class="bi bi-truck"></i><span class="menu-text">Xuất kho</span></a>
+        <a href="/stock-in"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Nhập kho</span></a>
 
         <a href="#" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false">
-            <i class="bi bi-bag-check"></i></i> Kiểm tra sản phẩm
+            <i class="bi bi-bag-check"></i></i><span class="menu-text">Kiểm tra sản phẩm</span>
         </a>
         <div class="collapse ms-4" id="kiemkeSubmenu">
-            <a href="/check/near-expiry" class="submenu"><i class="bi bi-calendar-event"></i>Kiểm tra định kì </a>
-            <a href="/check/low-stock" class="submenu"><i class="bi bi-exclamation-triangle"></i>Gần hết trong kho</a>
+            <a href="/check/near-expiry" class="submenu"><i class="bi bi-calendar-event"></i><span class="menu-text">Kiểm tra định kì</span></a>
+            <a href="/check/low-stock" class="submenu"><i class="bi bi-exclamation-triangle"></i><span class="menu-text">Gần hết trong kho</span></a></a>
         </div>
-        <a href="/inventory-check"><i class="bi bi-clipboard-check"></i>Kiểm kê</a>
-        <a href="/report"><i class="bi bi-file-bar-graph"></i>Báo cáo</a>
-        <a href="/activity-log"><i class="bi bi-clock-history"></i>Lịch sử hoạt động</a>
+        <a href="/inventory-check"><i class="bi bi-clipboard-check"></i><span class="menu-text">Kiểm kê</span></a>
+        <a href="/report"><i class="bi bi-file-bar-graph"></i><span class="menu-text">Báo cáo</span></a>
+        <a href="/activity-log"><i class="bi bi-clock-history"></i><span class="menu-text">Lịch sử hoạt động</span></a>
     </div>
 
-    <div class="main-content">
+    <div class="main-content expanded">
         <div class="container mt-5">
             {% block content %}
                 <h1>Welcome to StockB!</h1>
@@ -111,5 +111,6 @@
 
     {% block extra_js %}
     {% endblock %}
+
 </body>
 </html>
