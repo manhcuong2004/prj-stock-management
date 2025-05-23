@@ -234,18 +234,25 @@
                                 console.error(data.error);
                                 return;
                             }
-                            document.querySelectorAll('.metric-value.text-dark')[0].textContent = data.so_don_hang_xuat;
-                            document.querySelectorAll('.metric-value.text-dark')[0].textContent = data.so_don_hang_nhap;
-                            document.querySelectorAll('.metric-value.text-dark')[1].textContent = `${data.doanh_thu.toLocaleString()}đ`;
-                            document.querySelectorAll('.metric-value.text-dark')[2].textContent = `${data.gia_tri_nhap_kho.toLocaleString()}đ`;
 
-                           document.querySelectorAll('.metric-value.text-dark')[3].textContent = `${data.gia_tri_xuat_kho.toLocaleString()}đ`;
-                            document.querySelector('.metric-value.text-danger').textContent = `${data.no_phai_tra.toLocaleString()}đ`;
-                            document.querySelector('.metric-value.text-success').textContent = `${data.no_phai_thu.toLocaleString()}đ`;
-                            document.querySelector('.progress-bar.bg-danger').style.width = `${data.no_phai_tra_progress}%`;
-                            document.querySelector('.progress-bar.bg-success').style.width = `${data.no_phai_thu_progress}%`;
+                            // Log dữ liệu để kiểm tra
+                            console.log('API Response:', data);
 
-                            inventoryPieChart.data.datasets[0].data = [data.gia_tri_nhap_kho, data.gia_tri_xuat_kho];
+                            // Cập nhật các giá trị cho .metric-value.text-dark
+                            const metricValues = document.querySelectorAll('.metric-value.text-dark');
+                            metricValues[0].textContent = data.so_don_hang_xuat || 0; // Tổng đơn xuất
+                            metricValues[1].textContent = data.so_don_hang_nhap || 0; // Tổng đơn nhập
+                            metricValues[2].textContent = `${(data.gia_tri_nhap_kho || 0).toLocaleString()}đ`; // Giá trị nhập kho
+                            metricValues[3].textContent = `${(data.gia_tri_xuat_kho || 0).toLocaleString()}đ`; // Giá trị xuất kho
+
+                            // Cập nhật Nợ phải trả và Nợ phải thu
+                            document.querySelector('.metric-value.text-danger').textContent = `${(data.no_phai_tra || 0).toLocaleString()}đ`;
+                            document.querySelector('.metric-value.text-success').textContent = `${(data.no_phai_thu || 0).toLocaleString()}đ`;
+                            document.querySelector('.progress-bar.bg-danger').style.width = `${(data.no_phai_tra_progress || 0).toFixed(2)}%`;
+                            document.querySelector('.progress-bar.bg-success').style.width = `${(data.no_phai_thu_progress || 0).toFixed(2)}%`;
+
+                            // Cập nhật biểu đồ
+                            inventoryPieChart.data.datasets[0].data = [data.gia_tri_nhap_kho || 0, data.gia_tri_xuat_kho || 0];
                             inventoryPieChart.update();
 
                             categoryPieChart.data.labels = data.overview_chart_data.map(item => item.name);

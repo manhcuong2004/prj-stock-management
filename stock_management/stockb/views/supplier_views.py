@@ -28,6 +28,8 @@ def supplier_create_view(request):
         missing_fields = []
         if not supplier_name:
             missing_fields.append("Tên nhà cung cấp")
+        if not address:
+            missing_fields.append("Địa chỉ")
         if not tax_code:
             missing_fields.append("Mã số thuế")
         if not email:
@@ -40,6 +42,17 @@ def supplier_create_view(request):
             return render(request, 'supplier/supplier_create.html', {'form_data': request.POST})
 
         try:
+            supplier = Supplier(
+                supplier_name=supplier_name,
+                tax_code=tax_code,
+                address=address or None,
+                phone=phone,
+                email=email,
+                notes=notes or None
+            )
+            supplier.full_clean()
+            supplier.save()
+
             messages.success(request, 'Thêm nhà cung cấp thành công!')
             Notification.objects.create(
                 message=f"Thêm nhà cung cấp {supplier_name} thành công!",
