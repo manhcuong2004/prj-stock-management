@@ -1,3 +1,6 @@
+body {
+    overflow-x: hidden;
+}
 .header {
     height: 60px;
     width: 100%;
@@ -172,6 +175,10 @@
 .sidebar.sidebar-collapsed .submenu {
     padding-left: 5px;
 }
+
+.sidebar.sidebar-collapsed .submenu:hover {
+    background-color: #34495e;
+}
 .sidebar a:hover {
     background-color: #34495e;
     color: #ffffff;
@@ -188,6 +195,7 @@
     min-height: 100vh ;
     width: calc(100% - 250px);
     transition: margin-left 0.0s;
+
 }
 
 .main-content.expanded {
@@ -200,7 +208,7 @@
     font-size: 1.5rem;
     background: none;
     border: none;
-    color: #DC3545;
+
     cursor: pointer;
     padding: var(--spacing-sm);
     border-radius: var(--border-radius);
@@ -212,13 +220,14 @@
     color: var(--primary-color);
     outline: none;
 }
-.hamburger.active {
-    color: #000000;
-}
+
 .hamburger i {
     line-height: 1;
+    color: #DC3545;
 }
-
+.hamburger.active i{
+    color: #000000;
+}
 .toast-top-right {
     top: 50px !important;
 }

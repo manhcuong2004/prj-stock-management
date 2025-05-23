@@ -91,15 +91,11 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('toggleSidebar').addEventListener('click', function () {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.querySelector('.main-content');
-    const isExpanded = this.getAttribute('aria-expanded') === 'true';
-
-    if (isExpanded) {
-        this.classList.remove('active');
-    } else {
-        this.classList.add('active');
-    }
 
     sidebar.classList.toggle('sidebar-collapsed');
     mainContent.classList.toggle('expanded');
-    this.setAttribute('aria-expanded', !isExpanded);
+    this.classList.toggle('active');
+
+    const isExpanded = sidebar.classList.contains('sidebar-collapsed') ? 'false' : 'true';
+    this.setAttribute('aria-expanded', isExpanded);
 });
