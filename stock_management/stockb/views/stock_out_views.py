@@ -358,6 +358,7 @@ def import_stockout(request):
                 for col in numeric_columns:
                     try:
                         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                        df[col] = df[col].astype(float)
                     except Exception as e:
                         messages.error(request, f"Lỗi định dạng cột '{col}': {str(e)}")
                         return render(request, 'stock_out/import_stockout.html', {'form': form})
@@ -386,7 +387,7 @@ def import_stockout(request):
                             id=stockout_id,
                             defaults={
                                 'export_date': pd.to_datetime(stockout_data['Ngày xuất']),
-                                'amount_paid': stockout_data['Số tiền đã trả'],
+                                'amount_paid': float(stockout_data['Số tiền đã trả']),
                                 'payment_status': stockout_data['Trạng thái thanh toán'].upper(),
                                 'notes': stockout_data['Ghi chú'] if pd.notna(stockout_data['Ghi chú']) else '',
                                 'customer': customer,
@@ -396,7 +397,7 @@ def import_stockout(request):
 
                         if not created:
                             stockout.export_date = pd.to_datetime(stockout_data['Ngày xuất'])
-                            stockout.amount_paid = stockout_data['Số tiền đã trả']
+                            stockout.amount_paid = float(stockout_data['Số tiền đã trả'])  # Ép thành float
                             stockout.payment_status = stockout_data['Trạng thái thanh toán'].upper()
                             stockout.notes = stockout_data['Ghi chú'] if pd.notna(stockout_data['Ghi chú']) else ''
                             stockout.customer = customer
@@ -412,8 +413,8 @@ def import_stockout(request):
                                 return render(request, 'stock_out/import_stockout.html', {'form': form})
 
                             product_batch = row['Lô sản phẩm']
-                            quantity = row['Số lượng']
-                            discount = row['Chiết khấu (%)']
+                            quantity = float(row['Số lượng'])
+                            discount = float(row['Chiết khấu (%)'])
 
                             product_detail = ProductDetail.objects.filter(
                                 product=product,
@@ -437,7 +438,7 @@ def import_stockout(request):
                                 quantity=quantity,
                                 product_detail=product_detail,
                                 discount=discount,
-                                amount_paid=0,  #
+                                amount_paid=0,
                             )
 
                         Notification.objects.create(

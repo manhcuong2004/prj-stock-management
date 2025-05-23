@@ -370,7 +370,10 @@ def import_stockin(request):
                 numeric_columns = ['Số tiền đã trả', 'Số lượng', 'Chiết khấu (%)']
                 for col in numeric_columns:
                     try:
+                        # Ép kiểu thành số (numeric), thay thế giá trị không hợp lệ bằng 0
                         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                        # Chuyển đổi thành float để đảm bảo định dạng thập phân
+                        df[col] = df[col].astype(float)
                     except Exception as e:
                         messages.error(request, f"Lỗi định dạng cột '{col}': {str(e)}")
                         return render(request, 'stock_in/import_stockin.html', {'form': form})
@@ -397,21 +400,22 @@ def import_stockin(request):
                             id=stockin_id,
                             defaults={
                                 'import_date': pd.to_datetime(stockin_data['Ngày nhập']),
-                                'amount_paid': stockin_data['Số tiền đã trả'],
+                                'amount_paid': float(stockin_data['Số tiền đã trả']),  # Ép thành float
                                 'payment_status': stockin_data['Trạng thái thanh toán'].upper(),
                                 'notes': stockin_data['Ghi chú'] if pd.notna(stockin_data['Ghi chú']) else '',
                                 'supplier': supplier,
-                                'employee': employee,
+                                'created_by': employee,  # Thay employee thành created_by
                             }
                         )
 
                         if not created:
                             stockin.import_date = pd.to_datetime(stockin_data['Ngày nhập'])
-                            stockin.amount_paid = stockin_data['Số tiền đã trả']
+                            stockin.amount_paid = float(stockin_data['Số tiền đã trả'])  # Ép thành float
                             stockin.payment_status = stockin_data['Trạng thái thanh toán'].upper()
                             stockin.notes = stockin_data['Ghi chú'] if pd.notna(stockin_data['Ghi chú']) else ''
                             stockin.supplier = supplier
-                            stockin.employee = employee
+                            stockin.created_by = employee  # Thay employee thành created_by
+                            stockin.updated_by = employee  # Thêm updated_by nếu model có trường này
                             stockin.save()
 
                         for _, row in group.iterrows():
@@ -422,8 +426,8 @@ def import_stockin(request):
                                 return render(request, 'stock_in/import_stockin.html', {'form': form})
 
                             product_batch = row['Lô sản phẩm']
-                            quantity = row['Số lượng']
-                            discount = row['Chiết khấu (%)']
+                            quantity = float(row['Số lượng'])  # Ép thành float
+                            discount = float(row['Chiết khấu (%)'])  # Ép thành float
 
                             product_detail, _ = ProductDetail.objects.get_or_create(
                                 product=product,

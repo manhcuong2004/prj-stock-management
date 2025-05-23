@@ -2,10 +2,11 @@
 {% block title %}
     {{ title }}
 {% endblock %}
+{% load static %}
 
 {% block content %}
     <div class="container bg-white p-4 rounded shadow">
-        <h5>Nhập đơn nhập kho từ Excel</h5>
+        <h5>Nhập đơn xuất kho từ Excel</h5>
         <form class="mb-6" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
@@ -13,12 +14,15 @@
                 {{ form.excel_file }}
                 <br>
                 <small class="form-text text-danger">
-                    * Tệp Excel cần có các cột: Mã đơn nhập, Ngày nhập, ID Nhà cung cấp, Trạng thái thanh toán,
+                    * Tệp Excel cần có các cột: Mã đơn xuất, Ngày xuất, ID Khách hàng, Trạng thái thanh toán,
                     Số tiền đã trả, Ghi chú, ID Nhân viên, ID Sản phẩm, Lô sản phẩm, Số lượng, Chiết khấu (%).
                 </small>
             </div>
             <button type="submit" class="btn btn-success">Xác nhận</button>
-            <a href="{% url 'stock_in' %}" class="btn btn-secondary">Quay lại</a>
+            <a href="{% static 'example/stockout_example.xlsx' %}" download class="btn btn-info">
+              Tải file mẫu
+            </a>
+            <a href="{% url 'stock_out' %}" class="btn btn-secondary">Quay lại</a>
         </form>
     </div>
 {% endblock %}

@@ -2,6 +2,7 @@
 {% block title %}
     {{ title }}
 {% endblock %}
+{% load static %}
 
 {% block content %}
     <div class="container bg-white p-4 rounded shadow">
@@ -18,6 +19,9 @@
                 </small>
             </div>
             <button type="submit" class="btn btn-success">Xác nhận</button>
+            <a href="{% static 'example/stockin_example.xlsx' %}" download class="btn btn-info">
+              Tải file mẫu
+            </a>
             <a href="{% url 'stock_in' %}" class="btn btn-secondary">Quay lại</a>
         </form>
     </div>
