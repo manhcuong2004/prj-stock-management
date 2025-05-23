@@ -84,7 +84,7 @@
                     {% for order in customer_orders %}
                     <tr>
                       <td>#{{ order.id }}</td>
-                      <td>{{ order.export_date|date:"d/m/Y H:i" }}</td>
+                      <td>{{ order.export_date|date:"d/m/Y" }}</td>
 
                       <td>
                         {% if order.payment_status == "PAID" %}

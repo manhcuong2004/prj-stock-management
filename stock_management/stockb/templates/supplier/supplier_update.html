@@ -83,7 +83,7 @@
                 {% for purchase in purchase_order %}
                 <tr>
                   <td>#{{ purchase.id }}</td>
-                  <td>{{ purchase.import_date|date:"d/m/Y H:i" }}</td>
+                  <td>{{ purchase.import_date|date:"d/m/Y" }}</td>
                   <td>
                     {% if purchase.payment_status == "PAID" %}
                       <span class="badge bg-success">Đã thanh toán</span>
