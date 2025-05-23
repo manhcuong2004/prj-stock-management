@@ -74,7 +74,7 @@ def edit_unit(request, pk):
 def delete_unit(request, pk):
     unit = get_object_or_404(Unit, pk=pk)
     if request.method == 'POST':
-        unit_name = unit.name
+        unit_name = unit.unit_name
         unit.delete()
         messages.success(request, 'Đơn vị đã được xóa thành công!')
         Notification.objects.create(

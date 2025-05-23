@@ -202,7 +202,7 @@ class ProductDetail(models.Model):
     expiry_date = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    checked_at = models.DateTimeField(blank=True, null=True)
     class Meta:
         unique_together = ('product', 'product_batch')
 
@@ -210,15 +210,18 @@ class ProductDetail(models.Model):
         return f"{self.product.product_name} - Lô {self.product_batch}"
 
     def save(self, *args, **kwargs):
+        if self.pk:
+            old_instance = ProductDetail.objects.get(pk=self.pk)
+            if old_instance.import_date != self.import_date and self.product.inspection_time:
+                self.expiry_date = self.import_date + timedelta(days=self.product.inspection_time)
+        else:
+            if self.import_date and self.product.inspection_time:
+                self.expiry_date = self.import_date + timedelta(days=self.product.inspection_time)
+
         if self.initial_quantity is None:
             self.initial_quantity = 0
 
-        if self.import_date and self.product.inspection_time:
-            self.expiry_date = self.import_date + timedelta(days=self.product.inspection_time)
-
         super().save(*args, **kwargs)
-
-
 
     def calculate_remaining_quantity(self):
         exported_quantity = sum(
