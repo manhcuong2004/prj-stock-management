@@ -14,7 +14,7 @@ def supplier_list_view(request):
     search_query = request.GET.get('search', '')
     if search_query:
         suppliers = suppliers.filter(
-            Q(supplier_name_icontains=search_query)
+            Q(supplier_name__icontains=search_query)
         )
 
     paginator = Paginator(suppliers, 10)
