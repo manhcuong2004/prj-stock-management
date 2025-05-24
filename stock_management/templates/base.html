@@ -58,29 +58,138 @@
     </div>
 
     <div class="sidebar sidebar-collapsed active" id="sidebar">
-        <a href="#" data-bs-toggle="collapse" data-bs-target="#sanphamSubmenu" aria-expanded="false">
-            <i class="bi bi-box-seam"></i><span class="menu-text">Sản phẩm</span>
-        </a>
-        <div class="collapse ms-4" id="sanphamSubmenu">
-            <a href="/product-category" class="submenu"><i class="bi bi-card-checklist"></i><span class="menu-text">Danh mục sản phẩm</span></a>
-            <a href="/product" class="submenu"><i class="bi bi-house-door"></i><span class="menu-text">Sản phẩm trong kho</span></a>
-        </div>
-        <a href="/customers"><i class="bi bi-people"></i><span class="menu-text">Khách hàng</span> </a>
-        <a href="/supplier"><i class="bi bi-person-vcard"></i><span class="menu-text">Nhà cung cấp</span> </a>
-        <a href="/units"><i class="bi bi-building"></i><span class="menu-text">Đơn vị</span></a>
-        <a href="/stock-out"><i class="bi bi-truck"></i><span class="menu-text">Xuất kho</span></a>
-        <a href="/stock-in"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Nhập kho</span></a>
+        <!-- Sản phẩm -->
+        {% if request.user.is_authenticated %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#sanphamSubmenu" aria-expanded="false" aria-controls="sanphamSubmenu">
+                <i class="bi bi-box-seam"></i><span class="menu-text">Sản phẩm</span>
+              </a>
+              <div class="collapse ms-4" id="sanphamSubmenu">
+                {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' or group.name == 'Nhan Vien Quan Li Kho' %}
+                  <a href="/product-category" class="submenu">
+                    <i class="bi bi-card-checklist"></i><span class="menu-text">Danh mục sản phẩm</span>
+                  </a>
+                {% endif %}
+                {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' or group.name == 'Nhan Vien Quan Li Kho' %}
+                  <a href="/product" class="submenu">
+                    <i class="bi bi-boxes"></i><span class="menu-text">Sản phẩm trong kho</span>
+                  </a>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+            <!-- Khách hàng -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="/customers">
+                <i class="bi bi-people"></i><span class="menu-text">Khách hàng</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
 
-        <a href="#" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false">
-            <i class="bi bi-bag-check"></i></i><span class="menu-text">Kiểm tra sản phẩm</span>
-        </a>
-        <div class="collapse ms-4" id="kiemkeSubmenu">
-            <a href="/check/near-expiry" class="submenu"><i class="bi bi-calendar-event"></i><span class="menu-text">Kiểm tra định kì</span></a>
-            <a href="/check/low-stock" class="submenu"><i class="bi bi-exclamation-triangle"></i><span class="menu-text">Gần hết trong kho</span></a></a>
-        </div>
-        <a href="/inventory-check"><i class="bi bi-clipboard-check"></i><span class="menu-text">Kiểm kê</span></a>
-        <a href="/report"><i class="bi bi-file-bar-graph"></i><span class="menu-text">Báo cáo</span></a>
-        <a href="/activity-log"><i class="bi bi-clock-history"></i><span class="menu-text">Lịch sử hoạt động</span></a>
+        <!-- Nhà cung cấp -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="/supplier">
+                <i class="bi bi-person-vcard"></i><span class="menu-text">Nhà cung cấp</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Đơn vị -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="/units">
+                <i class="bi bi-building"></i><span class="menu-text">Đơn vị</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Xuất kho -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="/stock-out">
+                <i class="bi bi-truck"></i><span class="menu-text">Xuất kho</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Nhập kho -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="/stock-in">
+                <i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Nhập kho</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Kiểm tra sản phẩm -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' or group.name == 'Nhan Vien Quan Li Kho' %}
+              <a href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#kiemkeSubmenu" aria-expanded="false" aria-controls="kiemkeSubmenu">
+                <i class="bi bi-bag-check"></i><span class="menu-text">Kiểm tra sản phẩm</span>
+              </a>
+              <div class="collapse ms-4" id="kiemkeSubmenu">
+                {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' %}
+                  <a href="/check/near-expiry" class="submenu">
+                    <i class="bi bi-calendar-event"></i><span class="menu-text">Kiểm tra định kì</span>
+                  </a>
+                {% endif %}
+                {% if group.name == 'QuanLy' or group.name == 'Nhan Vien Quan Li Kho' %}
+                  <a href="/check/low-stock" class="submenu">
+                    <i class="bi bi-exclamation-triangle"></i><span class="menu-text">Gần hết trong kho</span>
+                  </a>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Kiểm kê -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' %}
+              <a href="/inventory-check">
+                <i class="bi bi-clipboard-check"></i><span class="menu-text">Kiểm kê</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Báo cáo -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' or group.name == 'Kiem Toan' %}
+              <a href="/report">
+                <i class="bi bi-file-bar-graph"></i><span class="menu-text">Báo cáo</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Lịch sử hoạt động -->
+        {% if request.user.groups.all %}
+          {% for group in request.user.groups.all %}
+            {% if group.name == 'QuanLy' %}
+              <a href="/activity-log">
+                <i class="bi bi-clock-history"></i><span class="menu-text">Lịch sử hoạt động</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
     </div>
 
     <div class="main-content expanded">
