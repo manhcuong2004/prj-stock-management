@@ -33,7 +33,10 @@ urlpatterns = [
     path('stock-in/', stock_in_views.stock_in, name='stock_in'),
     path('stock-in/create', stock_in_views.stock_in_update, name='stock_in_create'),
     path('stock-in/update/<int:pk>/', stock_in_views.stock_in_update, name='stock_in_update'),
+
     path('stock-in/<int:pk>/delete/', stock_in_views.stock_in_delete, name='stock_in_delete'),
+    path('delete-stockin-detail/<int:pk>/', stock_in_views.delete_stockin_detail, name='delete_stockin_detail'),
+
     path('stock-in/export-all/', stock_in_views.export_all_stockin_excel, name='export_all_stockin'),
     path('stock-in/export/<int:stockin_id>/', stock_in_views.export_single_stockin_excel, name='export_single_stockin'),
     path('stock-in/import/', stock_in_views.import_stockin, name='import_stockin'),

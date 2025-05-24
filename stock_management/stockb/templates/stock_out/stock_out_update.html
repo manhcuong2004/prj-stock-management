@@ -114,10 +114,9 @@
                                         </td>
                                         <td class="text-center">
                                             {% if detail_form.instance.pk %}
-                                                <form method="POST" action="{% url 'delete_stockout_detail' detail_form.instance.pk %}" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <a href="#" class="delete-row text-danger" onclick="this.closest('form').submit();">Xóa</a>
-                                                </form>
+                                                <a href="{% url 'delete_stockout_detail' detail_form.instance.pk %}?redirect=stock_out_update"
+                                                   class="delete-row text-danger"
+                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa chi tiết này không?');">Xóa</a>
                                             {% else %}
                                                 <a href="#" class="delete-row text-danger">Xóa</a>
                                             {% endif %}
@@ -230,6 +229,16 @@
                 <button type="submit" class="btn btn-primary">Lưu và Hoàn tất</button>
             </div>
         </form>
+        {% for detail_form in formset %}
+            {% if detail_form.instance.pk %}
+                <form method="POST"
+                      action="{% url 'delete_stockout_detail' detail_form.instance.pk %}"
+                      id="delete-form-{{ detail_form.instance.pk }}"
+                      style="display: none;">
+                    {% csrf_token %}
+                </form>
+            {% endif %}
+        {% endfor %}
     </div>
 
     <script>

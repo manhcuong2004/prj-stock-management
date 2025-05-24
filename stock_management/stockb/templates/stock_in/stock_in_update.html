@@ -105,8 +105,13 @@
                                             <span class="total">0đ</span>
                                         </td>
                                         <td class="text-center">
-                                            <input type="checkbox" name="{{ detail_form.DELETE.name }}" id="{{ detail_form.DELETE.id_for_label }}" class="delete-checkbox" {% if detail_form.DELETE.value %}checked{% endif %}>
-                                            <i class="bi bi-x-lg delete-row"></i>
+                                            {% if detail_form.instance.pk %}
+                                                <a href="{% url 'delete_stockin_detail' detail_form.instance.pk %}?redirect=stock_in_update"
+                                                   class="delete-row text-danger"
+                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa chi tiết này không?');">Xóa</a>
+                                            {% else %}
+                                                <a href="#" class="delete-row text-danger">Xóa</a>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -211,6 +216,16 @@
                 <button type="submit" class="btn btn-primary">Lưu và Hoàn tất</button>
             </div>
         </form>
+        {% for detail_form in formset %}
+            {% if detail_form.instance.pk %}
+                <form method="POST"
+                      action="{% url 'delete_stockin_detail' detail_form.instance.pk %}"
+                      id="delete-form-{{ detail_form.instance.pk }}"
+                      style="display: none;">
+                    {% csrf_token %}
+                </form>
+            {% endif %}
+        {% endfor %}
     </div>
 
     <script>
@@ -349,8 +364,7 @@
                         <span class="total">${productPrice.toLocaleString('vi-VN')} đ</span>
                     </td>
                     <td class="text-center">
-                        <input type="checkbox" name="stockindetail_set-${formIndex}-DELETE" class="delete-checkbox">
-                        <i class="bi bi-x-lg delete-row"></i>
+                        <a href="#" class="delete-row text-danger">Xóa</a>
                     </td>
                 `;
                 tableBody.appendChild(newRow);
@@ -367,30 +381,13 @@
         });
 
         document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('delete-row')) {
+            if (event.target.classList.contains('delete-row') && event.target.getAttribute('href') === '#') {
                 if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
                     const row = event.target.closest('tr');
-                    const deleteInput = row.querySelector('input[name$="-DELETE"]');
-                    const idInput = row.querySelector('input[name$="-id"]');
-
-                    if (!deleteInput) {
-                        console.error('Delete input not found for row:', row);
-                        return;
-                    }
-
-                    if (idInput && idInput.value) {
-                        // Hàng đã tồn tại trong DB, đánh dấu DELETE và ẩn
-                        deleteInput.checked = true;
-                        row.style.display = 'none';
-                        console.log('Marked DELETE for row with id:', idInput.value);
-                    } else {
-                        // Hàng mới, xóa hoàn toàn khỏi DOM
-                        row.remove();
-                        const totalForms = document.querySelector('#id_stockindetail_set-TOTAL_FORMS');
-                        totalForms.value = parseInt(totalForms.value) - 1;
-                        formIndex--;
-                        console.log('Removed new row, TOTAL_FORMS:', totalForms.value);
-                    }
+                    row.remove();
+                    const totalForms = document.querySelector('#id_stockindetail_set-TOTAL_FORMS');
+                    totalForms.value = parseInt(totalForms.value) - 1;
+                    formIndex--;
 
                     updateSummary();
 

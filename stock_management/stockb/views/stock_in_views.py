@@ -208,6 +208,25 @@ def stock_in_delete(request, pk):
         return redirect('stock_in')
     return render(request, 'stock_in/stock_in_list.html', {'stock_in': stock_in})
 
+
+@login_required
+def delete_stockin_detail(request, pk):
+    stock_in_detail = get_object_or_404(StockInDetail, pk=pk)
+    stock_in_id = stock_in_detail.import_record.id
+    try:
+        StockInDetail.objects.filter(pk=pk).delete()
+        messages.success(request, 'Chi tiết nhập kho đã được xóa thành công!')
+        Notification.objects.create(
+            message=f"Xóa chi tiết nhập kho ID {pk} thành công!",
+            employee=request.user,
+            created_at=timezone.now(),
+            is_read=False
+        )
+    except Exception as e:
+        messages.error(request, f'Lỗi khi xóa chi tiết nhập kho: {str(e)}')
+    return redirect('stock_in_update', pk=stock_in_id)
+
+
 @login_required
 def export_all_stockin_excel(request):
     filter_type = request.GET.get('filter', 'all')
