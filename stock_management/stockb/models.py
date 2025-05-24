@@ -161,6 +161,13 @@ class StockOut(models.Model):
     def remaining_debt(self):
         return self.total_amount() - self.amount_paid
 
+    def delete(self, *args, **kwargs):
+        for detail in self.stockoutdetail_set.all():
+            if detail.product_detail:
+                detail.product_detail.remaining_quantity += detail.quantity
+                detail.product_detail.save()
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"StockOut #{self.id} - {self.customer.first_name} {self.customer.last_name}"
 
@@ -289,7 +296,6 @@ class StockOutDetail(models.Model):
         if self.product_detail:
             self.product_detail.remaining_quantity += self.quantity
             self.product_detail.save()
-
         super().delete(*args, **kwargs)
 
 

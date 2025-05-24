@@ -122,7 +122,7 @@ class StockInDetailForm(forms.ModelForm):
         return cleaned_data
 
 StockInDetailFormSet = forms.inlineformset_factory(
-    StockIn, StockInDetail, form=StockInDetailForm, extra=0, can_delete=True
+    StockIn, StockInDetail, form=StockInDetailForm, extra=0, can_delete=False
 )
 
 

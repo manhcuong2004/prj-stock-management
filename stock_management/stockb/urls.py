@@ -24,6 +24,7 @@ urlpatterns = [
     path('stock-out/create/', stock_out_views.stock_out_update, name='stock_out_create'),
     path('stock-out/update/<int:pk>/', stock_out_views.stock_out_update, name='stock_out_update'),
     path('stock-out/<int:pk>/delete/', stock_out_views.stock_out_delete, name='stock_out_delete'),
+    path('delete-stockout-detail/<int:pk>/', stock_out_views.delete_stockout_detail, name='delete_stockout_detail'),
     path('stock-out/export-all/', stock_out_views.export_all_stockout_excel, name='export_all_stockout'),
     path('stock-out/export/<int:stockout_id>/', stock_out_views.export_single_stockout_excel, name='export_single_stockout'),
     path('stock-out/import/', stock_out_views.import_stockout, name='import_stockout'),

@@ -194,6 +194,27 @@ def stock_out_delete(request, pk):
     return render(request, 'stock_out/stock_out_list.html', {'stock_out': stock_out})
 
 @login_required
+def delete_stockout_detail(request, pk):
+    stock_out_detail = get_object_or_404(StockOutDetail, pk=pk)
+    stock_out_id = stock_out_detail.export_record.id
+    stock_out_detail.delete()
+    if request.method == 'POST':
+        try:
+            stock_out_detail.delete()
+            messages.success(request, 'Chi tiết xuất kho đã được xóa thành công!')
+            Notification.objects.create(
+                message=f"Xóa chi tiết xuất kho ID {pk} thành công!",
+                employee=request.user,
+                created_at=timezone.now(),
+                is_read=False
+            )
+            return redirect('stock_out_update', pk=stock_out_id)
+        except Exception as e:
+            messages.error(request, f'Lỗi khi xóa chi tiết xuất kho: {str(e)}')
+            return redirect('stock_out_update', pk=stock_out_id)
+    return redirect('stock_out_update', pk=stock_out_id)
+
+@login_required
 def export_all_stockout_excel(request):
     filter_type = request.GET.get('filter', 'all')
     search_text = request.GET.get('search', '')
