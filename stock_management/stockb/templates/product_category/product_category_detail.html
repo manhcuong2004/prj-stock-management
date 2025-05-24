@@ -15,12 +15,14 @@
         </a>
     </div>
     <div class="container bg-white p-4 rounded shadow">
-        <div class="input-group mb-4">
-            <input type="text" class="form-control" placeholder="Tìm kiếm">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-        </div>
+        <form method="get" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm..." value="{{ request.GET.search|default:'' }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
 
-        <div class="row mb-2 text-muted">
+        <div class="row mb-2 mt-3 text-muted">
             <div class="col-8">Sản phẩm</div>
             <div class="col-2 text-end">Giá bán ra</div>
             <div class="col-2 text-end">Giá nhập vào</div>

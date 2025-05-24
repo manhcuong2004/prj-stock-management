@@ -20,7 +20,7 @@ def product_view(request):
         products = products.filter(
             Q(product_name__icontains=search_text) |
             Q(category__category_name__icontains=search_text) |
-            Q(supplier__company_name__icontains=search_text)
+            Q(supplier__supplier_name__icontains=search_text)
         )
     if filter_category:
         products = products.filter(category__id=filter_category)

@@ -62,8 +62,14 @@ def product_category_create(request):
 
 @login_required
 def product_category_detail(request, pk):
+    search_text = request.GET.get('search', '').strip()
     category = get_object_or_404(ProductCategory, pk=pk)
     products = Product.objects.filter(category=category)
+
+    if search_text:
+        products = products.filter(
+            Q(product_name__icontains=search_text)
+        )
     context = {
         "title": f"Danh sách sản phẩm trong danh mục - {category.category_name}",
         "category": category,
