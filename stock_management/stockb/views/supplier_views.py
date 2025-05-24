@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
+from django.core.paginator import Paginator
+from django.db.models import Sum, Q
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from ..models import Supplier, Notification, StockIn
@@ -8,10 +9,21 @@ from ..models import Supplier, Notification, StockIn
 
 @login_required
 def supplier_list_view(request):
-    suppliers = Supplier.objects.all()
+    suppliers = Supplier.objects.order_by('-created_at')
+
+    search_query = request.GET.get('search', '')
+    if search_query:
+        suppliers = suppliers.filter(
+            Q(supplier_name_icontains=search_query)
+        )
+
+    paginator = Paginator(suppliers, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         "title": "Danh sách nhà cung cấp",
-        "suppliers": suppliers,
+        "suppliers": page_obj,
     }
     return render(request, 'supplier/supplier_list.html', context)
 
