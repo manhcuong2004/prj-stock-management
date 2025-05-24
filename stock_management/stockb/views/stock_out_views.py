@@ -308,7 +308,6 @@ def export_all_stockout_excel(request):
 @login_required
 def export_single_stockout_excel(request, stockout_id):
     stock_out = get_object_or_404(StockOut, id=stockout_id)
-
     data = []
     details = stock_out.stockoutdetail_set.all().select_related('product', 'product_detail')
     for detail in details:
@@ -348,7 +347,6 @@ def export_single_stockout_excel(request, stockout_id):
             'Tổng tiền chi tiết': 0,
         })
     df = pd.DataFrame(data)
-
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename=stockout_{stockout_id}_report.xlsx'
     df.to_excel(response, index=False, engine='openpyxl')
