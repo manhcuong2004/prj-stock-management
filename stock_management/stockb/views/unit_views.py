@@ -11,7 +11,7 @@ def unit_list(request):
     units = Unit.objects.all()
     query = request.GET.get('q')
     if query:
-        units = units.filter(name__icontains=query) | units.filter(symbol__icontains=query)
+        units = units.filter(unit_name__icontains=query) | units.filter(unit_symbol__icontains=query)
 
     paginator = Paginator(units, 10)
     page_number = request.GET.get('page')
